@@ -4,6 +4,10 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include <poll.h>
+#include <pthread.h>
+
+using namespace std;
 
 int main(int argc, char** argv) {
     // args
@@ -45,31 +49,37 @@ int main(int argc, char** argv) {
         return 1;
     }
 
+    // config poll
+    pollfd pfds[1];
+    pfds[0].fd = sockfd;
+    pfds[0].events = POLLIN;
+
     while(true) {
-        sockaddr_in new_client{};
-        socklen_t new_client_size = sizeof(new_client);
-
-        // accept
-        int clientfd = accept(sockfd, (sockaddr*)&new_client, &new_client_size);
-        if (clientfd == -1) {
-            perror("Error (accept)");
-            return 1;
+        // poll czekający na zdarzenia
+        int poll_count = poll(pfds, 1, -1);
+        if (poll_count == -1) {
+            perror("Error (poll)");
+            break;
         }
 
-        // act
-        const char* msg = "To jest wiadomość od serwera.";
-        int count = (int)send(clientfd, msg, strlen(msg), 0);
-        if (count != (int)strlen(msg)) {
-            perror("Error (send)");
-            return 1;
-        }
+        if (pfds[0].revents & POLLIN) {
+            sockaddr_in client_addr{};
+            socklen_t client_len = sizeof(client_addr);
+            int clientfd = accept(sockfd, (sockaddr*)&client_addr, &client_len);
+            if (clientfd == -1) {
+                perror("Error (accept)");
+                continue;
+            }
 
-        close(clientfd);
+            printf("nowe połączenie\n");
+
+            const char* msg = "wiadomość od serwera\n";
+            send(clientfd, msg, strlen(msg), 0);
+
+            close(clientfd);
+        }
     }
 
-    // shutdown
     shutdown(sockfd, SHUT_WR);
-
-    // close
     close(sockfd);
 }
