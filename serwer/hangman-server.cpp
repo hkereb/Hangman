@@ -1,16 +1,51 @@
 #include <cstring>
 #include <iostream>
+#include <list>
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <poll.h>
 #include <pthread.h>
+#include <thread>
+#include <vector>
 
 using namespace std;
 
+struct Player {
+    int sockfd;
+    string nick;
+    string room_name;
+    int score;
+};
+
+struct Lobby {
+    string name;
+    string password;
+    int count;
+    std::vector<Player> players;
+};
+
+int sockfd;
+
+std::list<Lobby> gameLobbies;
+int lobbyCount = 0;
+
+vector<int> client_sockets;
+
+void handle_client(int clientfd) {
+    const char* msg = "serwer: witaj na serwerze\n";
+    send(clientfd, msg, strlen(msg), 0);
+    //close(clientfd);
+    std::thread::id thread_id = std::this_thread::get_id();
+    std::cout << "serwer: klient działa na wątku o ID: " << thread_id << std::endl;
+    while(true) {
+        int i = 1;
+    }
+}
+
+
 int main(int argc, char** argv) {
-    // args
     if (argc != 2) {
         perror("Error (arguments) <port>");
         return 1;
@@ -18,38 +53,32 @@ int main(int argc, char** argv) {
     char* endp;
     long port = strtol(argv[1], &endp, 10);
 
-    // socket
-    int sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (sockfd == -1) {
         perror("Error (socket)");
         return 1;
     }
 
-    // sock opt
     const int one = 1;
     setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &one, sizeof(one));
 
-    // addr
     sockaddr_in server_addr {};
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(uint16_t(port));
-    server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
-    // bind
     int fail = bind(sockfd, (sockaddr*)&server_addr, sizeof(server_addr));
     if (fail == -1) {
         perror("Error (bind)");
         return 1;
     }
 
-    // listen
     fail = listen(sockfd, 1);
     if (fail == -1) {
         perror("Error (listen)");
         return 1;
     }
 
-    // config poll
     pollfd pfds[1];
     pfds[0].fd = sockfd;
     pfds[0].events = POLLIN;
@@ -71,12 +100,12 @@ int main(int argc, char** argv) {
                 continue;
             }
 
-            printf("nowe połączenie\n");
+            client_sockets.push_back(clientfd);
+            printf("serwer: nowe połączenie\n");
 
-            const char* msg = "wiadomość od serwera\n";
-            send(clientfd, msg, strlen(msg), 0);
-
-            close(clientfd);
+            // nowy wątek per klient
+            thread client_thread(handle_client, clientfd);
+            client_thread.detach();
         }
     }
 
