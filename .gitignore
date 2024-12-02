@@ -199,3 +199,7 @@ cython_debug/
 *.exe
 *.out
 *.app
+
+*.idea
+/serwer/cmake-build-debug/
+/serwer/build/
