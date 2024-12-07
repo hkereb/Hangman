@@ -4,11 +4,11 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
-#include <sys/socket.h>
-#include <poll.h>
+#include <sys/epoll.h>
 #include <pthread.h>
 #include <thread>
 #include <vector>
+#include <string>
 
 using namespace std;
 
@@ -18,6 +18,7 @@ struct Player {
     string room_name;
     int score;
 };
+std::vector<Player> players;
 
 struct Lobby {
     string name;
@@ -31,25 +32,18 @@ int sockfd;
 std::list<Lobby> gameLobbies;
 int lobbyCount = 0;
 
-vector<int> client_sockets;
-
 void handle_client(int clientfd) {
-    const char* msg = "serwer: witaj na serwerze\n";
-    send(clientfd, msg, strlen(msg), 0);
-    //close(clientfd);
-    std::thread::id thread_id = std::this_thread::get_id();
-    std::cout << "serwer: klient działa na wątku o ID: " << thread_id << std::endl;
-    while(true) {
-        int i = 1;
-    }
+    Player new_player;
+    new_player.sockfd = clientfd;
+    players.push_back(new_player);
 }
-
 
 int main(int argc, char** argv) {
     if (argc != 2) {
         perror("Error (arguments) <port>");
         return 1;
     }
+
     char* endp;
     long port = strtol(argv[1], &endp, 10);
 
@@ -73,42 +67,71 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    fail = listen(sockfd, 1);
+    fail = listen(sockfd, 10);
     if (fail == -1) {
         perror("Error (listen)");
         return 1;
     }
 
-    pollfd pfds[1];
-    pfds[0].fd = sockfd;
-    pfds[0].events = POLLIN;
+    int epoll_fd = epoll_create1(0);
+    if (epoll_fd == -1) {
+        perror("Error (epoll_create1)");
+        return 1;
+    }
 
-    while(true) {
-        // poll czekający na zdarzenia
-        int poll_count = poll(pfds, 1, -1);
-        if (poll_count == -1) {
-            perror("Error (poll)");
+    epoll_event event{};
+    event.data.fd = sockfd;
+    event.events = EPOLLIN;
+
+    if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, sockfd, &event) == -1) {
+        perror("Error (epoll_ctl)");
+        return 1;
+    }
+
+    const int MAX_EVENTS = 10;
+    epoll_event events[MAX_EVENTS];
+
+    while (true) {
+        int event_count = epoll_wait(epoll_fd, events, MAX_EVENTS, -1);
+        if (event_count == -1) {
+            perror("Error (epoll_wait)");
             break;
         }
 
-        if (pfds[0].revents & POLLIN) {
-            sockaddr_in client_addr{};
-            socklen_t client_len = sizeof(client_addr);
-            int clientfd = accept(sockfd, (sockaddr*)&client_addr, &client_len);
-            if (clientfd == -1) {
-                perror("Error (accept)");
-                continue;
+        for (int i = 0; i < event_count; ++i) {
+            if (events[i].data.fd == sockfd) {
+                int clientfd = accept(sockfd, nullptr, nullptr);
+                if (clientfd == -1) {
+                    perror("Error (accept)");
+                    continue;
+                }
+
+                cout << "serwer: nowe połączenie";
+
+                epoll_event client_event{};
+                client_event.data.fd = clientfd;
+                client_event.events = EPOLLIN;
+
+                // dodanie klienta do epoll
+                if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, clientfd, &client_event) == -1) {
+                    perror("Error (epoll_ctl - client)");
+                    close(clientfd);
+                    continue;
+                }
+
+                handle_client(clientfd);
+
+                // Usuwamy klienta z epolla po obsłużeniu
+                if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, clientfd, nullptr) == -1) {
+                    perror("Error (epoll_ctl - remove client)");
+                }
             }
-
-            client_sockets.push_back(clientfd);
-            printf("serwer: nowe połączenie\n");
-
-            // nowy wątek per klient
-            thread client_thread(handle_client, clientfd);
-            client_thread.detach();
         }
     }
 
+    close(epoll_fd);
     shutdown(sockfd, SHUT_WR);
     close(sockfd);
+
+    return 0;
 }
