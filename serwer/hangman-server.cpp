@@ -39,10 +39,31 @@ std::vector<std::string> client_nicks;
 int setNonBlocking(int sockfd);
 int startListening();
 
+void sendToClient(int client_fd, const std::string& command_number, const std::string& body) {
+    if (command_number.size() != 2) {
+        std::cerr << "Error: Command number must consist of 2 characters";
+        return;
+    }
+
+    std::string full_message = command_number + body;
+    ssize_t bytes_sent = send(client_fd, full_message.c_str(), full_message.size(), 0);
+
+    if (bytes_sent == -1) {
+        std::cerr << "Error: Failed to send message to client with socket " << client_fd << ".\n";
+    }
+}
+
 // obsługa klienta na podstawie jego wiadomości
 void handle_client_message(int client_fd, std::string msg) {
     if (msg.substr(0, 2) == "01") {
         std::string nick = msg.substr(2);
+
+        if (std::find(client_nicks.begin(), client_nicks.end(), nick) != client_nicks.end()) {
+            std::cout << "Nick, " << nick << ", has already been taken.\n";
+            // powiadomienie strony klienta o niepowodzeniu
+            sendToClient(client_fd, "01", "0");
+            return;
+        }
 
         auto it = std::find_if(players.begin(), players.end(), [client_fd](const Player& player) {
             return player.sockfd == client_fd;
@@ -51,11 +72,13 @@ void handle_client_message(int client_fd, std::string msg) {
         if (it != players.end()) {
             it->nick = nick;
             client_nicks.push_back(nick);
+            sendToClient(client_fd, "01", "1");
             //std::cout << "Player's accepted nickname: " << it->nick;
         } else {
             std::cout << "Player's socket has not been found in the players vector (socket: " << client_fd << ")";
+            sendToClient(client_fd, "01", "0");
+            return;
         }
-        // TODO sprawdzenie czy nick jest unikalny, proszenie o nick aż do skutku
     }
     else {
         // tutaj inne wiadomości/komendy
