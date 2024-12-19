@@ -14,6 +14,7 @@
 #include <list>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 #define MAXEPOLLSIZE 1000
 #define BACKLOG 200 // how many pending connections queue will hold
@@ -21,8 +22,6 @@
 struct Player {
     int sockfd;
     std::string nick;
-    std::string room_name;
-    int score;
 };
 std::vector<Player> players;
 
@@ -40,12 +39,45 @@ std::vector<std::string> client_nicks;
 int setNonBlocking(int sockfd);
 int startListening();
 
+void sendToClient(int client_fd, const std::string& command_number, const std::string& body) {
+    if (command_number.size() != 2) {
+        std::cerr << "Error: Command number must consist of 2 characters";
+        return;
+    }
+
+    std::string full_message = command_number + body;
+    ssize_t bytes_sent = send(client_fd, full_message.c_str(), full_message.size(), 0);
+
+    if (bytes_sent == -1) {
+        std::cerr << "Error: Failed to send message to client with socket " << client_fd << ".\n";
+    }
+}
+
 // obsługa klienta na podstawie jego wiadomości
 void handle_client_message(int client_fd, std::string msg) {
-    if (msg.compare("nick")) {
-        client_nicks.push_back(msg);
-        for (int i=0; i < client_nicks.size(); i++) {
-            std::cout << client_nicks[i];
+    if (msg.substr(0, 2) == "01") {
+        std::string nick = msg.substr(2);
+
+        if (std::find(client_nicks.begin(), client_nicks.end(), nick) != client_nicks.end()) {
+            std::cout << "Nick, " << nick << ", has already been taken.\n";
+            // powiadomienie strony klienta o niepowodzeniu
+            sendToClient(client_fd, "01", "0");
+            return;
+        }
+
+        auto it = std::find_if(players.begin(), players.end(), [client_fd](const Player& player) {
+            return player.sockfd == client_fd;
+        });
+
+        if (it != players.end()) {
+            it->nick = nick;
+            client_nicks.push_back(nick);
+            sendToClient(client_fd, "01", "1");
+            //std::cout << "Player's accepted nickname: " << it->nick;
+        } else {
+            std::cout << "Player's socket has not been found in the players vector (socket: " << client_fd << ")";
+            sendToClient(client_fd, "01", "0");
+            return;
         }
     }
     else {
@@ -56,7 +88,7 @@ void handle_client_message(int client_fd, std::string msg) {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char *argv[]) {
     if (argc != 1) {
-        fprintf(stderr, "serwer nie wymaga dodatkowych argumentów\n");
+        fprintf(stderr, "no extra arguments required\n");
         return 1;
     }
 
@@ -101,7 +133,7 @@ int main(int argc, char *argv[]) {
                     }
                 }
 
-                printf("server: connection established...\n");
+                printf("server: new connection established.\n");
                 setNonBlocking(new_fd);
                 ev.events = EPOLLIN | EPOLLET;
                 ev.data.fd = new_fd;
@@ -110,7 +142,11 @@ int main(int argc, char *argv[]) {
                 }
                 fds_to_watch++;
 
-                const char* msg = "prosze podac nick\n";
+                Player new_player;
+                new_player.sockfd = new_fd;
+                players.push_back(new_player);
+
+                const char* msg = "prosze podac nick <01xxxxx>\n";
                 ssize_t sent = send(new_fd, msg, strlen(msg), 0);
                 if (sent < (int)strlen(msg)) {
                     perror("send (prośba o nick)");
@@ -194,7 +230,7 @@ int startListening() {
         // make a socket:
         sockfd = socket(addr_iterator->ai_family, addr_iterator->ai_socktype, addr_iterator->ai_protocol);
         if (sockfd == -1) {
-            perror("server: socket");
+            perror("socket");
             continue;
         }
 
@@ -205,7 +241,7 @@ int startListening() {
         int failBind = bind(sockfd, addr_iterator->ai_addr, addr_iterator->ai_addrlen);
         if (failBind == -1) {
             close(sockfd);
-            perror("server: bind");
+            perror("bind");
             continue;
         }
 
@@ -213,7 +249,7 @@ int startListening() {
     }
 
     if (addr_iterator == NULL) {
-        fprintf(stderr, "server: failed to bind\n");
+        fprintf(stderr, "failed to bind\n");
         return 2;
     }
 
@@ -226,7 +262,7 @@ int startListening() {
         exit(1);
     }
 
-    printf("server: waiting for connections...\n");
+    printf("waiting for connections on port 1111...\n");
 
     return sockfd;
 }
