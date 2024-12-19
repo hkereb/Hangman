@@ -49,9 +49,9 @@ void handle_client_message(int client_fd, std::string msg) {
         });
 
         if (it != players.end()) {
-            Player& found_player = *it;
-            found_player.nick = nick;
-            std::cout << "Player's accepted nickname: " << found_player.nick;
+            it->nick = nick;
+            client_nicks.push_back(nick);
+            //std::cout << "Player's accepted nickname: " << it->nick;
         } else {
             std::cout << "Player's socket has not been found in the players vector (socket: " << client_fd << ")";
         }
@@ -65,7 +65,7 @@ void handle_client_message(int client_fd, std::string msg) {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char *argv[]) {
     if (argc != 1) {
-        fprintf(stderr, "serwer nie wymaga dodatkowych argumentów\n");
+        fprintf(stderr, "no extra arguments required\n");
         return 1;
     }
 
@@ -207,7 +207,7 @@ int startListening() {
         // make a socket:
         sockfd = socket(addr_iterator->ai_family, addr_iterator->ai_socktype, addr_iterator->ai_protocol);
         if (sockfd == -1) {
-            perror("server: socket");
+            perror("socket");
             continue;
         }
 
@@ -218,7 +218,7 @@ int startListening() {
         int failBind = bind(sockfd, addr_iterator->ai_addr, addr_iterator->ai_addrlen);
         if (failBind == -1) {
             close(sockfd);
-            perror("server: bind");
+            perror("bind");
             continue;
         }
 
@@ -226,7 +226,7 @@ int startListening() {
     }
 
     if (addr_iterator == NULL) {
-        fprintf(stderr, "server: failed to bind\n");
+        fprintf(stderr, "failed to bind\n");
         return 2;
     }
 
@@ -239,7 +239,7 @@ int startListening() {
         exit(1);
     }
 
-    printf("server: waiting for connections on port 1111...\n");
+    printf("waiting for connections on port 1111...\n");
 
     return sockfd;
 }
