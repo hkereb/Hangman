@@ -1,9 +1,9 @@
 ## TODO:
 
-### Funkcjonalności:
+### Obsługa komend (strona serwera):
 #### Klient -> Serwer:
 
-- [ ] 01\[nick] - przypisanie nicku  
+- [x] 01\[nick] - przypisanie nicku  
 - [ ] 02\[pokój] - utworzenie nowego pokoju o podanej nazwie 
 - [ ] 03\[pokój] - dołączenie do pokoju o podanej nazwie 
 - [ ] 04\[tutaj,ustawienia] - ustawienia pokoju
@@ -15,6 +15,6 @@
 
 
 #### Serwer -> Klient:
-- [ ] 01\[bool] - potwierdzenie ustawienia nicku (pętla while z podawaniem nicku do skutku powinna być po stronie klienta, więc potrzebna jest flaga)
+- [x] 01\[bool] - potwierdzenie ustawienia nicku (pętla while z podawaniem nicku do skutku powinna być po stronie klienta, więc potrzebna jest flaga), bool zapisany jako 0 lub 1
 - [ ] 02\[stan] - podanie stanu gry
 - [ ] 03\[..] - wynik próby odgadnięcia litery 
