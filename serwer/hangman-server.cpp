@@ -14,6 +14,7 @@
 #include <list>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 #define MAXEPOLLSIZE 1000
 #define BACKLOG 200 // how many pending connections queue will hold
@@ -21,8 +22,6 @@
 struct Player {
     int sockfd;
     std::string nick;
-    std::string room_name;
-    int score;
 };
 std::vector<Player> players;
 
@@ -42,11 +41,21 @@ int startListening();
 
 // obsługa klienta na podstawie jego wiadomości
 void handle_client_message(int client_fd, std::string msg) {
-    if (msg.compare("nick")) {
-        client_nicks.push_back(msg);
-        for (int i=0; i < client_nicks.size(); i++) {
-            std::cout << client_nicks[i];
+    if (msg.substr(0, 2) == "01") {
+        std::string nick = msg.substr(2);
+
+        auto it = std::find_if(players.begin(), players.end(), [client_fd](const Player& player) {
+            return player.sockfd == client_fd;
+        });
+
+        if (it != players.end()) {
+            Player& found_player = *it;
+            found_player.nick = nick;
+            std::cout << "Player's accepted nickname: " << found_player.nick;
+        } else {
+            std::cout << "Player's socket has not been found in the players vector (socket: " << client_fd << ")";
         }
+        // TODO sprawdzenie czy nick jest unikalny, proszenie o nick aż do skutku
     }
     else {
         // tutaj inne wiadomości/komendy
@@ -101,7 +110,7 @@ int main(int argc, char *argv[]) {
                     }
                 }
 
-                printf("server: connection established...\n");
+                printf("server: new connection established.\n");
                 setNonBlocking(new_fd);
                 ev.events = EPOLLIN | EPOLLET;
                 ev.data.fd = new_fd;
@@ -110,7 +119,11 @@ int main(int argc, char *argv[]) {
                 }
                 fds_to_watch++;
 
-                const char* msg = "prosze podac nick\n";
+                Player new_player;
+                new_player.sockfd = new_fd;
+                players.push_back(new_player);
+
+                const char* msg = "prosze podac nick <01xxxxx>\n";
                 ssize_t sent = send(new_fd, msg, strlen(msg), 0);
                 if (sent < (int)strlen(msg)) {
                     perror("send (prośba o nick)");
@@ -226,7 +239,7 @@ int startListening() {
         exit(1);
     }
 
-    printf("server: waiting for connections...\n");
+    printf("server: waiting for connections on port 1111...\n");
 
     return sockfd;
 }
