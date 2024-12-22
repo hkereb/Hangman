@@ -4,9 +4,11 @@
 #### Klient -> Serwer:
 
 - [x] 01\[nick] - przypisanie nicku  
-- [ ] 02\[pokój] - utworzenie nowego pokoju o podanej nazwie 
-- [ ] 03\[pokój] - dołączenie do pokoju o podanej nazwie 
+- [x] 02\[pokój] - utworzenie nowego pokoju o podanej nazwie 
+- [x] 03\[pokój] - dołączenie do pokoju o podanej nazwie 
 - [ ] 04\[tutaj,ustawienia] - ustawienia pokoju
+  - [x] 04.1\ wpisanie ustawien
+  - [ ] 04.2\ obsluga zlych danych wejsciowych 
 - [ ] 05\[] - start gry
 - [ ] 06\[litera] - próba zgadnięcia litery
 - [ ] 07\[pokój] - restart gry
