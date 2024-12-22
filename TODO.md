@@ -27,6 +27,7 @@
 
 #### Serwer -> Klient:
 - [x] 01\[bool] - potwierdzenie ustawienia nicku (pętla while z podawaniem nicku do skutku powinna być po stronie klienta, więc potrzebna jest flaga), bool zapisany jako 0 lub 1
-- [ ] 02\[stan] - podanie stanu gry
-- [ ] 03\[..] - wynik próby odgadnięcia litery 
+- [ ] 02\[] - wyswietlanie listy serwerow
+- [ ] 03\[stan] - podanie stanu gry
+- [ ] 04\[..] - wynik próby odgadnięcia litery 
 

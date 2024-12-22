@@ -118,6 +118,13 @@ struct Lobby {
     }
 };
 
+struct Servers {
+    std::vector<Lobby> lobbies;
+
+    Servers() {
+        
+    }    
+};
 
 std::list<Lobby> gameLobbies;
 int lobbyCount = 0;
