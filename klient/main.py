@@ -3,7 +3,7 @@ import PySide6.QtCore
 import sys
 import random
 ###################################
-from gui import MainWindow
+from gui import MainApp
 from PySide6 import QtWidgets as qtw
 from PySide6 import QtCore as qtc
 
@@ -35,8 +35,10 @@ if __name__ == "__main__":
     server_port = 1111
     #connect_to_server(server_ip, server_port)
 
-    app = qtw.QApplication(sys.argv)
-    window = MainWindow()
+    app = qtw.QApplication([])
+
+    window = MainApp()
     window.show()
+
     sys.exit(app.exec())
 

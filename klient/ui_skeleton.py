@@ -29,7 +29,7 @@ class Ui_MainWindow(object):
         MainWindow.setMinimumSize(QSize(800, 600))
         MainWindow.setMaximumSize(QSize(800, 600))
         MainWindow.setWindowTitle(u"Hangman")
-        MainWindow.setWindowOpacity(-9.000000000000000)
+        MainWindow.setWindowOpacity(1.0)
         MainWindow.setIconSize(QSize(24, 24))
         MainWindow.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonFollowStyle)
         self.centralwidget = QWidget(MainWindow)
