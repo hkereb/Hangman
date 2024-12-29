@@ -26,7 +26,7 @@
    <string notr="true">Hangman</string>
   </property>
   <property name="windowOpacity">
-   <double>-9.000000000000000</double>
+   <double>1.000000000000000</double>
   </property>
   <property name="iconSize">
    <size>

@@ -9,7 +9,7 @@ class MainApp(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
-        # Ustawienie strony startowej
+        # ustawienie strony startowej
         self.ui.stackedWidget.setCurrentWidget(self.ui.nick_page)
 
         # tu logika

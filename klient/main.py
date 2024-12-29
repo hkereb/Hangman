@@ -40,5 +40,5 @@ if __name__ == "__main__":
     window = MainApp()
     window.show()
 
-    sys.exit(app.exec())
+    sys.exit(app.exec()) # event loop
 
