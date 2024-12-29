@@ -20,6 +20,6 @@ class MainApp(QMainWindow):
 
     def submit_nick(self):
         nick = self.ui.nick_field.text()
-        if nick:  # Sprawdzenie, czy pole tekstowe nie jest puste
-            self.nick_submitted.emit(nick)  # Emitowanie sygnału z nickiem
+        if nick:
+            self.nick_submitted.emit(nick)
             print(f"Nick submitted: {nick}")
