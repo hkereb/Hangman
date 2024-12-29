@@ -1,44 +1,26 @@
-import socket
-import PySide6.QtCore
 import sys
-import random
+import client
+from client import NetworkClient
 ###################################
 from gui import MainApp
 from PySide6 import QtWidgets as qtw
 from PySide6 import QtCore as qtc
 
-
-def connect_to_server(ip, port):
-    try:
-        client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-        client_socket.connect((ip, port))
-        print(f"Połączono z serwerem {ip}:{port}")
-
-        # Wysyłanie wiadomości do serwera
-        # message = "Hello, server!"
-        # client_socket.sendall(message.encode('utf-8'))
-        # print(f"Wysłano wiadomość: {message}")
-
-        # Odbieranie odpowiedzi od serwera
-        # response = client_socket.recv(1024)
-        # print(f"Otrzymano odpowiedź od serwera: {response.decode('utf-8')}")
-
-    except Exception as e:
-        print(f"Błąd: {e}")
-
-    # client_socket.close()
-    # print("Zamknięto połączenie.")
-
 if __name__ == "__main__":
-    server_ip = "127.0.0.1"
-    server_port = 1111
-    #connect_to_server(server_ip, server_port)
+    SERVER_IP = "127.0.0.1"
+    SERVER_PORT = 1111
+
+    # Tworzenie klienta sieciowego
+    client = NetworkClient(SERVER_IP, SERVER_PORT, time_to_wait=5)
+    client.connect_to_server()
 
     app = qtw.QApplication([])
 
     window = MainApp()
     window.show()
+
+    # Połączenie sygnału wysyłania wiadomości z klientem
+    window.nick_submitted.connect(lambda nick: client.send_message(f"01{nick}"))
 
     sys.exit(app.exec()) # event loop
 

@@ -1,13 +1,14 @@
-from PySide6.QtCore import QObject, Signal
+from PySide6.QtCore import QObject, Signal, QThread
 import socket
 import threading
 
-class NetworkClient(QObject):
+class NetworkClient(QThread):
     message_received = Signal(str)
     error_occurred = Signal(str)
 
-    def __init__(self, server_ip, server_port):
-        super().__init__()
+    def __init__(self, server_ip, server_port, time_to_wait, parent=None):
+        super(NetworkClient, self).__init__(parent)
+        self.time_wait = time_to_wait
         self.server_ip = server_ip
         self.server_port = server_port
         self.socket = None
@@ -31,4 +32,7 @@ class NetworkClient(QObject):
 
     def send_message(self, message):
         if self.socket:
-            self.socket.sendall(message.encode('utf-8'))
+            try:
+                self.socket.sendall(message.encode('utf-8'))
+            except Exception as e:
+                self.error_occurred.emit(str(e))

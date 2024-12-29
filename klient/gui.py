@@ -1,8 +1,11 @@
 import sys
 from ui_skeleton import Ui_MainWindow
 from PySide6.QtWidgets import QApplication, QMainWindow
+from PySide6.QtCore import QObject, Signal, QThread
 
 class MainApp(QMainWindow):
+    nick_submitted = Signal(str)  # Sygnał do przesyłania nicku
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -17,4 +20,6 @@ class MainApp(QMainWindow):
 
     def submit_nick(self):
         nick = self.ui.nick_field.text()
-        print(f"Nick submitted: {nick}")
+        if nick:  # Sprawdzenie, czy pole tekstowe nie jest puste
+            self.nick_submitted.emit(nick)  # Emitowanie sygnału z nickiem
+            print(f"Nick submitted: {nick}")
