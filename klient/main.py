@@ -1,16 +1,26 @@
-# This is a sample Python script.
+import sys
+import client
+from client import NetworkClient
+###################################
+from gui import MainApp
+from PySide6 import QtWidgets as qtw
+from PySide6 import QtCore as qtc
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+if __name__ == "__main__":
+    SERVER_IP = "127.0.0.1"
+    SERVER_PORT = 1111
 
+    client = NetworkClient(SERVER_IP, SERVER_PORT, time_to_wait=5)
+    client.connect_to_server()
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+    app = qtw.QApplication([])
 
+    window = MainApp()
+    window.show()
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+    ############# signals ##############
+    window.nick_submitted.connect(lambda nick: client.send_message(f"01{nick}"))
+    ####################################
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    sys.exit(app.exec()) # event loop
+
