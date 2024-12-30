@@ -18,7 +18,8 @@ class MainApp(QMainWindow):
         self.ui.setupUi(self)
 
         # strona startowa
-        self.ui.stackedWidget.setCurrentWidget(self.ui.nick_page)
+        #self.ui.stackedWidget.setCurrentWidget(self.ui.nick_page)
+        self.ui.stackedWidget.setCurrentWidget(self.ui.create_or_join_page)
 
         # walidator adresu IP
         ip_regex = QRegularExpression(r'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$')
@@ -60,14 +61,14 @@ class MainApp(QMainWindow):
 
     def on_ip_changed(self):
         if self.ui.create_IP_field.hasAcceptableInput():
-            pass
+            # pass
             # TODO: add a checkamark to IP field
-           # self.ui.check_2_label.setText("\U00002714")
-           # self.ui.check_2_label.setStyleSheet("color: green;")
+            self.ui.check_ip_label.setText("\U00002714")
+            self.ui.check_ip_label.setStyleSheet("color: green;")
         else:
-            pass
-           # self.ui.check_2_label.setText("\U0000274C")
-           # self.ui.check_2_label.setStyleSheet("color: red;")
+            # pass
+            self.ui.check_ip_label.setText("\U0000274C")
+            self.ui.check_ip_label.setStyleSheet("color: red;")
 
     def is_at_create_or_join_page(self, index):
         if self.ui.stackedWidget.widget(index) == self.ui.create_or_join_page:
