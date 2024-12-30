@@ -48,6 +48,7 @@ class Ui_MainWindow(object):
         self.nick_submit_btn.setObjectName(u"nick_submit_btn")
         self.nick_submit_btn.setGeometry(QRect(350, 350, 111, 23))
         self.nick_field = QLineEdit(self.nick_page)
+        self.nick_field.setPlaceholderText("Enter a nickname")
         self.nick_field.setObjectName(u"nick_field")
         self.nick_field.setGeometry(QRect(290, 320, 231, 20))
         self.title_label = QLabel(self.nick_page)

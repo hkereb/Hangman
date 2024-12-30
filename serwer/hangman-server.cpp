@@ -41,7 +41,7 @@ struct Lobby {
 std::list<Lobby> gameLobbies;
 int lobbyCount = 0;
 
-std::vector<std::string> client_nicks;
+std::vector<std::string> client_nicks = {"kasia"}; // kasia dla testu
 
 int setNonBlocking(int sockfd);
 int startListening();
@@ -85,7 +85,7 @@ void handle_client_message(int client_fd, std::string msg) {
         if (std::find(client_nicks.begin(), client_nicks.end(), nick) != client_nicks.end()) {
             std::cout << "Nick, " << nick << ", has already been taken.\n";
             // powiadomienie strony klienta o niepowodzeniu
-            sendToClient(client_fd, "01", "0\nnickTaken\n");
+            sendToClient(client_fd, "01", "0");
             return;
         }
 
@@ -96,7 +96,7 @@ void handle_client_message(int client_fd, std::string msg) {
         if (it != players.end()) {
             it->nick = nick;
             client_nicks.push_back(nick);
-            sendToClient(client_fd, "01", "1\nnickAccepted\n");
+            sendToClient(client_fd, "01", "1");
             //std::cout << "Player's accepted nickname: " << it->nick;
         } else {
             std::cout << "Player's socket has not been found in the players vector (socket: " << client_fd << ")";

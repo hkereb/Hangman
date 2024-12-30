@@ -20,6 +20,7 @@ if __name__ == "__main__":
 
     ############# signals ##############
     window.nick_submitted.connect(lambda nick: client.send_message(f"01{nick}"))
+    client.message_received.connect(window.handle_server_response)
     ####################################
 
     sys.exit(app.exec()) # event loop
