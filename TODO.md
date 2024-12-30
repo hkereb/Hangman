@@ -14,11 +14,11 @@
 - [ ] 07\\[pokój] - restart gry
 - [ ] 08\\[pokój] - podanie aktualnego stanu gry
 - [ ] 09\\[pokój] - opuszczenie pokoju przez gracza
+- [x] 10\\[] - prośba o przesłanie listy pokoi
 
 
 #### Serwer -> Klient:
 - [x] 01\\[bool] - potwierdzenie ustawienia nicku (pętla while z podawaniem nicku do skutku powinna być po stronie klienta, więc potrzebna jest flaga), bool zapisany jako 0 lub 1
 - [ ] 02\\[stan] - podanie stanu gry
 - [ ] 03\\[bool] - wynik próby odgadnięcia litery
-- [ ] 04\\[nazwa_pokoju] - (aktualizacja listy pokoi w gui) pokój został stworzony
-- [ ] 05\\[nazwa_pokoju] - (aktualizacja listy pokoi w gui) pokój został usunięty
+- [x] 04\\[nazwa1,..,nazwa99] - przesłanie listy nazw pokoi
