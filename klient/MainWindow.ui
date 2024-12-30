@@ -35,7 +35,7 @@
    </size>
   </property>
   <property name="toolButtonStyle">
-   <enum>Qt::ToolButtonStyle::ToolButtonFollowStyle</enum>
+   <enum>Qt::ToolButtonStyle::ToolButtonIconOnly</enum>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QStackedWidget" name="stackedWidget">
@@ -69,7 +69,7 @@
      <enum>QFrame::Shape::NoFrame</enum>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>3</number>
     </property>
     <widget class="QWidget" name="nick_page">
      <widget class="QPushButton" name="nick_submit_btn">
@@ -98,9 +98,9 @@
      <widget class="QLabel" name="title_label">
       <property name="geometry">
        <rect>
-        <x>280</x>
+        <x>260</x>
         <y>190</y>
-        <width>271</width>
+        <width>291</width>
         <height>71</height>
        </rect>
       </property>
@@ -113,15 +113,15 @@
        </font>
       </property>
       <property name="text">
-       <string>Hangman</string>
+       <string> Hangman </string>
       </property>
      </widget>
      <widget class="QLabel" name="subtitle_label">
       <property name="geometry">
        <rect>
-        <x>340</x>
+        <x>330</x>
         <y>250</y>
-        <width>131</width>
+        <width>151</width>
         <height>41</height>
        </rect>
       </property>
@@ -132,17 +132,22 @@
        </font>
       </property>
       <property name="text">
-       <string>Multiplayer Game</string>
+       <string> Multiplayer Game </string>
       </property>
      </widget>
      <widget class="QLabel" name="check_label">
       <property name="geometry">
        <rect>
-        <x>520</x>
+        <x>530</x>
         <y>320</y>
         <width>21</width>
         <height>21</height>
        </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>9</pointsize>
+       </font>
       </property>
       <property name="text">
        <string/>
@@ -160,7 +165,7 @@
        </rect>
       </property>
       <property name="title">
-       <string>Create a Room</string>
+       <string>Create a Room </string>
       </property>
       <widget class="QLineEdit" name="create_IP_field">
        <property name="geometry">
@@ -172,7 +177,7 @@
         </rect>
        </property>
        <property name="inputMask">
-        <string>000.000.000.000;_</string>
+        <string/>
        </property>
       </widget>
       <widget class="QLineEdit" name="create_name_field">
@@ -244,20 +249,20 @@
         <string>Create</string>
        </property>
       </widget>
-      <widget class="QLabel" name="label_2">
+      <widget class="QLabel" name="ip_label">
        <property name="geometry">
         <rect>
-         <x>100</x>
+         <x>110</x>
          <y>70</y>
          <width>51</width>
          <height>20</height>
         </rect>
        </property>
        <property name="layoutDirection">
-        <enum>Qt::LayoutDirection::RightToLeft</enum>
+        <enum>Qt::LayoutDirection::LeftToRight</enum>
        </property>
        <property name="text">
-        <string>IP</string>
+        <string> IP</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
@@ -266,88 +271,88 @@
         <number>0</number>
        </property>
       </widget>
-      <widget class="QLabel" name="label_3">
+      <widget class="QLabel" name="name_label">
        <property name="geometry">
         <rect>
-         <x>90</x>
+         <x>100</x>
          <y>100</y>
          <width>61</width>
          <height>20</height>
         </rect>
        </property>
        <property name="text">
-        <string>Name</string>
+        <string> Name</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
        </property>
       </widget>
-      <widget class="QLabel" name="label_4">
+      <widget class="QLabel" name="pass_label">
        <property name="geometry">
         <rect>
-         <x>90</x>
+         <x>100</x>
          <y>130</y>
          <width>61</width>
          <height>20</height>
         </rect>
        </property>
        <property name="text">
-        <string>Password</string>
+        <string> Password</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
        </property>
       </widget>
-      <widget class="QLabel" name="label_5">
+      <widget class="QLabel" name="level_label">
        <property name="geometry">
         <rect>
-         <x>90</x>
+         <x>100</x>
          <y>160</y>
          <width>61</width>
          <height>20</height>
         </rect>
        </property>
        <property name="text">
-        <string>Difficulty</string>
+        <string> Difficulty</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
        </property>
       </widget>
-      <widget class="QLabel" name="label_6">
+      <widget class="QLabel" name="number_label">
        <property name="geometry">
         <rect>
-         <x>50</x>
+         <x>60</x>
          <y>190</y>
          <width>101</width>
          <height>20</height>
         </rect>
        </property>
        <property name="text">
-        <string>Number of Rounds</string>
+        <string> Number of Rounds</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
        </property>
       </widget>
-      <widget class="QLabel" name="label_7">
+      <widget class="QLabel" name="time_label">
        <property name="geometry">
         <rect>
-         <x>60</x>
+         <x>70</x>
          <y>220</y>
          <width>91</width>
          <height>20</height>
         </rect>
        </property>
        <property name="text">
-        <string>Time per Round</string>
+        <string> Time per Round</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
        </property>
       </widget>
      </widget>
-     <widget class="QGroupBox" name="join_g">
+     <widget class="QGroupBox" name="join_groupbox">
       <property name="geometry">
        <rect>
         <x>30</x>
@@ -357,7 +362,7 @@
        </rect>
       </property>
       <property name="title">
-       <string>Join a Room</string>
+       <string>Join a Room </string>
       </property>
       <widget class="QLineEdit" name="join_password_field">
        <property name="geometry">
@@ -373,9 +378,6 @@
        </property>
        <property name="maxLength">
         <number>20</number>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
        </property>
       </widget>
       <widget class="QPushButton" name="join_btn">
@@ -409,44 +411,41 @@
        <property name="maxLength">
         <number>20</number>
        </property>
-       <property name="alignment">
-        <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
-       </property>
       </widget>
-      <widget class="QLabel" name="label_8">
+      <widget class="QLabel" name="name_2_label">
        <property name="geometry">
         <rect>
-         <x>100</x>
+         <x>110</x>
          <y>50</y>
          <width>51</width>
          <height>20</height>
         </rect>
        </property>
        <property name="text">
-        <string>Name</string>
+        <string> Name</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
        </property>
       </widget>
-      <widget class="QLabel" name="label_9">
+      <widget class="QLabel" name="pass_2_label">
        <property name="geometry">
         <rect>
-         <x>90</x>
+         <x>100</x>
          <y>80</y>
          <width>61</width>
          <height>20</height>
         </rect>
        </property>
        <property name="text">
-        <string>Password</string>
+        <string> Password</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
        </property>
       </widget>
      </widget>
-     <widget class="QListWidget" name="listWidget">
+     <widget class="QListWidget" name="rooms_list">
       <property name="geometry">
        <rect>
         <x>500</x>
@@ -456,17 +455,17 @@
        </rect>
       </property>
      </widget>
-     <widget class="QLabel" name="label">
+     <widget class="QLabel" name="list_of_rooms_label">
       <property name="geometry">
        <rect>
         <x>600</x>
         <y>20</y>
-        <width>71</width>
+        <width>101</width>
         <height>16</height>
        </rect>
       </property>
       <property name="text">
-       <string>List of Rooms</string>
+       <string>  List of Rooms </string>
       </property>
      </widget>
     </widget>
@@ -489,9 +488,6 @@
       <property name="text">
        <string>waiting for the game to start...</string>
       </property>
-      <property name="alignment">
-       <set>Qt::AlignmentFlag::AlignCenter</set>
-      </property>
      </widget>
     </widget>
     <widget class="QWidget" name="game_page">
@@ -513,9 +509,6 @@
       <property name="text">
        <string>_ _ _ _ _ _ _</string>
       </property>
-      <property name="alignment">
-       <set>Qt::AlignmentFlag::AlignCenter</set>
-      </property>
      </widget>
      <widget class="QLabel" name="rounds1_label">
       <property name="geometry">
@@ -534,9 +527,6 @@
       <property name="text">
        <string>ROUNDS</string>
       </property>
-      <property name="alignment">
-       <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
-      </property>
      </widget>
      <widget class="QLabel" name="time1_label">
       <property name="geometry">
@@ -554,9 +544,6 @@
       </property>
       <property name="text">
        <string>TIME</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
       </property>
      </widget>
      <widget class="QLineEdit" name="letter_input">
@@ -582,9 +569,6 @@
       <property name="maxLength">
        <number>1</number>
       </property>
-      <property name="alignment">
-       <set>Qt::AlignmentFlag::AlignCenter</set>
-      </property>
       <property name="clearButtonEnabled">
        <bool>false</bool>
       </property>
@@ -603,9 +587,9 @@
       <property name="geometry">
        <rect>
         <x>590</x>
-        <y>50</y>
+        <y>40</y>
         <width>61</width>
-        <height>21</height>
+        <height>31</height>
        </rect>
       </property>
       <property name="font">
@@ -616,17 +600,14 @@
       <property name="text">
        <string>0/0</string>
       </property>
-      <property name="alignment">
-       <set>Qt::AlignmentFlag::AlignCenter</set>
-      </property>
      </widget>
      <widget class="QLabel" name="time2_label_2">
       <property name="geometry">
        <rect>
         <x>580</x>
-        <y>90</y>
-        <width>81</width>
-        <height>21</height>
+        <y>80</y>
+        <width>91</width>
+        <height>31</height>
        </rect>
       </property>
       <property name="font">
@@ -636,9 +617,6 @@
       </property>
       <property name="text">
        <string>0:00</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignmentFlag::AlignCenter</set>
       </property>
      </widget>
      <widget class="QPushButton" name="leave_btn">
@@ -654,10 +632,10 @@
        <string>Leave</string>
       </property>
      </widget>
-     <widget class="QLabel" name="label_13">
+     <widget class="QLabel" name="ranking_label">
       <property name="geometry">
        <rect>
-        <x>140</x>
+        <x>150</x>
         <y>20</y>
         <width>101</width>
         <height>16</height>
@@ -669,10 +647,7 @@
        </font>
       </property>
       <property name="text">
-       <string>RANKING</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignmentFlag::AlignCenter</set>
+       <string> RANKING</string>
       </property>
      </widget>
      <widget class="QLabel" name="player0_label">
@@ -768,13 +743,13 @@
        <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
       </property>
       <property name="defaultDropAction">
-       <enum>Qt::DropAction::CopyAction</enum>
+       <enum>Qt::DropAction::IgnoreAction</enum>
       </property>
       <property name="isWrapping" stdset="0">
        <bool>false</bool>
       </property>
       <property name="resizeMode">
-       <enum>QListView::ResizeMode::Adjust</enum>
+       <enum>QListView::ResizeMode::Fixed</enum>
       </property>
       <property name="selectionRectVisible">
        <bool>false</bool>
