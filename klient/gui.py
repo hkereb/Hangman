@@ -4,8 +4,12 @@ from PySide6.QtWidgets import QApplication, QMainWindow
 from PySide6.QtCore import QObject, Signal, QThread, QRegularExpression
 from PySide6.QtGui import QRegularExpressionValidator
 
+def substr_msg(msg):
+    return msg[3:]
+
 class MainApp(QMainWindow):
-    nick_submitted = Signal(str)  # Sygnał do przesyłania nicku
+    nick_submitted = Signal(str)  # sygnał do przesyłania nicku
+    update_rooms = Signal(str) # sygnał informujący serwer że ma wysłać aktualną listę pokoi
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -13,16 +17,18 @@ class MainApp(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
 
-        # ustawienie strony startowej
-        self.ui.stackedWidget.setCurrentWidget(self.ui.create_or_join_page)
+        # strona startowa
+        self.ui.stackedWidget.setCurrentWidget(self.ui.nick_page)
 
         # walidator adresu IP
-        # ip_regex = QRegularExpression(r'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$')
-        # validator = QRegularExpressionValidator(ip_regex)
-        # self.ui.create_IP_field.setValidator(validator)
+        ip_regex = QRegularExpression(r'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$')
+        validator = QRegularExpressionValidator(ip_regex)
+        self.ui.create_IP_field.setValidator(validator)
 
-        # tu logika
+        # connect
         self.ui.nick_submit_btn.clicked.connect(self.submit_nick)
+        self.ui.create_IP_field.textChanged.connect(self.on_ip_changed)
+        self.ui.stackedWidget.currentChanged.connect(self.is_at_create_or_join_page)
 
     def submit_nick(self):
         nick = self.ui.nick_field.text()
@@ -32,9 +38,34 @@ class MainApp(QMainWindow):
 
     def handle_server_response(self, message):
         if message.startswith("01"):
-            result = message[2:]
+            result = substr_msg(message)
             if result == "1":  # nick zaakceptowany
                 self.ui.stackedWidget.setCurrentWidget(self.ui.create_or_join_page)
             elif result == "0":  # nick odrzucony
                 self.ui.check_label.setText("\U0000274C")
                 self.ui.check_label.setStyleSheet("color: red;")
+        elif message.startswith("04"):
+            lobbies_encoded = substr_msg(message)
+            lobbies = lobbies_encoded.split(",")
+
+            self.ui.rooms_list.clear()
+
+            for lobby in lobbies:
+                self.ui.rooms_list.addItem(lobby)
+
+            print("Lista pokoi została zaktualizowana.")
+
+    def on_ip_changed(self):
+        if self.ui.create_IP_field.hasAcceptableInput():
+            pass
+            # TODO: add a checkamark to IP field
+           # self.ui.check_2_label.setText("\U00002714")
+           # self.ui.check_2_label.setStyleSheet("color: green;")
+        else:
+            pass
+           # self.ui.check_2_label.setText("\U0000274C")
+           # self.ui.check_2_label.setStyleSheet("color: red;")
+
+    def is_at_create_or_join_page(self, index):
+        if self.ui.stackedWidget.widget(index) == self.ui.create_or_join_page:
+            self.update_rooms.emit("")
