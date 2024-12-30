@@ -81,6 +81,7 @@ class Ui_MainWindow(object):
         self.create_groupbox.setGeometry(QRect(30, 30, 441, 351))
         self.create_IP_field = QLineEdit(self.create_groupbox)
         self.create_IP_field.setObjectName(u"create_IP_field")
+        self.create_IP_field.setPlaceholderText("___.___.___.___")
         self.create_IP_field.setGeometry(QRect(180, 70, 151, 20))
         self.create_name_field = QLineEdit(self.create_groupbox)
         self.create_name_field.setObjectName(u"create_name_field")

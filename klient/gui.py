@@ -25,10 +25,13 @@ class MainApp(QMainWindow):
         validator = QRegularExpressionValidator(ip_regex)
         self.ui.create_IP_field.setValidator(validator)
 
+        self.ui.level_combobox.addItems(["easy", "medium", "hard", "extra hard"])
+
         # connect
         self.ui.nick_submit_btn.clicked.connect(self.submit_nick)
         self.ui.create_IP_field.textChanged.connect(self.on_ip_changed)
         self.ui.stackedWidget.currentChanged.connect(self.is_at_create_or_join_page)
+        self.ui.rooms_list.itemSelectionChanged.connect(self.on_list_item_selected)
 
     def submit_nick(self):
         nick = self.ui.nick_field.text()
@@ -69,3 +72,8 @@ class MainApp(QMainWindow):
     def is_at_create_or_join_page(self, index):
         if self.ui.stackedWidget.widget(index) == self.ui.create_or_join_page:
             self.update_rooms.emit("")
+
+    def on_list_item_selected(self):
+        selected_item = self.ui.rooms_list.currentItem()
+        if selected_item:
+            self.ui.join_room_name_field.setText(selected_item.text())
