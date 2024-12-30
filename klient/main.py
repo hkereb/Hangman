@@ -19,8 +19,11 @@ if __name__ == "__main__":
     window.show()
 
     ############# signals ##############
-    window.nick_submitted.connect(lambda nick: client.send_message(f"01{nick}"))
+    window.nick_submitted.connect(lambda nick: client.send_to_server("01", f"{nick}"))
+    client.message_received.connect(window.handle_server_response)
+    window.update_rooms.connect(lambda message: client.send_to_server("10", ""))
     ####################################
 
-    sys.exit(app.exec()) # event loop
+    # event loop
+    sys.exit(app.exec())
 

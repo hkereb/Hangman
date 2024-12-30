@@ -21,9 +21,11 @@
 #define MAXEPOLLSIZE 1000
 #define BACKLOG 200 // how many pending connections queue will hold
 #define MAXPLAYERS 4
+
 struct Player {
     int sockfd;
     std::string nick;
+    std::string lobby_name;
 };
 std::vector<Player> players;
 
@@ -41,7 +43,8 @@ struct Lobby {
 std::list<Lobby> gameLobbies;
 int lobbyCount = 0;
 
-std::vector<std::string> client_nicks;
+std::vector<std::string> client_nicks = {"test"};
+std::vector<std::string> lobby_names = {"pierwszy","drugi","trzeci"};
 
 int setNonBlocking(int sockfd);
 int startListening();
@@ -69,7 +72,7 @@ void sendToClient(int client_fd, const std::string& command_number, const std::s
         return;
     }
 
-    std::string full_message = command_number + body;
+    std::string full_message = command_number + "\\" + body;
     ssize_t bytes_sent = send(client_fd, full_message.c_str(), full_message.size(), 0);
 
     if (bytes_sent == -1) {
@@ -77,15 +80,45 @@ void sendToClient(int client_fd, const std::string& command_number, const std::s
     }
 }
 
+std::string substr_msg(std::string msg) {
+    return msg.substr(3);
+}
+
+void sendLobbiesToClients(std::vector<std::string> lobby_names, int clientfd = -1) {
+    std::string msg_body;
+
+    // przygotowanie wiadomości
+    for (size_t i = 0; i < lobby_names.size(); ++i) {
+        msg_body += lobby_names[i];
+        if (i != lobby_names.size() - 1) {
+            msg_body += ",";
+        }
+    }
+
+    // wysłanie do jednego klienta
+    if (clientfd != -1) {
+        sendToClient(clientfd, "04", msg_body);
+    }
+    // wysłanie do wielu klientów
+    else {
+        for (const auto& player : players) {
+            if (player.lobby_name.empty()) {
+                sendToClient(player.sockfd, "04", msg_body);
+            }
+        }
+    }
+}
+
+
 // obsługa klienta na podstawie jego wiadomości
 void handle_client_message(int client_fd, std::string msg) {
     if (msg.substr(0, 2) == "01") {
-        std::string nick = msg.substr(2);
+        std::string nick = substr_msg(msg);
 
         if (std::find(client_nicks.begin(), client_nicks.end(), nick) != client_nicks.end()) {
             std::cout << "Nick, " << nick << ", has already been taken.\n";
-            // powiadomienie strony klienta o niepowodzeniu
-            sendToClient(client_fd, "01", "0\nnickTaken\n");
+            // powiadomienie o porażce
+            sendToClient(client_fd, "01", "0");
             return;
         }
 
@@ -96,15 +129,15 @@ void handle_client_message(int client_fd, std::string msg) {
         if (it != players.end()) {
             it->nick = nick;
             client_nicks.push_back(nick);
-            sendToClient(client_fd, "01", "1\nnickAccepted\n");
-            //std::cout << "Player's accepted nickname: " << it->nick;
+            // powiadomienie o sukcesie
+            sendToClient(client_fd, "01", "1");
         } else {
             std::cout << "Player's socket has not been found in the players vector (socket: " << client_fd << ")";
-            sendToClient(client_fd, "01", "0\nnickAssignmentFailed\n");
+            sendToClient(client_fd, "01", "0");
             return;
         }
     } else if (msg.substr(0, 2) == "02") {
-        std::string lobby_name = msg.substr(2);
+        std::string lobby_name = substr_msg(msg);
 
         // Check if a lobby with the same name already exists
         auto it = std::find_if(gameLobbies.begin(), gameLobbies.end(), [&lobby_name](const Lobby& lobby) {
@@ -139,11 +172,11 @@ void handle_client_message(int client_fd, std::string msg) {
         gameLobbies.push_back(new_lobby);
         lobbyCount++;
 
-        sendToClient(client_fd, "02", "1\nlobbyCreated\n");  // stworzono lobby
+        sendToClient(client_fd, "02", "1");  // stworzono lobby
         std::cout << "Lobby created successfully: " << lobby_name << "\n";
         std::cout << "Current lobby count: " << lobbyCount << "\n";
     } else if (msg.substr(0, 2) == "03") {  // Dołączanie do pokoju
-        std::string room_name = msg.substr(2);
+        std::string room_name = substr_msg(msg);
 
         // Znajdź pokój
         auto it = std::find_if(gameLobbies.begin(), gameLobbies.end(), [&room_name](const Lobby& lobby) {
@@ -151,12 +184,12 @@ void handle_client_message(int client_fd, std::string msg) {
         });
 
         if (it == gameLobbies.end()) {
-            sendToClient(client_fd, "03", "0\nroomNotExists\n");  // Pokój nie istnieje
+            sendToClient(client_fd, "03", "0");  // Pokój nie istnieje
             return;
         }
 
         if (it->count_players > MAXPLAYERS) {
-            sendToClient(client_fd, "03", "0\nroomIsFull\n");  // Pokój jest pełny
+            sendToClient(client_fd, "03", "0");  // Pokój jest pełny
             return;
         }
         // Znajdź gracza
@@ -167,12 +200,12 @@ void handle_client_message(int client_fd, std::string msg) {
         if (player_it != players.end()) {
             it->players.push_back(*player_it);  // Dodaj gracza do pokoju
             it->count_players++;
-            sendToClient(client_fd, "03", "1\njoinedRoom\n");  // Sukces
+            sendToClient(client_fd, "03", "1");  // Sukces
         } else {
-            sendToClient(client_fd, "03", "0\nplayerNotFound\n");  // Nie znaleziono gracza
+            sendToClient(client_fd, "03", "0");  // Nie znaleziono gracza
         }
     } else if (msg.substr(0, 2) == "04") {  // Ustawienia pokoju
-        std::string settings = msg.substr(2);
+        std::string settings = substr_msg(msg);
 
         // parsowanie stringa
         auto parsedSettings = parseSettings(settings);
@@ -202,14 +235,14 @@ void handle_client_message(int client_fd, std::string msg) {
             std::cout << "  Rounds: " << lobby_it->rounds_amount << "\n";
             std::cout << "  Duration: " << lobby_it->round_duration << "\n";
 
-            sendToClient(client_fd, "04", "1\nsettingsAssignmentSuccessful\n");  // Success
+            sendToClient(client_fd, "04", "1");  // Success
         } else {
-            sendToClient(client_fd, "04", "0\nsettingsAssignmentFailed\n");  // Failed
+            sendToClient(client_fd, "04", "0");  // Failed
         }
+    } else if (msg.substr(0, 2) == "10") {
+        sendLobbiesToClients(lobby_names, client_fd);
     }
 }
-
-
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char *argv[]) {
@@ -245,6 +278,7 @@ int main(int argc, char *argv[]) {
         }
 
         for (int n = 0; n < ready; ++n) {
+            // TODO: usuwanie danych klienta ze wszystkich struktur po zerwaniu połączenia
             if (events[n].data.fd == sockfd) {
                 // std::cout << "sockfd" << std::endl;
                 sockaddr_in client_addr{};
@@ -259,7 +293,7 @@ int main(int argc, char *argv[]) {
                     }
                 }
 
-                printf("server: new connection established.\n");
+                printf("new connection established.\n");
                 setNonBlocking(new_fd);
                 ev.events = EPOLLIN | EPOLLET;
                 ev.data.fd = new_fd;
@@ -272,15 +306,10 @@ int main(int argc, char *argv[]) {
                 new_player.sockfd = new_fd;
                 players.push_back(new_player);
 
-                const char* msg = "prosze podac nick <01xxxxx>\n";
-                ssize_t sent = send(new_fd, msg, strlen(msg), 0);
-                if (sent < (int)strlen(msg)) {
-                    perror("send (prośba o nick)");
-                    return 1;
-                }
-
-
-            } else {
+                // TEST wyświtlania pokoi u klienta
+                // sendLobbiesToClients(lobby_names);
+            }
+            else {
                 // std::cout << "clientfd" << std::endl;
                 while (true) {
                     char buffer[1024] = {0};

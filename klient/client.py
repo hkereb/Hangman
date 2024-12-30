@@ -30,9 +30,13 @@ class NetworkClient(QThread):
         except Exception as e:
             self.error_occurred.emit(str(e))
 
-    def send_message(self, message):
+    def send_to_server(self, command_number, body):
         if self.socket:
             try:
-                self.socket.sendall(message.encode('utf-8'))
+                command_number_bytes = command_number.encode('utf-8')
+                body_bytes = body.encode('utf-8')
+
+                message = command_number_bytes + b"\\" + body_bytes
+                self.socket.sendall(message)
             except Exception as e:
                 self.error_occurred.emit(str(e))
