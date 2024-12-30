@@ -19,4 +19,6 @@
 #### Serwer -> Klient:
 - [x] 01\[bool] - potwierdzenie ustawienia nicku (pętla while z podawaniem nicku do skutku powinna być po stronie klienta, więc potrzebna jest flaga), bool zapisany jako 0 lub 1
 - [ ] 02\[stan] - podanie stanu gry
-- [ ] 03\[..] - wynik próby odgadnięcia litery 
+- [ ] 03\[bool] - wynik próby odgadnięcia litery
+- [ ] 04\[nazwa_pokoju] - (aktualizacja listy pokoi w gui) pokój został stworzony
+- [ ] 05\[nazwa_pokoju] - (aktualizacja listy pokoi w gui) pokój został usunięty
