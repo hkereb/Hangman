@@ -125,11 +125,11 @@ class MainApp(QMainWindow):
         elif message.startswith("08"):
             word = substr_msg(message)
             spaced_word = " ".join(word)
-            self.ui.player0_label.setText("mam wszystkie szanse!")
-            self.ui.player1_label.setText("mam wszystkie szanse!")
-            self.ui.player2_label.setText("mam wszystkie szanse!")
-            self.ui.player3_label.setText("mam wszystkie szanse!")
-            self.ui.player4_label.setText("mam wszystkie szanse!")
+            self.ui.player0_label.setText("all lives!")
+            self.ui.player1_label.setText("all lives!")
+            self.ui.player2_label.setText("all lives!")
+            self.ui.player3_label.setText("all lives!")
+            self.ui.player4_label.setText("all lives!")
             self.ui.word_label.setText(spaced_word)
             self.ui.stackedWidget.setCurrentWidget(self.ui.game_page)
 
