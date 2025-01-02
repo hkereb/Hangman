@@ -12,6 +12,7 @@ class MainApp(QMainWindow):
     sig_rooms_list = Signal(str) # sygnał informujący serwer że ma wysłać aktualną listę pokoi
     sig_create_room = Signal(str) # sygnał informujący serwer że użytkownik uzupełnił dane nowego pokoju
     sig_players_list = Signal(str) # sygnał informujący serwer że ma wysłać aktualną listę graczy w pokoju
+    sig_join_room = Signal(str) # sygnał informujący serwer że użytkownik uzupełnił dane pokoju
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -37,6 +38,7 @@ class MainApp(QMainWindow):
         self.ui.stackedWidget.currentChanged.connect(self.is_at_waitroom_page)
         self.ui.rooms_list.itemSelectionChanged.connect(self.on_list_item_selected)
         self.ui.create_btn.clicked.connect(self.submit_create_room)
+        self.ui.join_btn.clicked.connect(self.submit_join_room)
 
     def submit_nick(self):
         nick = self.ui.nick_field.text()
@@ -50,6 +52,12 @@ class MainApp(QMainWindow):
         self.sig_create_room.emit(name)
         print(f"Create room submitted: {name}")
 
+    def submit_join_room(self):
+        name = self.ui.join_room_name_field.text()
+
+        self.sig_join_room.emit(name)
+        print(f"Create room submitted: {name}")
+
     def handle_server_response(self, message):
         print("serwer: " + message)
         if message.startswith("01"):
@@ -59,12 +67,21 @@ class MainApp(QMainWindow):
             elif result == "0":  # nick odrzucony
                 self.ui.check_label.setText("\U0000274C")
                 self.ui.check_label.setStyleSheet("color: red;")
+        ###
         elif message.startswith("02"):
             result = substr_msg(message)
             if result == "1":  # pokój pomyślnie stworzony
                 self.ui.stackedWidget.setCurrentWidget(self.ui.waitroom_page)
             elif result == "0":  # błąd
-                self.ui.create_name_field.styleSheet("color: red;")
+                self.ui.create_name_field.setStyleSheet("color: red;")
+        ###
+        elif message.startswith("03"):
+            result = substr_msg(message)
+            if result == "1":  # pomyślnie dołączono do pokoju
+                self.ui.stackedWidget.setCurrentWidget(self.ui.waitroom_page)
+            elif result == "0":  # błąd
+                self.ui.join_room_name_field.setStyleSheet("color: red;")
+        ###
         elif message.startswith("05"):
             nicks_encoded = substr_msg(message)
             nicks = nicks_encoded.split(",")
@@ -75,7 +92,8 @@ class MainApp(QMainWindow):
                 self.ui.rooms_list.addItem(lobby)
 
             print("Lista pokoi została zaktualizowana.")
-        elif message.startswith("99"):
+        ###
+        elif message.startswith("06"):
             nicks_encoded = substr_msg(message)
             nicks = nicks_encoded.split(",")
 

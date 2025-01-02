@@ -22,6 +22,7 @@ if __name__ == "__main__":
     client.message_received.connect(window.handle_server_response)
     window.sig_submit_nick.connect(lambda nick: client.send_to_server("01", f"{nick}"))
     window.sig_create_room.connect(lambda name: client.send_to_server("02", f"{name}"))
+    window.sig_join_room.connect(lambda name: client.send_to_server("03", f"{name}"))
     window.sig_rooms_list.connect(lambda message: client.send_to_server("10", ""))
     window.sig_players_list.connect(lambda message: client.send_to_server("11", ""))
     ####################################

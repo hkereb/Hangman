@@ -23,10 +23,21 @@ class NetworkClient(QThread):
 
     def listen_to_server(self):
         try:
+            buffer = ""
             while True:
-                message = self.socket.recv(1024).decode('utf-8')
-                if message:
-                    self.message_received.emit(message)
+                data = self.socket.recv(1024).decode('utf-8')  # Odbieramy dane
+                if data:
+                    buffer += data  # Dodajemy dane do bufora
+
+                    # Rozdzielamy wiadomości na podstawie znaku końca wiadomości '\n'
+                    messages = buffer.split("\n")
+
+                    for message in messages[:-1]:  # Obsługujemy wszystkie pełne wiadomości
+                        if message:
+                            self.message_received.emit(message)
+
+                    # Zostawiamy ostatnią część bufora (częściową wiadomość)
+                    buffer = messages[-1]
         except Exception as e:
             self.error_occurred.emit(str(e))
 
