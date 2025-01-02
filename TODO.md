@@ -4,8 +4,8 @@
 #### Klient -> Serwer:
 
 - [x] 01\\[nick] - przypisanie nicku  
-- [x] 02\\[pokój] - utworzenie nowego pokoju o podanej nazwie 
-- [x] 03\\[pokój] - dołączenie do pokoju o podanej nazwie 
+- [x] 02\\[nazwa] - utworzenie nowego pokoju o podanej nazwie 
+- [x] 03\\[nazwa,haslo] - dołączenie do pokoju o podanej nazwie 
 - [ ] 04\\[tutaj,ustawienia] - ustawienia pokoju
   - [x] 04.1\\ wpisanie ustawien
   - [ ] 04.2\\ obsluga zlych danych wejsciowych 
@@ -22,3 +22,27 @@
 - [ ] 02\\[stan] - podanie stanu gry
 - [ ] 03\\[bool] - wynik próby odgadnięcia litery
 - [x] 04\\[nazwa1,..,nazwa99] - przesłanie listy nazw pokoi
+
+
+
+
+HANIA (DO POPRAWY, wyjdzie w trakcie fixów w kodzie):
+
+- [x] 02\\[nazwa] - utworzenie nowego pokoju o podanej nazwie
+- [x] 03\\[nazwa,haslo] - dołączenie do pokoju o podanej nazwie
+- [x] 11\\[] - prośba o przesłanie listy nicków graczy obecnych w danym pokoju
+- [ ] 99\\[litera] - próba zgadnięcia litery
+- [ ] 99\\[pokój] - restart gry
+- [ ] 99\\[pokój] - podanie aktualnego stanu gry
+- [ ] 99\\[pokój] - opuszczenie pokoju przez gracza
+
+
+
+#### Serwer -> Klient:
+- [x] 01\\[bool] - potwierdzenie ustawienia nicku (pętla while z podawaniem nicku do skutku powinna być po stronie klienta, więc potrzebna jest flaga), bool zapisany jako 0 lub 1
+- [x] 02\\[bool] - potwierdzenie stworzenia pokoj
+- [x] 03\\[bool] - potwierdzenie dołączenia do pokoju
+- [x] 05\\[nazwa1,..,nazwa99] - przesłanie listy nazw pokoi
+- [x] 06\\[bool,nazwa1,..,nazwa99] - przesłanie listy nazw graczy w danym pokoju
+- [ ] 99\\[bool] - wynik próby odgadnięcia litery
+- [ ] 99\\[stan] - podanie stanu gry

@@ -7,7 +7,7 @@ from PySide6 import QtWidgets as qtw
 from PySide6 import QtCore as qtc
 
 if __name__ == "__main__":
-    SERVER_IP = "127.0.0.1"
+    SERVER_IP = "192.168.100.8"
     SERVER_PORT = 1111
 
     client = NetworkClient(SERVER_IP, SERVER_PORT, time_to_wait=5)
@@ -19,9 +19,11 @@ if __name__ == "__main__":
     window.show()
 
     ############# signals ##############
-    window.nick_submitted.connect(lambda nick: client.send_to_server("01", f"{nick}"))
     client.message_received.connect(window.handle_server_response)
-    window.update_rooms.connect(lambda message: client.send_to_server("10", ""))
+    window.sig_submit_nick.connect(lambda nick: client.send_to_server("01", f"{nick}"))
+    window.sig_create_room.connect(lambda name: client.send_to_server("02", f"{name}"))
+    window.sig_rooms_list.connect(lambda message: client.send_to_server("10", ""))
+    window.sig_players_list.connect(lambda message: client.send_to_server("11", ""))
     ####################################
 
     # event loop
