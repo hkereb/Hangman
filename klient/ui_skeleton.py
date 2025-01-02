@@ -188,7 +188,7 @@ class Ui_MainWindow(object):
         self.waiting_label.setFont(font2)
         self.players_list = QListWidget(self.waitroom_page)
         self.players_list.setObjectName(u"players_list")
-        self.players_list.setGeometry(QRect(200, 200, 371, 21))
+        self.players_list.setGeometry(QRect(200, 200, 371, 161))
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.MinimumExpanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
