@@ -1,6 +1,6 @@
 import sys
 from ui_skeleton import Ui_MainWindow
-from PySide6.QtWidgets import QApplication, QMainWindow
+from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox
 from PySide6.QtCore import QObject, Signal, QThread, QRegularExpression
 from PySide6.QtGui import QRegularExpressionValidator
 
@@ -45,12 +45,20 @@ class MainApp(QMainWindow):
         self.ui.start_btn.clicked.connect(self.submit_start)
 
     def submit_nick(self):
+        if not self.ui.nick_field.text().strip():
+            QMessageBox.warning(self, "Info", "Nickname field is obligatory!")
+            return
+
         nick = self.ui.nick_field.text()
 
         self.sig_submit_nick.emit(nick)
         print(f"Nick submitted: {nick}")
 
     def submit_create_room(self):
+        if not self.ui.create_name_field.text().strip():
+            QMessageBox.warning(self, "Error", "Name field is obligatory!")
+            return
+
         name = self.ui.create_name_field.text()
 
         self.sig_create_room.emit(name)
@@ -73,6 +81,7 @@ class MainApp(QMainWindow):
             if result == "1":  # nick zaakceptowany
                 self.ui.stackedWidget.setCurrentWidget(self.ui.create_or_join_page)
             elif result == "0":  # nick odrzucony
+                QMessageBox.warning(self, "Info", "Nickname has already been taken!")
                 self.ui.check_label.setText("\U0000274C")
                 self.ui.check_label.setStyleSheet("color: red;")
         ###

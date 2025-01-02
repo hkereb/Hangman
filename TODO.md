@@ -37,7 +37,7 @@ HANIA (DO POPRAWY, wyjdzie w trakcie fixów w kodzie):
     - [ ] 04.2\\ obsluga zlych danych wejsciowych
 - [x] 10\\[] - prośba o przesłanie listy pokoi
 - [x] 11\\[] - prośba o przesłanie listy nicków graczy obecnych w danym pokoju
-- [ ] 12\\[] - prośba o rozpoczęcie gry w pokoju gracza
+- [x] 12\\[] - prośba o rozpoczęcie gry w pokoju gracza
 - [ ] 99\\[litera] - próba zgadnięcia litery
 - [ ] 99\\[pokój] - restart gry
 - [ ] 99\\[pokój] - podanie aktualnego stanu gry
