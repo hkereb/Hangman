@@ -23,7 +23,7 @@
 
 #define MAXEPOLLSIZE 1000
 #define BACKLOG 200 // how many pending connections queue will hold
-#define MAXPLAYERS 4
+#define MAXPLAYERS 5
 
 std::map<std::string, int> parseSettings(const std::string& settings);
 void sendToClient(int clientFd, const std::string& commandNumber, const std::string& body);
@@ -36,12 +36,14 @@ void sendLobbiesToClients(std::vector<std::string> lobby_names, int clientfd = -
 struct Player {
     int sockfd;
     std::string nick;
-    
+
     bool isOwner = false;
 
     int points = 0;
     int lives = 5;
     int maxLives = 5;
+
+    std::string lobbyName;
 
     Player() {
         this->nick = "";
@@ -50,6 +52,7 @@ struct Player {
         this->points = 0;
         this->maxLives = 5;
         this->lives = this->maxLives;
+        this->lobbyName = "";
     }
 };
 
@@ -90,7 +93,7 @@ struct Game {
             "osiers","fighter","gaudier","crowberries","archrivals","roamers","whiffets",
             "aciculas","exhedrae","florilegia","catalo","reconnection","fillip","searched"
         };
-        
+
         std::random_device rd;
         std::default_random_engine engine(rd());
         std::shuffle(availableWords.begin(), availableWords.end(), engine); // shuffle zeby byla jakas losowosc
@@ -118,7 +121,7 @@ struct Game {
         currentRound++;  // zwiekszenie numeru rundy
 
         // ustawienie slowa do odgadniecia na aktualna runde
-        currentWord = wordList[currentRound - 1];  
+        currentWord = wordList[currentRound - 1];
         guessedLetters.resize(currentWord.size(), '_');  // resetowanie odgadnietych liter
 
         for (auto& player : players) {
@@ -137,7 +140,7 @@ struct Lobby {
     int difficulty;
     int roundsAmount;
     int roundDuration;
-    
+
     Game game;
 
     Lobby() {
@@ -151,7 +154,7 @@ struct Lobby {
 
     void startGame() {
         for (auto& player : players) {  // resetowanie punktow przed rozpoczeciem gry
-            player.points = 0;  
+            player.points = 0;
         }
 
         if (players.size() < 2) { // w lobby musi byc minimalnie 2 graczy
@@ -243,7 +246,7 @@ void sendToClient(int clientFd, const std::string& commandNumber, const std::str
         return;
     }
 
-    std::string fullMessage = commandNumber + body;
+    std::string fullMessage = commandNumber + "\\" + body;
     ssize_t bytesSent = send(clientFd, fullMessage.c_str(), fullMessage.size(), 0);
 
     if (bytesSent == -1) {
@@ -255,7 +258,8 @@ std::string messageSubstring(std::string msg) {
     return msg.substr(3);
 }
 
-void sendLobbiesToClients(std::vector<std::string> lobbyNames, int clientFd = -1) {
+// TODO fix
+/*void sendLobbiesToClients(std::vector<std::string> lobbyNames, int clientFd = -1) {
     std::string messageBody;
     // przygotowanie wiadomości
     for (size_t i = 0; i < lobbyNames.size(); ++i) {
@@ -266,17 +270,35 @@ void sendLobbiesToClients(std::vector<std::string> lobbyNames, int clientFd = -1
     }
     // wysłanie do jednego klienta
     if (clientFd != -1) {
-        sendToClient(clientFd, "04", messageBody);
+        sendToClient(clientFd, "05", messageBody);
     }
     // wysłanie do wielu klientów
     else {
         for (const auto& player : players) {
-            if (player.lobby_name.empty()) {
-                sendToClient(player.sockfd, "04", messageBody);
+            if (player.lobbyName.empty()) {
+                sendToClient(player.sockfd, "05", messageBody);
             }
         }
     }
-}
+}*/
+
+/*void sendPlayersToClients(const Lobby* lobby) {
+    std::string msg_body;
+
+    // przygotowanie wiadomości
+    for (size_t i = 0; i < lobby->players.size(); ++i) {
+        msg_body += lobby->players[i].nick;
+        if (i != lobby->players.size() - 1) {
+            msg_body += ",";
+        }
+    }
+
+    // wysłanie do wszystkich klientów z pokoju
+    for (const auto& player : lobby->players) {
+        sendToClient(player.sockfd, "99", msg_body);
+    }
+}*/
+
 
 // obsługa klienta na podstawie jego wiadomości
 void handleClientMessage(int clientFd, std::string msg) {
@@ -286,7 +308,7 @@ void handleClientMessage(int clientFd, std::string msg) {
         if (std::find(playersNicknames.begin(), playersNicknames.end(), nick) != playersNicknames.end()) {
             std::cout << "Nick, " << nick << ", has already been taken.\n";
             // powiadomienie strony klienta o niepowodzeniu
-            sendToClient(clientFd, "01", "0\nnickTaken\n");
+            sendToClient(clientFd, "01", "0");
             return;
         }
 
@@ -297,11 +319,11 @@ void handleClientMessage(int clientFd, std::string msg) {
         if (playerIt != players.end()) {
             playerIt->nick = nick;
             playersNicknames.push_back(nick);
-            sendToClient(clientFd, "01", "1\nnickAccepted\n");
+            sendToClient(clientFd, "01", "1");
             //std::cout << "Player's accepted nickname: " << playerIt->nick;
         } else {
             std::cout << "Player's socket has not been found in the players vector (socket: " << clientFd << ")";
-            sendToClient(clientFd, "01", "0\nnickAssignmentFailed\n");
+            sendToClient(clientFd, "01", "0");
             return;
         }
     } else if (msg.substr(0, 2) == "02") {  // Tworzenie pokoju
@@ -314,7 +336,8 @@ void handleClientMessage(int clientFd, std::string msg) {
 
         if (lobbyIt != gameLobbies.end()) {
             // Lobby name already taken
-            sendToClient(clientFd, "02", "0\nlobbyNameTaken\n");  // Send failure response
+            // TODO w przypadku błędu trzeba dokładnie podać gdzie on wystąpił (np. 02\11011, gdzie 0 oznacza błąd w trzeciej opcji)
+            sendToClient(clientFd, "02", "0");  // Send failure response
             std::cout << "Failed to create lobby. Name already taken: " << lobbyName << "\n";
             return;
         }
@@ -341,8 +364,12 @@ void handleClientMessage(int clientFd, std::string msg) {
         gameLobbies.push_back(newLobby);
         lobbyCount++;
 
-        sendToClient(clientFd, "02", "1\nlobbyCreated\n");  // stworzono lobby
+        // TODO fix
+        //sendPlayersToClients(&new_lobby);
+
+        sendToClient(clientFd, "02", "1");  // stworzono lobby
         std::cout << "Lobby created successfully: " << lobbyName << "\n";
+
         std::cout << "Current lobby count: " << lobbyCount << "\n";
     } else if (msg.substr(0, 2) == "03") {  // Dołączanie do pokoju
         std::string roomName = messageSubstring(msg);
@@ -353,7 +380,7 @@ void handleClientMessage(int clientFd, std::string msg) {
         });
 
         if (lobbyIt == gameLobbies.end()) {
-            sendToClient(clientFd, "03", "0\nroomNotExists\n");  // Pokój nie istnieje
+            sendToClient(clientFd, "03", "0");  // Pokój nie istnieje
             return;
         }
 
@@ -364,16 +391,16 @@ void handleClientMessage(int clientFd, std::string msg) {
 
         // powiadomienie ze gracz jest juz w pokoju
         if (playerIt != lobbyIt->players.end()) {
-            sendToClient(clientFd, "03", "0\nalreadyInRoom\n");
+            sendToClient(clientFd, "03", "0");
             return;
         }
 
         // powiadomienie ze pokoj jest pelny
         if (lobbyIt->playersCount >= MAXPLAYERS) {
-            sendToClient(clientFd, "03", "0\nroomIsFull\n"); 
+            sendToClient(clientFd, "03", "0");
             return;
         }
-        
+
         // wyszukanie gracza ktory ma dolaczyc do pokoju
         playerIt = std::find_if(players.begin(), players.end(), [clientFd](const Player& player) {
             return player.sockfd == clientFd;
@@ -384,7 +411,10 @@ void handleClientMessage(int clientFd, std::string msg) {
             lobbyIt->joinTimes[clientFd] = now;
             lobbyIt->players.push_back(*playerIt);  // Dodaj gracza do pokoju
             lobbyIt->playersCount++;
-            sendToClient(clientFd, "03", "1\njoinedRoom\n");  // Sukces
+            // TODO fix
+            //auto& lobby = *it;
+            //sendPlayersToClients(&lobby);
+            sendToClient(clientFd, "03", "1");  // Sukces
         } else {
             sendToClient(clientFd, "03", "0\nplayerNotFound\n");  // Nie znaleziono gracza
         }
@@ -447,7 +477,7 @@ void handleClientMessage(int clientFd, std::string msg) {
                 if (lobbyIt->players.size() < 2) {
                     sendToClient(clientFd, "05", "0\nnotEnoughPlayers\n");
                 } else {
-                    lobbyIt->startGame(); 
+                    lobbyIt->startGame();
                     for (const auto& player : lobbyIt->players) {  // powiadomienie graczy
                         sendToClient(player.sockfd, "05", "1\ngameStarted\n");
                     }
@@ -544,7 +574,7 @@ void handleClientMessage(int clientFd, std::string msg) {
             if (ownerIt != lobbyIt->players.end() && ownerIt->sockfd == clientFd) {
                 std::cout << "Restart gry w pokoju: " << roomName << "\n";
                 // restart gry w tym lobby
-                lobbyIt->startGame(); 
+                lobbyIt->startGame();
                 for (const auto& player : lobbyIt->players) {  // powiadomienie graczy
                     sendToClient(player.sockfd, "07", "1\ngameRestartSuccessful\n");
                 }
@@ -556,7 +586,7 @@ void handleClientMessage(int clientFd, std::string msg) {
         }
     } else if (msg.substr(0, 2) == "08") {  // Stan gry
         std::string roomName = messageSubstring(msg);
-        
+
 
         auto lobbyIt = std::find_if(gameLobbies.begin(), gameLobbies.end(), [&roomName](const Lobby& lobby) {
             return lobby.name == roomName;
@@ -567,7 +597,7 @@ void handleClientMessage(int clientFd, std::string msg) {
             gameState += "Current round: " + std::to_string(lobbyIt->game.currentRound) + "/" + std::to_string(lobbyIt->roundsAmount) + "\n";
             gameState += "Game over: " + std::string(lobbyIt->game.isGameOver ? "Yes" : "No") + "\n";
             gameState += "Difficulty: " + std::to_string(lobbyIt->difficulty) + "\n";
-            
+
             for (auto& player : lobbyIt->players) {
                 gameState += player.nick + ": " + std::to_string(player.points) + "\n";
             }
@@ -577,7 +607,7 @@ void handleClientMessage(int clientFd, std::string msg) {
             for (char letter : lobbyIt->game.guessedLetters) {
                 gameState += letter;
             }
-            
+
             sendToClient(clientFd, "08", gameState);  // Stan gry
         } else {
             sendToClient(clientFd, "08", "0\ngameStateReadFailed\n");
@@ -612,7 +642,7 @@ void handleClientMessage(int clientFd, std::string msg) {
 
             sendToClient(clientFd, "09", "1\nplayerLeftRoomSuccessfully\n");  // Sukces
         } else {
-            sendToClient(clientFd, "09", "0\nplayerLeftRoomFailed\n");  
+            sendToClient(clientFd, "09", "0\nplayerLeftRoomFailed\n");
         }
     } else if (msg.substr(0, 2) == "10") {  // Informacje o lobby
         auto lobbyIt = std::find_if(gameLobbies.begin(), gameLobbies.end(), [clientFd](const Lobby& lobby) {
@@ -625,7 +655,7 @@ void handleClientMessage(int clientFd, std::string msg) {
             auto ownerIt = std::find_if(lobbyIt->players.begin(), lobbyIt->players.end(),
                 [](const Player& player) { return player.isOwner; });
             std::string ownerNick;
-            
+
             if (ownerIt != lobbyIt->players.end()) {
                 ownerNick = ownerIt->nick;
             } else {
@@ -634,7 +664,7 @@ void handleClientMessage(int clientFd, std::string msg) {
             std::string response = "10\nroomFound\n" + lobbyIt->name +
                                 "\nPlayers: " + std::to_string(lobbyIt->playersCount) +
                                 "\nOwner: " + ownerNick + "\n";
-            sendToClient(clientFd, "10", response); 
+            sendToClient(clientFd, "10", response);
         } else {
             sendToClient(clientFd, "10", "0\ngettingResponseFailed\n");
         }
@@ -677,6 +707,7 @@ int main(int argc, char *argv[]) {
         }
 
         for (int n = 0; n < ready; ++n) {
+            // TODO: usuwanie danych klienta ze wszystkich struktur po zerwaniu połączenia
             if (events[n].data.fd == sockfd) {
                 // std::cout << "sockfd" << std::endl;
                 sockaddr_in clientAddr{};
@@ -711,8 +742,8 @@ int main(int argc, char *argv[]) {
                     return 1;
                 }
 
-
-            } else {
+            }
+            else {
                 // std::cout << "clientfd" << std::endl;
                 while (true) {
                     char buffer[1024] = {0};
@@ -722,6 +753,7 @@ int main(int argc, char *argv[]) {
                             // nie ma więcej danych
                             break;
                         }
+                        // klient rozłączył się, należy usunąć jego dane
                         perror("recv (wiadomość od klienta)");
                         close(events[n].data.fd);
                         epoll_ctl(efd, EPOLL_CTL_DEL, events[n].data.fd, &ev);
@@ -734,7 +766,10 @@ int main(int argc, char *argv[]) {
                         fdsToWatch--;
                         break;
                     }
-                    //write(1, buffer, bytesReceived); // do sprawdzania odebranej wiadomości
+                    write(1, "klient: ", 8);
+                    write(1, buffer, bytesReceived); // do sprawdzania odebranej wiadomości
+                    write(1, "\n", 1);
+
                     std::string clientMessage(buffer, bytesReceived);
 
                     handleClientMessage(events[n].data.fd, clientMessage);
