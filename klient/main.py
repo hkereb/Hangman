@@ -25,6 +25,7 @@ if __name__ == "__main__":
     window.sig_join_room.connect(lambda name: client.send_to_server("03", f"{name}"))
     window.sig_rooms_list.connect(lambda message: client.send_to_server("10", ""))
     window.sig_players_list.connect(lambda message: client.send_to_server("11", ""))
+    window.sig_start.connect(lambda message: client.send_to_server("12", ""))
     ####################################
 
     # event loop

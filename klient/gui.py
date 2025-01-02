@@ -13,6 +13,7 @@ class MainApp(QMainWindow):
     sig_create_room = Signal(str) # sygnał informujący serwer że użytkownik uzupełnił dane nowego pokoju
     sig_players_list = Signal(str) # sygnał informujący serwer że ma wysłać aktualną listę graczy w pokoju
     sig_join_room = Signal(str) # sygnał informujący serwer że użytkownik uzupełnił dane pokoju
+    sig_start = Signal(str)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -31,6 +32,8 @@ class MainApp(QMainWindow):
 
         self.ui.level_combobox.addItems(["easy", "medium", "hard"])
 
+        self.ui.start_btn.setVisible(False)
+
         # connect
         self.ui.nick_submit_btn.clicked.connect(self.submit_nick)
         self.ui.create_IP_field.textChanged.connect(self.on_ip_changed)
@@ -39,6 +42,7 @@ class MainApp(QMainWindow):
         self.ui.rooms_list.itemSelectionChanged.connect(self.on_list_item_selected)
         self.ui.create_btn.clicked.connect(self.submit_create_room)
         self.ui.join_btn.clicked.connect(self.submit_join_room)
+        self.ui.start_btn.clicked.connect(self.submit_start)
 
     def submit_nick(self):
         nick = self.ui.nick_field.text()
@@ -57,6 +61,10 @@ class MainApp(QMainWindow):
 
         self.sig_join_room.emit(name)
         print(f"Create room submitted: {name}")
+
+    def submit_start(self):
+        self.sig_start.emit("")
+        print("START!")
 
     def handle_server_response(self, message):
         print("serwer: " + message)
@@ -103,6 +111,21 @@ class MainApp(QMainWindow):
                 self.ui.players_list.addItem(nick)
 
             print("Lista graczy w pokoju została zaktualizowana.")
+        ###
+        elif message.startswith("07"):
+            decision = substr_msg(message)
+
+            if decision:
+                self.ui.start_btn.setVisible(True)
+            else:
+                self.ui.start_btn.setVisible(False)
+
+            print("Gra może zostać rozpoczęta.")
+        ###
+        elif message.startswith("08"):
+            word = substr_msg(message)
+            self.ui.word_label.setText(word)
+            self.ui.stackedWidget.setCurrentWidget(self.ui.game_page)
 
     def on_ip_changed(self):
         if self.ui.create_IP_field.hasAcceptableInput():
