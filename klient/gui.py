@@ -124,7 +124,13 @@ class MainApp(QMainWindow):
         ###
         elif message.startswith("08"):
             word = substr_msg(message)
-            self.ui.word_label.setText(word)
+            spaced_word = " ".join(word)
+            self.ui.player0_label.setText("mam wszystkie szanse!")
+            self.ui.player1_label.setText("mam wszystkie szanse!")
+            self.ui.player2_label.setText("mam wszystkie szanse!")
+            self.ui.player3_label.setText("mam wszystkie szanse!")
+            self.ui.player4_label.setText("mam wszystkie szanse!")
+            self.ui.word_label.setText(spaced_word)
             self.ui.stackedWidget.setCurrentWidget(self.ui.game_page)
 
     def on_ip_changed(self):
