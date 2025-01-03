@@ -9,11 +9,11 @@
 - [ ] 04\\[tutaj,ustawienia] - ustawienia pokoju
   - [x] 04.1\\ wpisanie ustawien
   - [ ] 04.2\\ obsluga zlych danych wejsciowych 
-- [ ] 05\\[] - start gry
-- [ ] 06\\[litera] - próba zgadnięcia litery
-- [ ] 07\\[pokój] - restart gry
-- [ ] 08\\[pokój] - podanie aktualnego stanu gry
-- [ ] 09\\[pokój] - opuszczenie pokoju przez gracza
+- [x] 05\\[] - start gry
+- [x] 06\\[litera] - próba zgadnięcia litery
+- [x] 07\\[pokój] - restart gry
+- [x] 08\\[pokój] - podanie aktualnego stanu gry
+- [x] 09\\[pokój] - opuszczenie pokoju przez gracza
 - [x] 10\\[] - prośba o przesłanie listy pokoi
 
 
