@@ -440,12 +440,31 @@ void handleClientMessage(int clientFd, std::string msg) {
         std::cout << "Current lobby count: " << lobbyCount << "\n";
     }
     else if (msg.substr(0, 2) == "03") {  // Dołączanie do pokoju
-        std::string roomName = messageSubstring(msg);
+        std::string lobbyInfo = messageSubstring(msg);
+
+        size_t posName = msg.find("name:");
+        size_t posPass = msg.find("password:");
+
+        size_t nameStart = posName + strlen("name:"); // po "name:"
+        size_t nameEnd = msg.find(",", nameStart); // do przecinka
+        std::string lobbyName = msg.substr(nameStart, nameEnd - nameStart);
+
+        size_t passStart = posPass + strlen("password:");
+        size_t passEnd = msg.find(",", passStart);
+        std::string password = msg.substr(passStart, passEnd - passStart);
+
+        std::cout << "taką widzę nazwę: " + lobbyName + "\n";
+        std::cout << "takie widzę hasło: " + password + "\n";
 
         // Znajdź pokój
-        auto lobbyIt = std::find_if(gameLobbies.begin(), gameLobbies.end(), [&roomName](const Lobby& lobby) {
-            return lobby.name == roomName;
+        auto lobbyIt = std::find_if(gameLobbies.begin(), gameLobbies.end(), [&lobbyName](const Lobby& lobby) {
+            return lobby.name == lobbyName;
         });
+
+        if (password != lobbyIt->password) {
+            sendToClient(clientFd, "03", "0");  // niepoprawne hasło
+            return;
+        }
 
         // TODO należy zwracać konkretniejsze kody błędów
         if (lobbyIt == gameLobbies.end()) {
