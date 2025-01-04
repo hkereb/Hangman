@@ -10,9 +10,9 @@ def substr_msg(msg):
 class MainApp(QMainWindow):
     sig_submit_nick = Signal(str)  # sygnał do przesyłania nicku
     sig_rooms_list = Signal(str) # sygnał informujący serwer że ma wysłać aktualną listę pokoi
-    sig_create_room = Signal(str) # sygnał informujący serwer że użytkownik uzupełnił dane nowego pokoju
+    sig_create_room = Signal(str, str, int, int, int) # sygnał informujący serwer że użytkownik uzupełnił dane nowego pokoju
     sig_players_list = Signal(str) # sygnał informujący serwer że ma wysłać aktualną listę graczy w pokoju
-    sig_join_room = Signal(str) # sygnał informujący serwer że użytkownik uzupełnił dane pokoju
+    sig_join_room = Signal(str, str) # sygnał informujący serwer że użytkownik uzupełnił dane pokoju
     sig_start = Signal(str)
 
     def __init__(self, *args, **kwargs):
@@ -55,20 +55,27 @@ class MainApp(QMainWindow):
         print(f"Nick submitted: {nick}")
 
     def submit_create_room(self):
+        # todo msg box dla każdego pola oprócz hasła
         if not self.ui.create_name_field.text().strip():
             QMessageBox.warning(self, "Error", "Name field is obligatory!")
             return
 
         name = self.ui.create_name_field.text()
+        password = self.ui.create_password_field.text()
+        level = self.ui.level_combobox.currentIndex() + 1
+        rounds = self.ui.rounds_number_spin.value()
+        time = self.ui.time_edit.time()
+        time_sec = time.hour() * 3600 + time.minute() * 60 + time.second()
 
-        self.sig_create_room.emit(name)
-        print(f"Create room submitted: {name}")
+        self.sig_create_room.emit(name, password, level, rounds, time_sec)
+        print(f"Create room submitted: {name}, {password}, {level}, {rounds}, {time_sec}")
 
     def submit_join_room(self):
         name = self.ui.join_room_name_field.text()
+        password = self.ui.join_password_field.text()
 
-        self.sig_join_room.emit(name)
-        print(f"Create room submitted: {name}")
+        self.sig_join_room.emit(name, password)
+        print(f"Join room submitted: {name}, {password}")
 
     def submit_start(self):
         self.sig_start.emit("")
@@ -99,7 +106,7 @@ class MainApp(QMainWindow):
             elif result == "0":  # błąd
                 self.ui.join_room_name_field.setStyleSheet("color: red;")
         ###
-        elif message.startswith("05"):
+        elif message.startswith("70"):
             nicks_encoded = substr_msg(message)
             nicks = nicks_encoded.split(",")
 
@@ -110,7 +117,7 @@ class MainApp(QMainWindow):
 
             print("Lista pokoi została zaktualizowana.")
         ###
-        elif message.startswith("06"):
+        elif message.startswith("71"):
             nicks_encoded = substr_msg(message)
             nicks = nicks_encoded.split(",")
 
@@ -121,7 +128,7 @@ class MainApp(QMainWindow):
 
             print("Lista graczy w pokoju została zaktualizowana.")
         ###
-        elif message.startswith("07"):
+        elif message.startswith("72"):
             decision = substr_msg(message)
 
             if decision:
@@ -131,7 +138,7 @@ class MainApp(QMainWindow):
 
             print("Gra może zostać rozpoczęta.")
         ###
-        elif message.startswith("08"):
+        elif message.startswith("73"):
             word = substr_msg(message)
             spaced_word = " ".join(word)
             self.ui.player0_label.setText("all lives!")

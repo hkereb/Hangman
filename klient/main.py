@@ -21,13 +21,12 @@ if __name__ == "__main__":
     ############# signals ##############
     client.message_received.connect(window.handle_server_response)
     window.sig_submit_nick.connect(lambda nick: client.send_to_server("01", f"{nick}"))
-    window.sig_create_room.connect(lambda name: client.send_to_server("02", f"{name}"))
-    window.sig_join_room.connect(lambda name: client.send_to_server("03", f"{name}"))
-    window.sig_rooms_list.connect(lambda message: client.send_to_server("10", ""))
-    window.sig_players_list.connect(lambda message: client.send_to_server("11", ""))
-    window.sig_start.connect(lambda message: client.send_to_server("12", ""))
+    window.sig_create_room.connect(lambda name, password, level, rounds, time_sec: client.send_to_server("02", f"name:{name},password:{password},difficulty:{level},rounds:{rounds},time:{time_sec}"))
+    window.sig_join_room.connect(lambda name, password: client.send_to_server("03", f"name:{name},password:{password}"))
+    window.sig_rooms_list.connect(lambda message: client.send_to_server("70", ""))
+    window.sig_players_list.connect(lambda message: client.send_to_server("71", ""))
+    window.sig_start.connect(lambda message: client.send_to_server("73", ""))
     ####################################
 
     # event loop
     sys.exit(app.exec())
-
