@@ -12,7 +12,7 @@ class MainApp(QMainWindow):
     sig_rooms_list = Signal(str) # sygnał informujący serwer że ma wysłać aktualną listę pokoi
     sig_create_room = Signal(str, str, int, int, int) # sygnał informujący serwer że użytkownik uzupełnił dane nowego pokoju
     sig_players_list = Signal(str) # sygnał informujący serwer że ma wysłać aktualną listę graczy w pokoju
-    sig_join_room = Signal(str) # sygnał informujący serwer że użytkownik uzupełnił dane pokoju
+    sig_join_room = Signal(str, str) # sygnał informujący serwer że użytkownik uzupełnił dane pokoju
     sig_start = Signal(str)
 
     def __init__(self, *args, **kwargs):
@@ -72,9 +72,10 @@ class MainApp(QMainWindow):
 
     def submit_join_room(self):
         name = self.ui.join_room_name_field.text()
+        password = self.ui.join_password_field.text()
 
-        self.sig_join_room.emit(name)
-        print(f"Create room submitted: {name}")
+        self.sig_join_room.emit(name, password)
+        print(f"Join room submitted: {name}, {password}")
 
     def submit_start(self):
         self.sig_start.emit("")
@@ -137,7 +138,7 @@ class MainApp(QMainWindow):
 
             print("Gra może zostać rozpoczęta.")
         ###
-        elif message.startswith("08"):
+        elif message.startswith("73"):
             word = substr_msg(message)
             spaced_word = " ".join(word)
             self.ui.player0_label.setText("all lives!")
