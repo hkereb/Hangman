@@ -103,6 +103,7 @@ class Ui_MainWindow(object):
         self.rounds_number_spin.setObjectName(u"rounds_number_spin")
         self.rounds_number_spin.setGeometry(QRect(180, 190, 151, 22))
         self.time_edit = QTimeEdit(self.create_groupbox)
+        self.time_edit.setDisplayFormat("mm:ss")
         self.time_edit.setObjectName(u"time_edit")
         self.time_edit.setGeometry(QRect(180, 220, 151, 22))
         self.create_btn = QPushButton(self.create_groupbox)
