@@ -35,13 +35,19 @@ namespace Levels {
     static const int HARD = 3;
 }
 
-std::map<std::string, int> parseSettings(const std::string& settings);
+//std::map<std::string, int> parseSettings(const std::string& settings);
 void sendToClient(int clientFd, const std::string& commandNumber, const std::string& body);
 void handleClientMessage(int clientFd, std::string msg);
 int setNonBlocking(int sockfd);
 int startListening();
-std::string substr_msg(std::string msg);
-void sendLobbiesToClients(std::vector<std::string> lobby_names, int clientfd = -1);
+
+struct Settings {
+    std::string name;
+    std::string password;
+    int difficulty;
+    int roundsAmount;
+    int roundDurationSec;
+};
 
 struct Player {
     int sockfd;
@@ -78,13 +84,14 @@ struct Game {
     int roundsAmount;
     int difficulty;
     bool isGameActive;
+    std::chrono::steady_clock::time_point timeStart; // czas rozpoczęcia gry
 
     Game() {
         this->roundsAmount = 5;
         this->roundDuration = 60;
         this->currentRound = 0;
         this->difficulty = Levels::EASY;
-        this->isGameActive = false; // TODO false ale gra zaczyna się dopiero po gameStart? nie powinno być true?
+        this->isGameActive = false;
     }
 
     Game(int roundsAmount, int roundDuration, int difficulty) {
@@ -148,6 +155,7 @@ struct Lobby {
     std::string password;
     int playersCount;
     std::vector<Player> players;
+    Player owner;
     std::map<int, time_t> joinTimes;
 
     int difficulty;
@@ -182,17 +190,20 @@ struct Lobby {
         std::cout << "Gra rozpoczęta w lobby: " << name << "\n";
     }
 
-    // TODO czy to nie będzie po prostu players[0]?
+    // TODO przetestować (musi być obsługa usuwania danych graczy)
     void setOwner() {
-        if (!players.empty()) {
-            auto owner = std::min_element(players.begin(), players.end(),
-                [this](const Player& a, const Player& b) {
-                    return joinTimes[a.sockfd] < joinTimes[b.sockfd];
-                });
-            for (auto& player : players) {
-                player.isOwner = (&player == &(*owner));
-            }
-        }
+        // if (!players.empty()) { // jeżeli lobby nie ma graczy to jest usuwane
+        //     auto owner = std::min_element(players.begin(), players.end(),
+        //         [this](const Player& a, const Player& b) {
+        //             return joinTimes[a.sockfd] < joinTimes[b.sockfd];
+        //         });
+        //     for (auto& player : players) {
+        //         player.isOwner = (&player == &(*owner));
+        //     }
+        //
+        // }
+        owner = players[0];
+        players[0].isOwner = true;
     }
 };
 
@@ -205,57 +216,57 @@ int lobbyCount = 0;
 std::vector<std::string> lobbyNames;
 
 // funkcja do mapowania ustawien w formie difficulty=3,roundDuration=120 itd.
-std::map<std::string, int> parseSettings(const std::string& settings) {
-    std::map<std::string, int> parsedSettings;
-    std::istringstream ss(settings);
-    std::string pair;
-
-    // TODO albo przerzucić na GUI albo skonstruować wiadomość zwrotną z detalami błędu bo klient potrzebuje feedback
-    // Funkcja walidacji dla kluczy, które wymagają sprawdzenia
-    auto validateSetting = [](const std::string& key, const std::string& value) -> bool {
-        if (key == "roundsAmount" || key == "roundDuration") {
-            // Sprawdzenie, czy wartość to liczba całkowita i większa od zera
-            try {
-                int num = std::stoi(value);
-                return num > 0;
-            } catch (...) {
-                return false;
-            }
-        }
-        // Inne klucze, np. difficulty, nie wymagają walidacji
-        // poprawka: wymagają, difficulty powinno być hardcoded (patrz: Levels)
-        return true;
-    };
-
-    while (std::getline(ss, pair, ',')) {
-        size_t pos = pair.find('=');
-        if (pos != std::string::npos) {
-            std::string key = pair.substr(0, pos);
-            std::string value = pair.substr(pos + 1);
-
-            // Jeśli wartość jest poprawna lub klucz nie wymaga walidacji
-            if (validateSetting(key, value)) {
-                if (key == "difficulty" || key == "roundsAmount" || key == "roundDuration") {
-                    parsedSettings[key] = std::stoi(value);  // Konwersja do liczby całkowitej
-                } else {
-                    std::cout << "Wrong setting" << std::endl;
-                }
-            } else {
-                std::cout << "Invalid setting: " << key << "=" << value << ". Using default values.\n";
-                // Ustawienia domyślne
-                if (key == "roundsAmount") {
-                    parsedSettings[key] = 5;  // Domyślna liczba rund
-                } else if (key == "roundDuration") {
-                    parsedSettings[key] = 60; // Domyślny czas rundy (60 sekund)
-                } else if (key == "difficulty") {
-                    parsedSettings[key] = 1;
-                }
-            }
-        }
-    }
-
-    return parsedSettings;
-}
+// std::map<std::string, int> parseSettings(const std::string& settings) {
+//     std::map<std::string, int> parsedSettings;
+//     std::istringstream ss(settings);
+//     std::string pair;
+//
+//     // TODO albo przerzucić na GUI albo skonstruować wiadomość zwrotną z detalami błędu bo klient potrzebuje feedback
+//     // Funkcja walidacji dla kluczy, które wymagają sprawdzenia
+//     auto validateSetting = [](const std::string& key, const std::string& value) -> bool {
+//         if (key == "roundsAmount" || key == "roundDuration") {
+//             // Sprawdzenie, czy wartość to liczba całkowita i większa od zera
+//             try {
+//                 int num = std::stoi(value);
+//                 return num > 0;
+//             } catch (...) {
+//                 return false;
+//             }
+//         }
+//         // Inne klucze, np. difficulty, nie wymagają walidacji
+//         // poprawka: wymagają, difficulty powinno być hardcoded (patrz: Levels)
+//         return true;
+//     };
+//
+//     while (std::getline(ss, pair, ',')) {
+//         size_t pos = pair.find('=');
+//         if (pos != std::string::npos) {
+//             std::string key = pair.substr(0, pos);
+//             std::string value = pair.substr(pos + 1);
+//
+//             // Jeśli wartość jest poprawna lub klucz nie wymaga walidacji
+//             if (validateSetting(key, value)) {
+//                 if (key == "difficulty" || key == "roundsAmount" || key == "roundDuration") {
+//                     parsedSettings[key] = std::stoi(value);  // Konwersja do liczby całkowitej
+//                 } else {
+//                     std::cout << "Wrong setting" << std::endl;
+//                 }
+//             } else {
+//                 std::cout << "Invalid setting: " << key << "=" << value << ". Using default values.\n";
+//                 // Ustawienia domyślne
+//                 if (key == "roundsAmount") {
+//                     parsedSettings[key] = 5;  // Domyślna liczba rund
+//                 } else if (key == "roundDuration") {
+//                     parsedSettings[key] = 60; // Domyślny czas rundy (60 sekund)
+//                 } else if (key == "difficulty") {
+//                     parsedSettings[key] = 1;
+//                 }
+//             }
+//         }
+//     }
+//
+//     return parsedSettings;
+// }
 
 void sendToClient(int clientFd, const std::string& commandNumber, const std::string& body) {
     if (commandNumber.size() != 2) {
@@ -275,7 +286,7 @@ std::string messageSubstring(std::string msg) {
     return msg.substr(3);
 }
 
-void sendLobbiesToClients(std::vector<std::string> lobbyNames, int clientFd) {
+void sendLobbiesToClients(std::vector<std::string> lobbyNames, int clientFd = -1) {
     std::string messageBody;
     // przygotowanie wiadomości
     for (size_t i = 0; i < lobbyNames.size(); ++i) {
@@ -373,6 +384,38 @@ void startTheGame(Lobby* lobby) {
     }
 }*/
 
+Settings parseSettings(std::string msg) {
+    Settings settings;
+
+    size_t posName = msg.find("name:");
+    size_t posPass = msg.find("password:");
+    size_t posDiff = msg.find("difficulty:");
+    size_t posRounds = msg.find("rounds:");
+    size_t posTime = msg.find("time:");
+
+    size_t nameStart = posName + strlen("name:"); // po "name:"
+    size_t nameEnd = msg.find(",", nameStart); // do przecinka
+    settings.name = msg.substr(nameStart, nameEnd - nameStart);
+
+    size_t passStart = posPass + strlen("password:");
+    size_t passEnd = msg.find(",", passStart);
+    settings.password = msg.substr(passStart, passEnd - passStart);
+
+    size_t diffStart = posDiff + strlen("difficulty:");
+    size_t diffEnd = msg.find(",", diffStart);
+    settings.difficulty = std::stoi(msg.substr(diffStart, diffEnd - diffStart));
+
+    size_t roundsStart = posRounds + strlen("name:");
+    size_t roundsEnd = msg.find(",", roundsStart);
+    settings.roundsAmount = std::stoi(msg.substr(roundsStart, roundsEnd - roundsStart));
+
+    size_t timeStart = posTime + strlen("name:");
+    size_t timeEnd = msg.find(",", timeStart);
+    settings.roundDurationSec = std::stoi(msg.substr(timeStart, timeEnd - timeStart));
+
+    return settings;
+}
+
 // obsługa klienta na podstawie jego wiadomości
 void handleClientMessage(int clientFd, std::string msg) {
     if (msg.substr(0, 2) == "01") {// Ustawienie nicku
@@ -400,28 +443,30 @@ void handleClientMessage(int clientFd, std::string msg) {
             return;
         }
     } else if (msg.substr(0, 2) == "02") {  // Tworzenie pokoju
-        std::string lobbyName = messageSubstring(msg);
+        std::string settings = messageSubstring(msg);
+        Settings parsedSettings = parseSettings(settings);
 
-        // Check if a lobby with the same name already exists
+        std::string lobbyName = parsedSettings.name;
+
+        // sprawdzenie czy nazwa nie jest zajęta
         auto lobbyIt = std::find_if(gameLobbies.begin(), gameLobbies.end(), [&lobbyName](const Lobby& lobby) {
             return lobby.name == lobbyName;
         });
 
         if (lobbyIt != gameLobbies.end()) {
-            // Lobby name already taken
             // TODO w przypadku błędu trzeba dokładnie podać gdzie on wystąpił (np. 02\11011, gdzie 0 oznacza błąd w trzeciej opcji)
             sendToClient(clientFd, "02", "0");  // Send failure response
             std::cout << "Failed to create lobby. Name already taken: " << lobbyName << "\n";
             return;
         }
 
-        // stare, zweryfikuj czy aktualne
-        // TODO wylosuj hasła do gry, przypisz wszystkie ustawienia (łącznie z wartościami dla każdego gracza), połącz ustawienia z 04 z kodem z 02
         // nowe lobby
         Lobby newLobby;
         newLobby.name = lobbyName;
-        newLobby.password = "";  // todo: password handling
-        newLobby.playersCount = 0;
+        newLobby.password = parsedSettings.password;  // todo: password handling
+        newLobby.difficulty = parsedSettings.difficulty;
+        newLobby.roundsAmount = parsedSettings.roundsAmount;
+        newLobby.roundDuration = parsedSettings.roundDurationSec;
 
         // lokalizowanie gracza tworzacego lobby
         auto playerIt = std::find_if(players.begin(), players.end(), [clientFd](const Player& player) {
@@ -447,7 +492,8 @@ void handleClientMessage(int clientFd, std::string msg) {
         std::cout << "Lobby created successfully: " << lobbyName << "\n";
 
         std::cout << "Current lobby count: " << lobbyCount << "\n";
-    } else if (msg.substr(0, 2) == "03") {  // Dołączanie do pokoju
+    }
+    else if (msg.substr(0, 2) == "03") {  // Dołączanie do pokoju
         std::string roomName = messageSubstring(msg);
 
         // Znajdź pokój
@@ -485,7 +531,8 @@ void handleClientMessage(int clientFd, std::string msg) {
         } else {
             sendToClient(clientFd, "03", "0");  // Nie znaleziono gracza
         }
-    } else if (msg.substr(0, 2) == "04") {  // Ustawienia pokoju
+    }
+    else if (msg.substr(0, 2) == "04") {  // Ustawienia pokoju
         std::string settings = messageSubstring(msg);
 
         // parsowanie ustawien
@@ -503,27 +550,27 @@ void handleClientMessage(int clientFd, std::string msg) {
                 return player.isOwner;  // szukamy obecnego wlasciciela lobby
             });
 
-            if (ownerIt != lobbyIt->players.end() && ownerIt->sockfd == clientFd) {
-                // przypisanie ustawien
-                if (parsedSettings.find("difficulty") != parsedSettings.end()) {
-                    lobbyIt->difficulty = parsedSettings["difficulty"];
-                }
-                if (parsedSettings.find("roundsAmount") != parsedSettings.end()) {
-                    lobbyIt->roundsAmount = parsedSettings["roundsAmount"];
-                }
-                if (parsedSettings.find("roundDuration") != parsedSettings.end()) {
-                    lobbyIt->roundDuration = parsedSettings["roundDuration"];
-                }
-
-                // wypisanie ustawien
-                std::cout << "Updated settings for lobby " << lobbyIt->name << ":\n";
-                std::cout << "  Difficulty: " << lobbyIt->difficulty << "\n";
-                std::cout << "  Rounds: " << lobbyIt->roundsAmount << "\n";
-                std::cout << "  Duration: " << lobbyIt->roundDuration << "\n";
-                sendToClient(clientFd, "04", "1\nsettingsAssignmentSuccessful\n");  // Success
-            } else {
-                sendToClient(clientFd, "04", "0\nnotLobbyLeader\n");  // Gracz nie jest liderem
-            }
+            // if (ownerIt != lobbyIt->players.end() && ownerIt->sockfd == clientFd) {
+            //     // przypisanie ustawien
+            //     if (parsedSettings.find("difficulty") != parsedSettings.end()) {
+            //         lobbyIt->difficulty = parsedSettings["difficulty"];
+            //     }
+            //     if (parsedSettings.find("roundsAmount") != parsedSettings.end()) {
+            //         lobbyIt->roundsAmount = parsedSettings["roundsAmount"];
+            //     }
+            //     if (parsedSettings.find("roundDuration") != parsedSettings.end()) {
+            //         lobbyIt->roundDuration = parsedSettings["roundDuration"];
+            //     }
+            //
+            //     // wypisanie ustawien
+            //     std::cout << "Updated settings for lobby " << lobbyIt->name << ":\n";
+            //     std::cout << "  Difficulty: " << lobbyIt->difficulty << "\n";
+            //     std::cout << "  Rounds: " << lobbyIt->roundsAmount << "\n";
+            //     std::cout << "  Duration: " << lobbyIt->roundDuration << "\n";
+            //     sendToClient(clientFd, "04", "1\nsettingsAssignmentSuccessful\n");  // Success
+            // } else {
+            //     sendToClient(clientFd, "04", "0\nnotLobbyLeader\n");  // Gracz nie jest liderem
+            // }
         } else {
             sendToClient(clientFd, "04", "0\nsettingsAssignmentFailed\n");  // Failed
         }
