@@ -181,6 +181,7 @@ struct Lobby {
         std::cout << "Gra rozpoczęta w lobby: " << name << "\n";
     }
 
+    // TODO czy to nie będzie po prostu players[0]?
     void setOwner() {
         if (!players.empty()) {
             auto owner = std::min_element(players.begin(), players.end(),
@@ -207,6 +208,7 @@ std::map<std::string, int> parseSettings(const std::string& settings) {
     std::istringstream ss(settings);
     std::string pair;
 
+    // TODO albo przerzucić na GUI albo skonstruować wiadomość zwrotną z detalami błędu bo klient potrzebuje feedback
     // Funkcja walidacji dla kluczy, które wymagają sprawdzenia
     auto validateSetting = [](const std::string& key, const std::string& value) -> bool {
         if (key == "roundsAmount" || key == "roundDuration") {
@@ -219,6 +221,7 @@ std::map<std::string, int> parseSettings(const std::string& settings) {
             }
         }
         // Inne klucze, np. difficulty, nie wymagają walidacji
+        // poprawka: wymagają, difficulty powinno być hardcoded (patrz: Levels)
         return true;
     };
 
@@ -258,7 +261,7 @@ void sendToClient(int clientFd, const std::string& commandNumber, const std::str
         return;
     }
 
-    std::string fullMessage = commandNumber + "\\" + body;
+    std::string fullMessage = commandNumber + "\\" + body + "\n";
     ssize_t bytesSent = send(clientFd, fullMessage.c_str(), fullMessage.size(), 0);
 
     if (bytesSent == -1) {
@@ -367,7 +370,8 @@ void startTheGame(Lobby* lobby) {
 
 // obsługa klienta na podstawie jego wiadomości
 void handleClientMessage(int clientFd, std::string msg) {
-    if (msg.substr(0, 2) == "01") {         // Ustawienie nicku
+    if (msg.substr(0, 2) == "01") {// Ustawienie nicku
+        std::cout << "ustawianie nicku w toku...";
         std::string nick = messageSubstring(msg);
 
         if (std::find(playersNicknames.begin(), playersNicknames.end(), nick) != playersNicknames.end()) {
@@ -811,17 +815,9 @@ int main(int argc, char *argv[]) {
                 Player newPlayer;
                 newPlayer.sockfd = newFd;
                 players.push_back(newPlayer);
-
-                const char* msg = "prosze podac nick <01xxxxx>\n";
-                ssize_t sent = send(newFd, msg, strlen(msg), 0);
-                if (sent < (int)strlen(msg)) {
-                    perror("send (prośba o nick)");
-                    return 1;
-                }
-
             }
             else {
-                // std::cout << "clientfd" << std::endl;
+                //std::cout << "clientfd" << std::endl;
                 while (true) {
                     char buffer[1024] = {0};
                     int bytesReceived = recv(events[n].data.fd, buffer, sizeof(buffer) - 1, 0);
@@ -896,7 +892,7 @@ int startListening() {
 
     struct addrinfo* addrIterator;
     // resolved now points to a linked list of 1 or more struct addrinfos
-    for (addrIterator = resolved; addrIterator != NULL; addrIterator = addrIterator->ai_next) {
+    for (addrIterator = resolved; addrIterator != nullptr; addrIterator = addrIterator->ai_next) {
         // make a socket:
         sockfd = socket(addrIterator->ai_family, addrIterator->ai_socktype, addrIterator->ai_protocol);
         if (sockfd == -1) {
@@ -918,7 +914,7 @@ int startListening() {
         break;
     }
 
-    if (addrIterator == NULL) {
+    if (addrIterator == nullptr) {
         fprintf(stderr, "failed to bind\n");
         return 2;
     }
