@@ -30,4 +30,3 @@ if __name__ == "__main__":
 
     # event loop
     sys.exit(app.exec())
-
