@@ -207,66 +207,12 @@ struct Lobby {
     }
 };
 
-
 std::vector<Player> players;
 std::vector<std::string> playersNicknames;
 
 std::list<Lobby> gameLobbies;
 int lobbyCount = 0;
 std::vector<std::string> lobbyNames;
-
-// funkcja do mapowania ustawien w formie difficulty=3,roundDuration=120 itd.
-// std::map<std::string, int> parseSettings(const std::string& settings) {
-//     std::map<std::string, int> parsedSettings;
-//     std::istringstream ss(settings);
-//     std::string pair;
-//
-//     // TODO albo przerzucić na GUI albo skonstruować wiadomość zwrotną z detalami błędu bo klient potrzebuje feedback
-//     // Funkcja walidacji dla kluczy, które wymagają sprawdzenia
-//     auto validateSetting = [](const std::string& key, const std::string& value) -> bool {
-//         if (key == "roundsAmount" || key == "roundDuration") {
-//             // Sprawdzenie, czy wartość to liczba całkowita i większa od zera
-//             try {
-//                 int num = std::stoi(value);
-//                 return num > 0;
-//             } catch (...) {
-//                 return false;
-//             }
-//         }
-//         // Inne klucze, np. difficulty, nie wymagają walidacji
-//         // poprawka: wymagają, difficulty powinno być hardcoded (patrz: Levels)
-//         return true;
-//     };
-//
-//     while (std::getline(ss, pair, ',')) {
-//         size_t pos = pair.find('=');
-//         if (pos != std::string::npos) {
-//             std::string key = pair.substr(0, pos);
-//             std::string value = pair.substr(pos + 1);
-//
-//             // Jeśli wartość jest poprawna lub klucz nie wymaga walidacji
-//             if (validateSetting(key, value)) {
-//                 if (key == "difficulty" || key == "roundsAmount" || key == "roundDuration") {
-//                     parsedSettings[key] = std::stoi(value);  // Konwersja do liczby całkowitej
-//                 } else {
-//                     std::cout << "Wrong setting" << std::endl;
-//                 }
-//             } else {
-//                 std::cout << "Invalid setting: " << key << "=" << value << ". Using default values.\n";
-//                 // Ustawienia domyślne
-//                 if (key == "roundsAmount") {
-//                     parsedSettings[key] = 5;  // Domyślna liczba rund
-//                 } else if (key == "roundDuration") {
-//                     parsedSettings[key] = 60; // Domyślny czas rundy (60 sekund)
-//                 } else if (key == "difficulty") {
-//                     parsedSettings[key] = 1;
-//                 }
-//             }
-//         }
-//     }
-//
-//     return parsedSettings;
-// }
 
 void sendToClient(int clientFd, const std::string& commandNumber, const std::string& body) {
     if (commandNumber.size() != 2) {
@@ -405,11 +351,11 @@ Settings parseSettings(std::string msg) {
     size_t diffEnd = msg.find(",", diffStart);
     settings.difficulty = std::stoi(msg.substr(diffStart, diffEnd - diffStart));
 
-    size_t roundsStart = posRounds + strlen("name:");
+    size_t roundsStart = posRounds + strlen("rounds:");
     size_t roundsEnd = msg.find(",", roundsStart);
     settings.roundsAmount = std::stoi(msg.substr(roundsStart, roundsEnd - roundsStart));
 
-    size_t timeStart = posTime + strlen("name:");
+    size_t timeStart = posTime + strlen("time:");
     size_t timeEnd = msg.find(",", timeStart);
     settings.roundDurationSec = std::stoi(msg.substr(timeStart, timeEnd - timeStart));
 

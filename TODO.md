@@ -40,11 +40,8 @@ HANIA (DO POPRAWY, wyjdzie w trakcie fixów w kodzie):
 #### Klient -> Serwer:
 
 - [x] 01\\[nick] - przypisanie nicku
-- [x] 02\\[nazwa] - utworzenie nowego pokoju o podanej nazwie
+- [x] 02\\[nazwa,hasło,poziom,rundy,czas] - utworzenie nowego pokoju o podanej nazwie i ustawieniach
 - [x] 03\\[nazwa,haslo] - dołączenie do pokoju o podanej nazwie
-- [ ] 04\\[tutaj,ustawienia] - ustawienia pokoju
-    - [x] 04.1\\ wpisanie ustawien
-    - [ ] 04.2\\ obsluga zlych danych wejsciowych
 - [x] 10\\[] - prośba o przesłanie listy pokoi
 - [x] 11\\[] - prośba o przesłanie listy nicków graczy obecnych w danym pokoju
 - [x] 12\\[] - prośba o rozpoczęcie gry w pokoju gracza
