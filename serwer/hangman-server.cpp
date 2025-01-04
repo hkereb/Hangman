@@ -77,14 +77,14 @@ struct Game {
     int currentRound;
     int roundsAmount;
     int difficulty;
-    bool isGameOver;
+    bool isGameActive;
 
     Game() {
         this->roundsAmount = 5;
         this->roundDuration = 60;
         this->currentRound = 0;
         this->difficulty = Levels::EASY;
-        this->isGameOver = false;
+        this->isGameActive = false; // TODO false ale gra zaczyna się dopiero po gameStart? nie powinno być true?
     }
 
     Game(int roundsAmount, int roundDuration, int difficulty) {
@@ -92,7 +92,7 @@ struct Game {
         this->roundDuration = roundDuration;
         this->currentRound = 0;
         this->difficulty = difficulty;
-        this->isGameOver = false;
+        this->isGameActive = false;
     }
 
     void initializeWordList() {
@@ -114,7 +114,7 @@ struct Game {
 
     void startGame() {
         // reset gry - potrzebny dla ponownego uruchomienia z tymi samymi ustawieniami
-        isGameOver = false;
+        isGameActive = true;
         currentRound = 0;
         guessedLetters.clear();
 
@@ -127,7 +127,7 @@ struct Game {
 
     void nextRound() {
         if (currentRound >= roundsAmount) {
-            isGameOver = true;  // zakonczenie gry
+            isGameActive = false;  // zakonczenie gry
             return;
         }
 
@@ -204,7 +204,7 @@ std::list<Lobby> gameLobbies;
 int lobbyCount = 0;
 std::vector<std::string> lobbyNames;
 
-// funkcja do mapowania ustawien w formie difficulty=3&roundDuration=120 itd.
+// funkcja do mapowania ustawien w formie difficulty=3,roundDuration=120 itd.
 std::map<std::string, int> parseSettings(const std::string& settings) {
     std::map<std::string, int> parsedSettings;
     std::istringstream ss(settings);
@@ -227,7 +227,7 @@ std::map<std::string, int> parseSettings(const std::string& settings) {
         return true;
     };
 
-    while (std::getline(ss, pair, '&')) {
+    while (std::getline(ss, pair, ',')) {
         size_t pos = pair.find('=');
         if (pos != std::string::npos) {
             std::string key = pair.substr(0, pos);
@@ -275,7 +275,6 @@ std::string messageSubstring(std::string msg) {
     return msg.substr(3);
 }
 
-// TODO fix
 void sendLobbiesToClients(std::vector<std::string> lobbyNames, int clientFd) {
     std::string messageBody;
     // przygotowanie wiadomości
@@ -299,8 +298,6 @@ void sendLobbiesToClients(std::vector<std::string> lobbyNames, int clientFd) {
     }
 }
 
-
-// TODO fix
 void sendPlayersToClients(const Lobby* lobby) {
     std::string msgBody;
 
@@ -318,18 +315,18 @@ void sendPlayersToClients(const Lobby* lobby) {
     }
 }
 
-/*
 void isStartAllowed(const Lobby* lobby) {
-    if (!lobby->is_active) {
-        if (lobby->count_players >= 2) {
-            sendToClient(lobby->players[0].sockfd, "07", "1");
+    if (!lobby->game.isGameActive) {
+        if (lobby->playersCount >= 2) {
+            sendToClient(lobby->players[0].sockfd, "72", "1");
         }
         else {
-            sendToClient(lobby->players[0].sockfd, "07", "0");
+            sendToClient(lobby->players[0].sockfd, "72", "0");
         }
     }
 }
 
+/*
 Lobby* findPlayerLobby(int client_fd, bool master = false) {
     for (auto& lobby : gameLobbies) {
         if (master) {
@@ -348,7 +345,9 @@ Lobby* findPlayerLobby(int client_fd, bool master = false) {
     }
     return nullptr;
 }
+*/
 
+/*
 std::string encodeWord(std::string word, std::set<char> guessed_letters) {
     std::string encoded_word;
 
@@ -361,7 +360,9 @@ std::string encodeWord(std::string word, std::set<char> guessed_letters) {
     }
     return encoded_word;
 }
+*/
 
+/*
 void startTheGame(Lobby* lobby) {
     lobby->current_word_full = lobby->word_que[lobby->word_iterator];
     lobby->is_active = true;
@@ -460,18 +461,6 @@ void handleClientMessage(int clientFd, std::string msg) {
             return;
         }
 
-        // To zapewnia gui, jeżeli gracz jest już w pokoju to nie ma jak wysłać komendy o dołączenie do pokoju
-        // // sprawdzenie czy gracz juz jest w pokoju
-        // auto playerIt = std::find_if(lobbyIt->players.begin(), lobbyIt->players.end(), [clientFd](const Player& player) {
-        //     return player.sockfd == clientFd;
-        // });
-        //
-        // // powiadomienie ze gracz jest juz w pokoju
-        // if (playerIt != lobbyIt->players.end()) {
-        //     sendToClient(clientFd, "03", "0");
-        //     return;
-        // }
-
         // powiadomienie ze pokoj jest pelny
         if (lobbyIt->playersCount >= MAXPLAYERS) {
             sendToClient(clientFd, "03", "0");
@@ -492,7 +481,7 @@ void handleClientMessage(int clientFd, std::string msg) {
             // TODO fix
             auto& lobby = *lobbyIt;
             sendPlayersToClients(&lobby);
-            //isStartAllowed(&lobby);
+            isStartAllowed(&lobby);
         } else {
             sendToClient(clientFd, "03", "0");  // Nie znaleziono gracza
         }
@@ -538,7 +527,9 @@ void handleClientMessage(int clientFd, std::string msg) {
         } else {
             sendToClient(clientFd, "04", "0\nsettingsAssignmentFailed\n");  // Failed
         }
-    } else if (msg.substr(0, 2) == "05") {  // Start gry
+    }
+    // TODO wiele rzeczy jest tu ogarnianych przez gui, zmodyfikować
+    else if (msg.substr(0, 2) == "05") {  // Start gry
         auto lobbyIt = std::find_if(gameLobbies.begin(), gameLobbies.end(), [clientFd](const Lobby& lobby) {
             return std::any_of(lobby.players.begin(), lobby.players.end(), [clientFd](const Player& player) {
                 return player.sockfd == clientFd;
@@ -673,7 +664,7 @@ void handleClientMessage(int clientFd, std::string msg) {
         if (lobbyIt != gameLobbies.end()) {
             std::string gameState = "Game state in room: " + roomName + "\n";
             gameState += "Current round: " + std::to_string(lobbyIt->game.currentRound) + "/" + std::to_string(lobbyIt->roundsAmount) + "\n";
-            gameState += "Game over: " + std::string(lobbyIt->game.isGameOver ? "Yes" : "No") + "\n";
+            gameState += "Game over: " + std::string(lobbyIt->game.isGameActive ? "Yes" : "No") + "\n";
             gameState += "Difficulty: " + std::to_string(lobbyIt->difficulty) + "\n";
 
             for (auto& player : lobbyIt->players) {

@@ -14,18 +14,23 @@
 - [x] 07\\[pokój] - restart gry
 - [x] 08\\[pokój] - podanie aktualnego stanu gry
 - [x] 09\\[pokój] - opuszczenie pokoju przez gracza
+
 - [x] 70\\[] - prośba o przesłanie listy pokoi
 - [x] 71\\[] - prośba o przesłanie listy nicków graczy obecnych w danym pokoju
+
 - 10 info o lobby??????
 
 
 #### Serwer -> Klient:
 - [x] 01\\[bool] - potwierdzenie ustawienia nicku (pętla while z podawaniem nicku do skutku powinna być po stronie klienta, więc potrzebna jest flaga), bool zapisany jako 0 lub 1
 - [x] 02\\[bool] - potwierdzenie stworzenia pokoj
-- 
+
+- [x] 70\\[nazwa1,..,nazwa99] - przesłanie listy nazw pokoi
+- [x] 71\\[bool,nazwa1,..,nazwa99] - przesłanie listy nazw graczy w danym pokoju
+- [x] 72\\[bool] - pozwolenie na rozpoczęcie gry (0 jeżeli gracze opuszczą waitroom jeszcze zanim zacznie się gra i jest <2)
+
 - [ ] 99\\[stan] - podanie stanu gry
 - [ ] 99\\[bool] - wynik próby odgadnięcia litery
-- [x] 70\\[nazwa1,..,nazwa99] - przesłanie listy nazw pokoi
 
 
 
