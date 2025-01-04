@@ -15,6 +15,7 @@
 #include <iostream>
 #include <list>
 #include <string>
+#include <utility>
 #include <vector>
 #include <algorithm>
 #include <chrono>
@@ -201,6 +202,7 @@ std::vector<std::string> playersNicknames;
 
 std::list<Lobby> gameLobbies;
 int lobbyCount = 0;
+std::vector<std::string> lobbyNames;
 
 // funkcja do mapowania ustawien w formie difficulty=3&roundDuration=120 itd.
 std::map<std::string, int> parseSettings(const std::string& settings) {
@@ -274,7 +276,7 @@ std::string messageSubstring(std::string msg) {
 }
 
 // TODO fix
-/*void sendLobbiesToClients(std::vector<std::string> lobbyNames, int clientFd = -1) {
+void sendLobbiesToClients(std::vector<std::string> lobbyNames, int clientFd) {
     std::string messageBody;
     // przygotowanie wiadomości
     for (size_t i = 0; i < lobbyNames.size(); ++i) {
@@ -283,36 +285,38 @@ std::string messageSubstring(std::string msg) {
             messageBody += ",";
         }
     }
-    // wysłanie do jednego klienta
+    // wysłanie do jednego klienta (który dopiero włączył aplikację)
     if (clientFd != -1) {
-        sendToClient(clientFd, "05", messageBody);
+        sendToClient(clientFd, "70", messageBody);
     }
-    // wysłanie do wielu klientów
+    // wysłanie do wielu klientów (update dla klientów, którzy są już w aplikacji)
     else {
         for (const auto& player : players) {
             if (player.lobbyName.empty()) {
-                sendToClient(player.sockfd, "05", messageBody);
+                sendToClient(player.sockfd, "70", messageBody);
             }
         }
     }
-}*/
+}
 
-/*void sendPlayersToClients(const Lobby* lobby) {
-    std::string msg_body;
+
+// TODO fix
+void sendPlayersToClients(const Lobby* lobby) {
+    std::string msgBody;
 
     // przygotowanie wiadomości
     for (size_t i = 0; i < lobby->players.size(); ++i) {
-        msg_body += lobby->players[i].nick;
+        msgBody += lobby->players[i].nick;
         if (i != lobby->players.size() - 1) {
-            msg_body += ",";
+            msgBody += ",";
         }
     }
 
     // wysłanie do wszystkich klientów z pokoju
     for (const auto& player : lobby->players) {
-        sendToClient(player.sockfd, "06", msg_body);
+        sendToClient(player.sockfd, "71", msgBody);
     }
-}*/
+}
 
 /*
 void isStartAllowed(const Lobby* lobby) {
@@ -371,7 +375,6 @@ void startTheGame(Lobby* lobby) {
 // obsługa klienta na podstawie jego wiadomości
 void handleClientMessage(int clientFd, std::string msg) {
     if (msg.substr(0, 2) == "01") {// Ustawienie nicku
-        std::cout << "ustawianie nicku w toku...";
         std::string nick = messageSubstring(msg);
 
         if (std::find(playersNicknames.begin(), playersNicknames.end(), nick) != playersNicknames.end()) {
@@ -411,8 +414,9 @@ void handleClientMessage(int clientFd, std::string msg) {
             return;
         }
 
+        // stare, zweryfikuj czy aktualne
         // TODO wylosuj hasła do gry, przypisz wszystkie ustawienia (łącznie z wartościami dla każdego gracza), połącz ustawienia z 04 z kodem z 02
-        // Create a new lobby
+        // nowe lobby
         Lobby newLobby;
         newLobby.name = lobbyName;
         newLobby.password = "";  // todo: password handling
@@ -430,13 +434,13 @@ void handleClientMessage(int clientFd, std::string msg) {
             newLobby.setOwner();
         }
 
-        // Add the lobby to the list of lobbies
+        // dodanie lobby do listy
         gameLobbies.push_back(newLobby);
         lobbyCount++;
+        lobbyNames.push_back(lobbyName);
 
-        // TODO fix
-        //sendLobbiesToClients(lobby_names);
-        //sendPlayersToClients(&new_lobby);
+        sendLobbiesToClients(lobbyNames);
+        sendPlayersToClients(&newLobby);
 
         sendToClient(clientFd, "02", "1");  // stworzono lobby
         std::cout << "Lobby created successfully: " << lobbyName << "\n";
@@ -456,16 +460,17 @@ void handleClientMessage(int clientFd, std::string msg) {
             return;
         }
 
-        // sprawdzenie czy gracz juz jest w pokoju
-        auto playerIt = std::find_if(lobbyIt->players.begin(), lobbyIt->players.end(), [clientFd](const Player& player) {
-            return player.sockfd == clientFd;
-        });
-
-        // powiadomienie ze gracz jest juz w pokoju
-        if (playerIt != lobbyIt->players.end()) {
-            sendToClient(clientFd, "03", "0");
-            return;
-        }
+        // To zapewnia gui, jeżeli gracz jest już w pokoju to nie ma jak wysłać komendy o dołączenie do pokoju
+        // // sprawdzenie czy gracz juz jest w pokoju
+        // auto playerIt = std::find_if(lobbyIt->players.begin(), lobbyIt->players.end(), [clientFd](const Player& player) {
+        //     return player.sockfd == clientFd;
+        // });
+        //
+        // // powiadomienie ze gracz jest juz w pokoju
+        // if (playerIt != lobbyIt->players.end()) {
+        //     sendToClient(clientFd, "03", "0");
+        //     return;
+        // }
 
         // powiadomienie ze pokoj jest pelny
         if (lobbyIt->playersCount >= MAXPLAYERS) {
@@ -474,7 +479,7 @@ void handleClientMessage(int clientFd, std::string msg) {
         }
 
         // wyszukanie gracza ktory ma dolaczyc do pokoju
-        playerIt = std::find_if(players.begin(), players.end(), [clientFd](const Player& player) {
+        auto playerIt = std::find_if(players.begin(), players.end(), [clientFd](const Player& player) {
             return player.sockfd == clientFd;
         });
         
@@ -485,11 +490,11 @@ void handleClientMessage(int clientFd, std::string msg) {
             lobbyIt->playersCount++;
             sendToClient(clientFd, "03", "1");  // Sukces
             // TODO fix
-            //auto& lobby = *it;
-            //sendPlayersToClients(&lobby);
+            auto& lobby = *lobbyIt;
+            sendPlayersToClients(&lobby);
             //isStartAllowed(&lobby);
         } else {
-            sendToClient(clientFd, "03", "0\nplayerNotFound\n");  // Nie znaleziono gracza
+            sendToClient(clientFd, "03", "0");  // Nie znaleziono gracza
         }
     } else if (msg.substr(0, 2) == "04") {  // Ustawienia pokoju
         std::string settings = messageSubstring(msg);
@@ -717,7 +722,9 @@ void handleClientMessage(int clientFd, std::string msg) {
         } else {
             sendToClient(clientFd, "09", "0\nplayerLeftRoomFailed\n");
         }
-    } else if (msg.substr(0, 2) == "10") {  // Informacje o lobby
+    }
+    // TODO zmienić numer komendy
+    else if (msg.substr(0, 2) == "10") {  // Informacje o lobby
         auto lobbyIt = std::find_if(gameLobbies.begin(), gameLobbies.end(), [clientFd](const Lobby& lobby) {
             return std::any_of(lobby.players.begin(), lobby.players.end(), [clientFd](const Player& player) {
                 return player.sockfd == clientFd;
@@ -742,10 +749,10 @@ void handleClientMessage(int clientFd, std::string msg) {
             sendToClient(clientFd, "10", "0\ngettingResponseFailed\n");
         }
     }
-    /*
-    else if (msg.substr(0, 2) == "10") {
-        sendLobbiesToClients(lobby_names, client_fd);
+    else if (msg.substr(0, 2) == "70") { // prośba o listę pokoi (dla jednego gracza)
+        sendLobbiesToClients(lobbyNames, clientFd);
     }
+    /*
     else if (msg.substr(0, 2) == "12") {
         Lobby* lobby = findPlayerLobby(client_fd, true);
         startTheGame(lobby);
