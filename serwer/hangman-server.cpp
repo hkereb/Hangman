@@ -28,6 +28,12 @@
 #define BACKLOG 200 // how many pending connections queue will hold
 #define MAXPLAYERS 5
 
+namespace Levels {
+    static const int EASY = 1;
+    static const int MEDIUM = 2;
+    static const int HARD = 3;
+}
+
 std::map<std::string, int> parseSettings(const std::string& settings);
 void sendToClient(int clientFd, const std::string& commandNumber, const std::string& body);
 void handleClientMessage(int clientFd, std::string msg);
@@ -43,22 +49,21 @@ struct Player {
 
     bool isOwner = false;
 
-    int points = 0;
-    int lives = 5;
-    int maxLives = 5;
-    std::vector<char> guessed_letters;
-    std::vector<char> failed_letters;
+    int points;
+    int lives;
+    int maxLives;
+    std::vector<char> guessedLetters;
+    std::vector<char> failedLetters;
 
     Player() {
         this->nick = "";
-        this->sockfd = -1;
+        this->sockfd = NULL;
         this->isOwner = false;
         this->points = 0;
         this->maxLives = 5;
         this->lives = this->maxLives;
         this->lobbyName = "";
-        this->guessed_letters.clear();
-        this->failed_letters.clear();
+        this->failedLetters = {};
     }
 };
 
@@ -77,7 +82,7 @@ struct Game {
         this->roundsAmount = 5;
         this->roundDuration = 60;
         this->currentRound = 0;
-        this->difficulty = 1;
+        this->difficulty = Levels::EASY;
         this->isGameOver = false;
     }
 
@@ -107,9 +112,10 @@ struct Game {
     }
 
     void startGame() {
-        isGameOver = false; // Reset flagi gry
-        currentRound = 0;   // Resetowanie aktualnej rundy
-        guessedLetters.clear(); // Resetowanie odgadniętych liter
+        // reset gry - potrzebny dla ponownego uruchomienia z tymi samymi ustawieniami
+        isGameOver = false;
+        currentRound = 0;
+        guessedLetters.clear();
 
         // inicjalizacja slow
         initializeWordList();
