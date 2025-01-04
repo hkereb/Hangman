@@ -737,7 +737,8 @@ void handleClientMessage(int clientFd, std::string msg) {
         sendLobbiesToClients(lobby_names, client_fd);
     }
     else if (msg.substr(0, 2) == "12") {
-
+        Lobby* lobby = findPlayerLobby(client_fd, true);
+        startTheGame(lobby);
     }
      */
 }
