@@ -1,20 +1,10 @@
 #include "handle-client-message.h"
-
 // Assuming external variables or definitions are declared elsewhere
 extern std::vector<Player> players;
-extern std::vector<Lobby> gameLobbies;
+extern std::list<Lobby> gameLobbies;
 extern std::vector<std::string> playersNicknames;
 extern std::vector<std::string> lobbyNames;
 extern int lobbyCount;
-extern const int MAXPLAYERS;
-
-// Definitions for the functions used within handleClientMessage
-extern std::string messageSubstring(const std::string&);
-extern Settings parseSettings(const std::string&);
-extern void sendToClient(int clientFd, const std::string& command, const std::string& message);
-extern void sendLobbiesToClients(const std::vector<std::string>& lobbyNames, int clientFd = -1);
-extern void sendPlayersToClients(Lobby* lobby);
-extern void isStartAllowed(Lobby* lobby);
 
 
 // obsługa klienta na podstawie jego wiadomości

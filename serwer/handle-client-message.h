@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <iostream>
 #include <ctime>
+#include <list>
 
 #include "network-utils.h"
 #include "comunication-functions.h"

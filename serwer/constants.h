@@ -1,0 +1,7 @@
+#ifndef CONSTANTS_H
+#define CONSTANTS_H
+
+#define MAXPLAYERS 5
+#define MAXEPOLLSIZE 1000
+
+#endif // CONSTANTS_H

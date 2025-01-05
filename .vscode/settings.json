@@ -72,5 +72,6 @@
         "stop_token": "cpp",
         "thread": "cpp",
         "variant": "cpp"
-    }
+    },
+    "cmake.sourceDirectory": "Z:/Dev-learning/Studia/SK2-cpp/hangman-sk2-2024/serwer"
 }

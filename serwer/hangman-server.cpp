@@ -1,4 +1,3 @@
-
 #include "handle-client-message.h"
 #include "network-utils.h"
 #include "comunication-functions.h"
@@ -15,9 +14,6 @@
 #include <iostream>
 #include <list>
 
-#define MAXEPOLLSIZE 1000
-#define MAXPLAYERS 5
-
 std::vector<Player> players;
 std::vector<std::string> playersNicknames;
 
@@ -25,7 +21,6 @@ std::list<Lobby> gameLobbies;
 int lobbyCount = 0;
 std::vector<std::string> lobbyNames;
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char *argv[]) {
     if (argc != 1) {
         fprintf(stderr, "no extra arguments required\n");
