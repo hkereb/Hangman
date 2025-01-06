@@ -1,7 +1,7 @@
 import sys
 from ui_skeleton import Ui_MainWindow
 from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox
-from PySide6.QtCore import QObject, Signal, QThread, QRegularExpression
+from PySide6.QtCore import QObject, Signal, QThread, QRegularExpression, QTime
 from PySide6.QtGui import QRegularExpressionValidator
 
 def substr_msg(msg):
@@ -14,6 +14,8 @@ class MainApp(QMainWindow):
     sig_players_list = Signal(str) # sygnał informujący serwer że ma wysłać aktualną listę graczy w pokoju
     sig_join_room = Signal(str, str) # sygnał informujący serwer że użytkownik uzupełnił dane pokoju
     sig_start = Signal(str)
+    sig_connect = Signal(str)
+    sig_has_connected = Signal()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -28,15 +30,24 @@ class MainApp(QMainWindow):
         # walidator adresu IP
         ip_regex = QRegularExpression(r'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$')
         validator = QRegularExpressionValidator(ip_regex)
-        self.ui.create_IP_field.setValidator(validator)
+        self.ui.ip_field.setValidator(validator)
 
         self.ui.level_combobox.addItems(["easy", "medium", "hard"])
 
         self.ui.start_btn.setVisible(False)
 
+        self.ui.ip_field.setText("192.168.100.8")
+
+        self.ui.time_edit.setDisplayFormat("mm:ss")
+        self.ui.time_edit.setTime(QTime(0,0,30))
+        self.ui.time_edit.setMinimumTime(QTime(0,0,5))
+        self.ui.time_edit.setMaximumTime(QTime(0,5,0))
+
+        self.ui.rounds_number_spin.setMinimum(1)
+
         # connect
-        self.ui.nick_submit_btn.clicked.connect(self.submit_nick)
-        self.ui.create_IP_field.textChanged.connect(self.on_ip_changed)
+        self.ui.connect_btn.clicked.connect(self.submit_ip)
+        self.ui.ip_field.textChanged.connect(self.on_ip_changed)
         self.ui.stackedWidget.currentChanged.connect(self.is_at_create_or_join_page)
         self.ui.stackedWidget.currentChanged.connect(self.is_at_waitroom_page)
         self.ui.rooms_list.itemSelectionChanged.connect(self.on_list_item_selected)
@@ -54,8 +65,12 @@ class MainApp(QMainWindow):
         self.sig_submit_nick.emit(nick)
         print(f"Nick submitted: {nick}")
 
+    def submit_ip(self):
+        ip = self.ui.ip_field.text()
+
+        self.sig_connect.emit(ip)
+
     def submit_create_room(self):
-        # todo msg box dla każdego pola oprócz hasła
         if not self.ui.create_name_field.text().strip():
             QMessageBox.warning(self, "Error", "Name field is obligatory!")
             return
@@ -89,8 +104,7 @@ class MainApp(QMainWindow):
                 self.ui.stackedWidget.setCurrentWidget(self.ui.create_or_join_page)
             elif result == "0":  # nick odrzucony
                 QMessageBox.warning(self, "Info", "Nickname has already been taken!")
-                self.ui.check_label.setText("\U0000274C")
-                self.ui.check_label.setStyleSheet("color: red;")
+                self.ui.nick_field.setStyleSheet("color: red;")
         ###
         elif message.startswith("02"):
             result = substr_msg(message)
@@ -105,6 +119,9 @@ class MainApp(QMainWindow):
                 self.ui.stackedWidget.setCurrentWidget(self.ui.waitroom_page)
             elif result == "0":  # błąd
                 self.ui.join_room_name_field.setStyleSheet("color: red;")
+        ###
+        elif message.startswith("69"):
+            self.sig_has_connected.emit()
         ###
         elif message.startswith("70"):
             nicks_encoded = substr_msg(message)
@@ -150,12 +167,10 @@ class MainApp(QMainWindow):
             self.ui.stackedWidget.setCurrentWidget(self.ui.game_page)
 
     def on_ip_changed(self):
-        if self.ui.create_IP_field.hasAcceptableInput():
-            self.ui.check_ip_label.setText("\U00002714")
-            self.ui.check_ip_label.setStyleSheet("color: green;")
+        if self.ui.ip_field.hasAcceptableInput():
+            self.ui.ip_field.setStyleSheet("color: green;")
         else:
-            self.ui.check_ip_label.setText("\U0000274C")
-            self.ui.check_ip_label.setStyleSheet("color: red;")
+            self.ui.ip_field.setStyleSheet("color: black;")
 
     def is_at_create_or_join_page(self, index):
         if self.ui.stackedWidget.widget(index) == self.ui.create_or_join_page:
