@@ -1,6 +1,6 @@
 #include "handle-client-message.h"
-#include "network-utils.h"
-#include "comunication-functions.h"
+#include "network.h"
+#include "helpers.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -46,6 +46,8 @@ int main(int argc, char *argv[]) {
     struct epoll_event *events;
     events = (struct epoll_event *)malloc(sizeof(struct epoll_event) * fdsToWatch);
 
+    std::unordered_map<int, std::string> clientBuffers;
+
     while (1) {  // loop for accepting incoming connections
         int ready = epoll_wait(efd, events, fdsToWatch, -1);
         if (ready == -1) {
@@ -54,7 +56,6 @@ int main(int argc, char *argv[]) {
         }
 
         for (int n = 0; n < ready; ++n) {
-            // TODO: usuwanie danych klienta ze wszystkich struktur po zerwaniu połączenia
             if (events[n].data.fd == sockfd) {
                 // std::cout << "sockfd" << std::endl;
                 sockaddr_in clientAddr{};
@@ -81,6 +82,8 @@ int main(int argc, char *argv[]) {
                 Player newPlayer;
                 newPlayer.sockfd = newFd;
                 players.push_back(newPlayer);
+
+                sendToClient(newFd, "69", "hello!");
             }
             else {
                 //std::cout << "clientfd" << std::endl;
@@ -94,7 +97,12 @@ int main(int argc, char *argv[]) {
                         // client disconnected, remove player
                         perror("recv (wiadomość od klienta)");
 
-                        // search for player and remove it from lobby
+                        // todo musi pójść wiadomość do graczy z tego lobby z aktualizacją listy graczy w pokoju (funkcja już jest) (jeżeli isActive=False)
+                        // todo wiadomość do graczy w trwającej rozgrywce o tym że konkretny gracz [nickname] został usunięty z ich gry
+                        // todo trzeba zmniejszyć players_count w lobby o -1
+                        // todo trzeba ponownie sprawdzić czy gra może zostać rozpoczęta (jeżeli isActive = false) i wysłać wiadomość (funkcja już jest)
+                        // todo rozesłać na nowo listę pokoi do graczy którzy nie są w żadnym lobby (funkcja już jest)
+                        // search for player and remove them from lobby
                         for (auto& lobby : gameLobbies) {
                             auto playerIt = std::find_if(lobby.players.begin(), lobby.players.end(), [n, events, &lobby](const Player& player) {
                                 return player.sockfd == events[n].data.fd;
@@ -129,13 +137,19 @@ int main(int argc, char *argv[]) {
                         fdsToWatch--;
                         break;
                     }
-                    write(1, "klient: ", 8);
-                    write(1, buffer, bytesReceived); // do sprawdzania odebranej wiadomości
-                    write(1, "\n", 1);
+                    clientBuffers[events[n].data.fd] += std::string(buffer, bytesReceived);
 
-                    std::string clientMessage(buffer, bytesReceived);
+                    std::string& clientBuffer = clientBuffers[events[n].data.fd];
+                    size_t pos;
+                    while ((pos = clientBuffer.find('\n')) != std::string::npos) {
+                        std::string clientMessage = clientBuffer.substr(0, pos);
+                        clientBuffer.erase(0, pos + 1);
 
-                    handleClientMessage(events[n].data.fd, clientMessage);
+                        std::string outputMessage = "klient: " + clientMessage + "\n";
+                        write(1, outputMessage.c_str(), outputMessage.size());
+
+                        handleClientMessage(events[n].data.fd, clientMessage);
+                    }
                 }
             }
         }

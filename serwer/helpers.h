@@ -6,7 +6,7 @@
 #include <iostream>
 #include <sys/socket.h>
 #include <string.h>
-#include "network-utils.h"
+#include "network.h"
 #include "Settings.h"
 #include "Player.h"
 #include "Game.h"

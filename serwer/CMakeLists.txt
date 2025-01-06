@@ -6,8 +6,8 @@ set(CMAKE_CXX_STANDARD 17)
 # pliki zrodlowe
 set(SOURCES
     hangman-server.cpp
-    network-utils.cpp
-    comunication-functions.cpp
+        network.cpp
+        helpers.cpp
     handle-client-message.cpp
     Game.cpp
     Lobby.cpp
@@ -15,8 +15,8 @@ set(SOURCES
 
 # pliki naglowkowe
 set(HEADERS
-    network-utils.h
-    comunication-functions.h
+        network.h
+        helpers.h
     handle-client-message.h
     Game.h
     Lobby.h

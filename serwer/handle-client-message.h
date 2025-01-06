@@ -8,8 +8,8 @@
 #include <ctime>
 #include <list>
 
-#include "network-utils.h"
-#include "comunication-functions.h"
+#include "network.h"
+#include "helpers.h"
 #include "Settings.h"
 #include "Player.h"
 #include "Game.h"
