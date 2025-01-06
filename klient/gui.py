@@ -148,12 +148,12 @@ class MainApp(QMainWindow):
         elif message.startswith("72"):
             decision = substr_msg(message)
 
-            if decision:
+            if decision == "1":
                 self.ui.start_btn.setVisible(True)
+                print("Gra może zostać rozpoczęta.")
             else:
                 self.ui.start_btn.setVisible(False)
-
-            print("Gra może zostać rozpoczęta.")
+                print("Gra NIE może zostać rozpoczęta.")
         ###
         elif message.startswith("73"):
             word = substr_msg(message)
