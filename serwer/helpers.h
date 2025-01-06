@@ -15,9 +15,10 @@
 
 void sendToClient(int clientFd, const std::string& commandNumber, const std::string& body);
 void sendLobbiesToClients(std::vector<std::string> lobbyNames, int clientFd = -1);
-void sendPlayersToClients(const Lobby* lobby);
+void sendPlayersToClients(const Lobby* lobby, int ignoreFd = -1);
 void isStartAllowed(const Lobby* lobby);
 Settings parseSettings(std::string msg);
 std::string messageSubstring(std::string msg);
+void removeFromLobby(int clientFd);
 
 #endif // COMMUNICATION_FUNCTIONS_H
