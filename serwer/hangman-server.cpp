@@ -13,6 +13,7 @@
 
 #include <iostream>
 #include <list>
+#include <unordered_map>
 
 std::vector<Player> players;
 std::vector<std::string> playersNicknames;
