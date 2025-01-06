@@ -22,8 +22,8 @@
 - [x] 03\\[bool] - potwierdzenie dołączenia do pokoju
 - [x] 05\\[szyfrowane_hasło] - start gry
 
+- [x] 69\\[hello!] - potwierdzenie nawiązania połączenia
 - [x] 70\\[nazwa1,..,nazwa99] - przesłanie listy nazw pokoi
 - [x] 71\\[bool,nazwa1,..,nazwa99] - przesłanie listy nazw graczy w danym pokoju
 - [x] 72\\[bool] - pozwolenie na rozpoczęcie gry (0 jeżeli gracze opuszczą waitroom jeszcze zanim zacznie się gra i jest <2)
 - [x] 73\\[zaszyfrowane_hasło] - sygnał do przejścia do ekranu głównego gry
-
