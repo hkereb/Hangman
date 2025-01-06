@@ -87,19 +87,43 @@ int main(int argc, char *argv[]) {
                 while (true) {
                     char buffer[1024] = {0};
                     int bytesReceived = recv(events[n].data.fd, buffer, sizeof(buffer) - 1, 0);
-                    if (bytesReceived < 0) {
+                    if (bytesReceived <= 0) {
                         if (errno == EAGAIN || errno == EWOULDBLOCK) {
-                            // nie ma więcej danych
                             break;
                         }
-                        // klient rozłączył się, należy usunąć jego dane
+                        // client disconnected, remove player
                         perror("recv (wiadomość od klienta)");
-                        close(events[n].data.fd);
-                        epoll_ctl(efd, EPOLL_CTL_DEL, events[n].data.fd, &ev);
-                        fdsToWatch--;
-                        break;
-                    } else if (bytesReceived == 0) {
-                        // klient się rozłączył
+
+                        // search for player and remove it from lobby
+                        for (auto& lobby : gameLobbies) {
+                            auto playerIt = std::find_if(lobby.players.begin(), lobby.players.end(), [n, events, &lobby](const Player& player) {
+                                return player.sockfd == events[n].data.fd;
+                            });
+
+                            if (playerIt != lobby.players.end()) {
+                                lobby.players.erase(playerIt);  // removed
+                                std::cout << "Player with sockfd " << events[n].data.fd << " removed from lobby: " << lobby.name << "\n";
+                                break;
+                            }
+                        }
+
+                        // remove player from global list
+                        auto playerIt = std::find_if(players.begin(), players.end(), [n, events](const Player& player) {
+                            return player.sockfd == events[n].data.fd;
+                        });
+
+                        if (playerIt != players.end()) {
+                            players.erase(playerIt); 
+                            std::cout << "Player with sockfd " << events[n].data.fd << " removed from global player list.\n";
+                            
+                            auto nicknameIt = std::find(playersNicknames.begin(), playersNicknames.end(), playerIt->nick);
+                            if (nicknameIt != playersNicknames.end()) {
+                                playersNicknames.erase(nicknameIt);  // Remove the nickname
+                                std::cout << "Player's nickname removed: " << playerIt->nick << "\n";
+                            }
+                        }
+
+                        // Clean up resources
                         close(events[n].data.fd);
                         epoll_ctl(efd, EPOLL_CTL_DEL, events[n].data.fd, &ev);
                         fdsToWatch--;
