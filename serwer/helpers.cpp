@@ -1,4 +1,4 @@
-#include "comunication-functions.h"
+#include "helpers.h"
 
 extern std::vector<Player> players;
 extern std::vector<Lobby> gameLobbies;
@@ -56,7 +56,6 @@ void sendPlayersToClients(const Lobby* lobby) {
         sendToClient(player.sockfd, "71", msgBody);
     }
 }
-
 
 void isStartAllowed(const Lobby* lobby) {
     if (!lobby->game.isGameActive) {

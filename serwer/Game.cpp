@@ -20,25 +20,34 @@ void Game::initializeWordList() {
 }
 
 void Game::startGame() {
+    // reset gry - potrzebny dla ponownego uruchomienia z tymi samymi ustawieniami
     isGameActive = true;
     currentRound = 0;
     wordInProgress = "";
+
+    // inicjalizacja slow
     initializeWordList();
+
+    // start pierwszej rundy
     nextRound();
 }
 
 void Game::nextRound() {
     if (currentRound >= roundsAmount) {
-        isGameActive = false;
+        isGameActive = false;  // zakonczenie gry
         return;
     }
 
-    currentRound++;
+    currentRound++;  // zwiekszenie numeru rundy
+
+    // ustawienie slowa do odgadniecia na aktualna runde
     currentWord = wordList[currentRound - 1];
+    std::cout << "new word to guess: " + currentWord + "\n";
+    //wordInProgress.resize(currentWord.size(), '_');  // resetowanie odgadnietych liter
     encodeWord(currentWord, guessedLetters);
 
     for (auto& player : players) {
-        player.lives = player.maxLives;
+        player.lives = player.maxLives;  // ustawianie domyslnej liczby żyć
     }
 }
 

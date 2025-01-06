@@ -139,6 +139,7 @@ void handleClientMessage(int clientFd, std::string msg) {
         }
     }
     else if (msg.substr(0, 2) == "73") {  // Start gry
+        // todo tutaj szukać tylko po ownerach (players[0])
         auto lobbyIt = std::find_if(gameLobbies.begin(), gameLobbies.end(), [clientFd](const Lobby& lobby) {
             return std::any_of(lobby.players.begin(), lobby.players.end(), [clientFd](const Player& player) {
                 return player.sockfd == clientFd;
@@ -148,7 +149,7 @@ void handleClientMessage(int clientFd, std::string msg) {
         if (lobbyIt != gameLobbies.end()) {
             lobbyIt->startGame();
             for (const auto& player : lobbyIt->players) {  // powiadomienie graczy
-                sendToClient(player.sockfd, "73", lobbyIt->game.wordInProgress); //todo current word
+                sendToClient(player.sockfd, "73", lobbyIt->game.wordInProgress);
             }
         }
         else {

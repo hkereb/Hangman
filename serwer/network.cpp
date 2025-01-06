@@ -1,4 +1,4 @@
-#include "network-utils.h"
+#include "network.h"
 
 // Funkcja ustawiająca gniazdo w tryb nieblokujący
 int setNonBlocking(int sockfd) {
@@ -27,7 +27,7 @@ int startListening() {
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE;
 
-    int status = getaddrinfo(NULL, "1111", &hints, &resolved);
+    int status = getaddrinfo(nullptr, "1111", &hints, &resolved);
     if (status != 0) {
         fprintf(stderr, "getaddrinfo error: %s\n", gai_strerror(status));
         return 2;

@@ -6,11 +6,6 @@ void Lobby::startGame() {
         player.points = 0;
     }
 
-    if (players.size() < 2) {
-        std::cout << "Potrzeba przynajmniej 2 graczy w lobby\n";
-        return;
-    }
-
     game = Game(roundsAmount, roundDuration, difficulty);
     game.players = players;
     game.startGame();
@@ -19,8 +14,6 @@ void Lobby::startGame() {
 }
 
 void Lobby::setOwner() {
-    if (!players.empty()) {
-        owner = players[0];
-        players[0].isOwner = true;
-    }
+    owner = players[0];
+    players[0].isOwner = true;
 }
