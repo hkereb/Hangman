@@ -12,11 +12,13 @@ class NetworkClient(QThread):
         self.server_ip = server_ip
         self.server_port = server_port
         self.socket = None
+        self.isConnected = False
 
     def connect_to_server(self):
         try:
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.socket.connect((self.server_ip, self.server_port))
+            self.isConnected = True
             threading.Thread(target=self.listen_to_server, daemon=True).start()
         except Exception as e:
             self.error_occurred.emit(str(e))
@@ -47,7 +49,7 @@ class NetworkClient(QThread):
                 command_number_bytes = command_number.encode('utf-8')
                 body_bytes = body.encode('utf-8')
 
-                message = command_number_bytes + b"\\" + body_bytes
+                message = command_number_bytes + b"\\" + body_bytes + b"\n"
                 self.socket.sendall(message)
             except Exception as e:
                 self.error_occurred.emit(str(e))
