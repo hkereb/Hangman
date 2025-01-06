@@ -17,16 +17,11 @@
 std::vector<Player> players;
 std::vector<std::string> playersNicknames;
 
-std::list<Lobby> gameLobbies;
+std::vector<Lobby> lobbies;
 int lobbyCount = 0;
 std::vector<std::string> lobbyNames;
 
-int main(int argc, char *argv[]) {
-    if (argc != 1) {
-        fprintf(stderr, "no extra arguments required\n");
-        return 1;
-    }
-
+int main() {
     int sockfd = startListening();
 
     int efd = epoll_create(MAXEPOLLSIZE);
@@ -94,26 +89,9 @@ int main(int argc, char *argv[]) {
                         if (errno == EAGAIN || errno == EWOULDBLOCK) {
                             break;
                         }
-                        // client disconnected, remove player
-                        perror("recv (wiadomość od klienta)");
+                        perror("client got disconnected");
 
-                        // todo musi pójść wiadomość do graczy z tego lobby z aktualizacją listy graczy w pokoju (funkcja już jest) (jeżeli isActive=False)
-                        // todo wiadomość do graczy w trwającej rozgrywce o tym że konkretny gracz [nickname] został usunięty z ich gry
-                        // todo trzeba zmniejszyć players_count w lobby o -1
-                        // todo trzeba ponownie sprawdzić czy gra może zostać rozpoczęta (jeżeli isActive = false) i wysłać wiadomość (funkcja już jest)
-                        // todo rozesłać na nowo listę pokoi do graczy którzy nie są w żadnym lobby (funkcja już jest)
-                        // search for player and remove them from lobby
-                        for (auto& lobby : gameLobbies) {
-                            auto playerIt = std::find_if(lobby.players.begin(), lobby.players.end(), [n, events, &lobby](const Player& player) {
-                                return player.sockfd == events[n].data.fd;
-                            });
-
-                            if (playerIt != lobby.players.end()) {
-                                lobby.players.erase(playerIt);  // removed
-                                std::cout << "Player with sockfd " << events[n].data.fd << " removed from lobby: " << lobby.name << "\n";
-                                break;
-                            }
-                        }
+                        removeFromLobby(events[n].data.fd);
 
                         // remove player from global list
                         auto playerIt = std::find_if(players.begin(), players.end(), [n, events](const Player& player) {
@@ -122,12 +100,12 @@ int main(int argc, char *argv[]) {
 
                         if (playerIt != players.end()) {
                             players.erase(playerIt); 
-                            std::cout << "Player with sockfd " << events[n].data.fd << " removed from global player list.\n";
+                            std::cout << "Player with nickname " << playerIt->nick << " removed from global player list.\n";
                             
                             auto nicknameIt = std::find(playersNicknames.begin(), playersNicknames.end(), playerIt->nick);
                             if (nicknameIt != playersNicknames.end()) {
                                 playersNicknames.erase(nicknameIt);  // Remove the nickname
-                                std::cout << "Player's nickname removed: " << playerIt->nick << "\n";
+                                //std::cout << "Player's nickname removed: " << playerIt->nick << "\n";
                             }
                         }
 

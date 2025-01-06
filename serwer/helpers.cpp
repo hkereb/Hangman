@@ -1,7 +1,7 @@
 #include "helpers.h"
 
 extern std::vector<Player> players;
-extern std::vector<Lobby> gameLobbies;
+extern std::vector<Lobby> lobbies;
 
 void sendToClient(int clientFd, const std::string& commandNumber, const std::string& body) {
     if (commandNumber.size() != 2) {
@@ -40,20 +40,24 @@ void sendLobbiesToClients(std::vector<std::string> lobbyNames, int clientFd) {
     }
 }
 
-void sendPlayersToClients(const Lobby* lobby) {
+void sendPlayersToClients(const Lobby* lobby, int ignoreFd) {
     std::string msgBody;
 
     // przygotowanie wiadomości
     for (size_t i = 0; i < lobby->players.size(); ++i) {
-        msgBody += lobby->players[i].nick;
-        if (i != lobby->players.size() - 1) {
-            msgBody += ",";
+        if (lobby->players[i].sockfd != ignoreFd) {
+            msgBody += lobby->players[i].nick;
+            if (i != lobby->players.size() - 1) {
+                msgBody += ",";
+            }
         }
     }
 
     // wysłanie do wszystkich klientów z pokoju
     for (const auto& player : lobby->players) {
-        sendToClient(player.sockfd, "71", msgBody);
+        if (player.sockfd != ignoreFd) {
+            sendToClient(player.sockfd, "71", msgBody);
+        }
     }
 }
 
@@ -102,4 +106,30 @@ Settings parseSettings(std::string msg) {
 
 std::string messageSubstring(std::string msg) {
     return msg.substr(3);
+}
+
+void removeFromLobby(int clientFd) {
+    for (auto & lobby : lobbies) {
+        auto playerIt = std::find_if(lobby.players.begin(), lobby.players.end(), [clientFd](const Player& player) {
+            return player.sockfd == clientFd;
+        });
+
+        if (playerIt != lobby.players.end()) {
+            std::cout << "Player: " << playerIt->nick << ", got removed from lobby: " << lobby.name << "\n";
+            lobby.playersCount--;
+            if (lobby.game.isGameActive) { // gra trwa (game page)
+                for (auto & player : lobby.players) {
+                    if (playerIt->nick != player.nick) {
+                        sendToClient(player.sockfd, "74", playerIt->nick);
+                    }
+                }
+            }
+            else { // gra nie trwa (waitroom lub end page)
+                sendPlayersToClients(&lobby, playerIt->sockfd);
+                isStartAllowed(&lobby);
+            }
+            lobby.players.erase(playerIt);
+            break;
+        }
+    }
 }
