@@ -4,7 +4,8 @@ from os.path import split
 from ui_skeleton import Ui_MainWindow
 from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox
 from PySide6.QtCore import QObject, Signal, QThread, QRegularExpression, QTime
-from PySide6.QtGui import QRegularExpressionValidator
+from PySide6.QtGui import QRegularExpressionValidator, QPixmap
+
 
 def substr_msg(msg):
     return msg[3:]
@@ -27,8 +28,7 @@ class MainApp(QMainWindow):
         self.ui.setupUi(self)
 
         # strona startowa
-        self.ui.stackedWidget.setCurrentWidget(self.ui.nick_page)
-        #self.ui.stackedWidget.setCurrentWidget(self.ui.create_or_join_page)
+        self.ui.stackedWidget.setCurrentWidget(self.ui.game_page)
 
         # walidator adresu IP
         ip_regex = QRegularExpression(r'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$')
@@ -53,6 +53,18 @@ class MainApp(QMainWindow):
         self.ui.letter_input.setMaxLength(1)
 
         self.ui.rounds_number_spin.setMinimum(1)
+
+        self.ui.player0_label.setPixmap(QPixmap("klient/images/0-lives-no-eyes.png"))
+        self.ui.player0_label.setScaledContents(True)
+        self.ui.player1_label.setPixmap(QPixmap("klient/images/0-lives-no-eyes.png"))
+        self.ui.player1_label.setScaledContents(True)
+        self.ui.player2_label.setPixmap(QPixmap("klient/images/0-lives-no-eyes.png"))
+        self.ui.player2_label.setScaledContents(True)
+        self.ui.player3_label.setPixmap(QPixmap("klient/images/0-lives-no-eyes.png"))
+        self.ui.player3_label.setScaledContents(True)
+        self.ui.player4_label.setPixmap(QPixmap("klient/images/0-lives-no-eyes.png"))
+        self.ui.player4_label.setScaledContents(True)
+
 
         # connect
         self.ui.connect_btn.clicked.connect(self.submit_ip)
