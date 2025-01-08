@@ -1,4 +1,6 @@
 import sys
+from os.path import split
+
 from ui_skeleton import Ui_MainWindow
 from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox
 from PySide6.QtCore import QObject, Signal, QThread, QRegularExpression, QTime
@@ -63,6 +65,7 @@ class MainApp(QMainWindow):
         self.ui.start_btn.clicked.connect(self.submit_start)
         self.ui.letter_input.textChanged.connect(self.on_letter_changed)
         self.ui.letter_input.returnPressed.connect(self.submit_letter)
+        self.ui.send_letter_btn.clicked.connect(self.submit_letter)
 
     def submit_nick(self):
         if not self.ui.nick_field.text().strip():
@@ -106,8 +109,10 @@ class MainApp(QMainWindow):
         print("START!")
 
     def submit_letter(self):
+        if not self.ui.letter_input.text().strip():
+            return
         letter = self.ui.letter_input.text()
-        letter.lower()
+        letter = letter.lower()
 
         self.sig_submit_letter.emit(letter)
         self.ui.letter_input.clear()
@@ -142,13 +147,15 @@ class MainApp(QMainWindow):
 
             decision = parts[0]
             letter = parts[1]
-            lives = int(parts[2])
+            if decision == "0":
+                lives = int(parts[2])
 
             if decision == "0":
                 if self.ui.fails_label.text() == "":
                     self.ui.fails_label.setText(letter.upper())
                 old = self.ui.fails_label.text()
                 self.ui.fails_label.setText(old + ", " + letter.upper())
+                #todo zmienić wisielca
         ###
         elif message.startswith("69"):
             self.sig_has_connected.emit()
@@ -186,15 +193,24 @@ class MainApp(QMainWindow):
                 print("Gra NIE może zostać rozpoczęta.")
         ###
         elif message.startswith("73"):
-            word = substr_msg(message)
+            msg = substr_msg(message)
+            parts = msg.split(",")
+            word = parts[0]
             spaced_word = " ".join(word)
-            self.ui.player0_label.setText("all lives!")
-            self.ui.player1_label.setText("all lives!")
-            self.ui.player2_label.setText("all lives!")
-            self.ui.player3_label.setText("all lives!")
-            self.ui.player4_label.setText("all lives!")
+            starting_lives = parts[1]
+
             self.ui.word_label.setText(spaced_word)
+            self.ui.player0_label.setText(starting_lives)
+            self.ui.player1_label.setText(starting_lives)
+            self.ui.player2_label.setText(starting_lives)
+            self.ui.player3_label.setText(starting_lives)
+            self.ui.player4_label.setText(starting_lives)
             self.ui.stackedWidget.setCurrentWidget(self.ui.game_page)
+        ###
+        elif message.startswith("75"):
+            word = substr_msg(message).upper()
+            spaced_word = " ".join(word)
+            self.ui.word_label.setText(spaced_word)
 
     def on_ip_changed(self):
         if self.ui.ip_field.hasAcceptableInput():
