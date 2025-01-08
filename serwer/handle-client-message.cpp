@@ -158,6 +158,16 @@ void handleClientMessage(int clientFd, std::string msg) {
     }
     // TODO hania - dostować gui
     else if (msg.substr(0, 2) == "06") {  // Próba zgadnięcia litery
+        std::string letter = messageSubstring(msg);
+        if (letter.size() == 1) {
+            char lowercaseLetter = std::tolower(letter[0]);
+        }
+        else {
+            perror("Wrong message type");
+            //todo wiadomość o błędzie do klienta
+            return;
+        }
+        char lowercaseLetter = std::tolower(letter[0]);
         char letter = msg[2];
 
         auto lobbyIt = std::find_if(lobbies.begin(), lobbies.end(), [clientFd](const Lobby& lobby) {

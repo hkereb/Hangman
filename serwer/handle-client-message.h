@@ -14,6 +14,7 @@
 #include "Player.h"
 #include "Game.h"
 #include "Lobby.h"
+#include <cctype>
 
 void handleClientMessage(int clientFd, std::string msg);
 
