@@ -61,25 +61,29 @@ void sendPlayersToClients(const Lobby* lobby, int ignoreFd) {
     }
 }
 
-void sendGameUpdatesToClients(const Lobby* lobby) {
+void sendWordAndPointsToClients(const Lobby* lobby, const Player* player) {
     std::string msgWord = lobby->game.wordInProgress;
+    std::string msgPoints = player->nick + "," + std::to_string(player->points);
+
+    // wysłanie do wszystkich klientów z pokoju
+    for (const auto& player : lobby->players) {
+        sendToClient(player.sockfd, "75", msgWord);
+        sendToClient(player.sockfd, "77", msgPoints);
+    }
+}
+void sendLivesToClients(const Lobby* lobby) {
     std::string msgLives;
-    std::string msgPoints;
 
     for (size_t i = 0; i < lobby->players.size(); ++i) {
         msgLives += lobby->players[i].nick + ":" + std::to_string(lobby->players[i].lives);
-        msgPoints += lobby->players[i].nick + ":" + std::to_string(lobby->players[i].points);
         if (i != lobby->players.size() - 1) {
             msgLives += ",";
-            msgPoints += ",";
         }
     }
 
     // wysłanie do wszystkich klientów z pokoju
     for (const auto& player : lobby->players) {
-        sendToClient(player.sockfd, "75", msgWord);
         sendToClient(player.sockfd, "76", msgLives);
-        sendToClient(player.sockfd, "77", msgPoints);
     }
 }
 

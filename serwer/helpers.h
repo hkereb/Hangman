@@ -20,6 +20,7 @@ void isStartAllowed(const Lobby* lobby);
 Settings parseSettings(std::string msg);
 std::string messageSubstring(std::string msg);
 void removeFromLobby(int clientFd);
-void sendGameUpdatesToClients(const Lobby* lobby);
+void sendWordAndPointsToClients(const Lobby* lobby);
+void sendLivesToClients(const Lobby* lobby);
 
 #endif // COMMUNICATION_FUNCTIONS_H
