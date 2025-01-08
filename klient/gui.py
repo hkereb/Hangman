@@ -16,6 +16,7 @@ class MainApp(QMainWindow):
     sig_start = Signal(str)
     sig_connect = Signal(str)
     sig_has_connected = Signal()
+    sig_submit_letter = Signal(str)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -29,8 +30,12 @@ class MainApp(QMainWindow):
 
         # walidator adresu IP
         ip_regex = QRegularExpression(r'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$')
-        validator = QRegularExpressionValidator(ip_regex)
-        self.ui.ip_field.setValidator(validator)
+        ip_validator = QRegularExpressionValidator(ip_regex)
+        self.ui.ip_field.setValidator(ip_validator)
+        # walidator litery
+        letter_regex = QRegularExpression("^[a-zA-Z]$")
+        letter_validator = QRegularExpressionValidator(letter_regex)
+        self.ui.letter_input.setValidator(letter_validator)
 
         self.ui.level_combobox.addItems(["easy", "medium", "hard"])
 
@@ -43,6 +48,8 @@ class MainApp(QMainWindow):
         self.ui.time_edit.setMinimumTime(QTime(0,0,5))
         self.ui.time_edit.setMaximumTime(QTime(0,5,0))
 
+        self.ui.letter_input.setMaxLength(1)
+
         self.ui.rounds_number_spin.setMinimum(1)
 
         # connect
@@ -54,6 +61,7 @@ class MainApp(QMainWindow):
         self.ui.create_btn.clicked.connect(self.submit_create_room)
         self.ui.join_btn.clicked.connect(self.submit_join_room)
         self.ui.start_btn.clicked.connect(self.submit_start)
+        self.ui.letter_input.textChanged.connect(self.on_letter_changed)
 
     def submit_nick(self):
         if not self.ui.nick_field.text().strip():
@@ -95,6 +103,11 @@ class MainApp(QMainWindow):
     def submit_start(self):
         self.sig_start.emit("")
         print("START!")
+
+    def submit_letter(self):
+        letter = self.ui.letter_input.text()
+
+        self.sig_submit_letter.emit(letter)
 
     def handle_server_response(self, message):
         print("serwer: " + message)
@@ -171,6 +184,11 @@ class MainApp(QMainWindow):
             self.ui.ip_field.setStyleSheet("color: green;")
         else:
             self.ui.ip_field.setStyleSheet("color: black;")
+
+    def on_letter_changed(self):
+        letter = self.ui.letter_input.text()
+        if letter and letter.islower():
+            self.ui.letter_input.setText(letter.upper())
 
     def is_at_create_or_join_page(self, index):
         if self.ui.stackedWidget.widget(index) == self.ui.create_or_join_page:
