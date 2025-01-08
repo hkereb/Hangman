@@ -62,6 +62,7 @@ class MainApp(QMainWindow):
         self.ui.join_btn.clicked.connect(self.submit_join_room)
         self.ui.start_btn.clicked.connect(self.submit_start)
         self.ui.letter_input.textChanged.connect(self.on_letter_changed)
+        self.ui.letter_input.returnPressed.connect(self.submit_letter)
 
     def submit_nick(self):
         if not self.ui.nick_field.text().strip():
@@ -106,8 +107,10 @@ class MainApp(QMainWindow):
 
     def submit_letter(self):
         letter = self.ui.letter_input.text()
+        letter.lower()
 
         self.sig_submit_letter.emit(letter)
+        self.ui.letter_input.clear()
 
     def handle_server_response(self, message):
         print("serwer: " + message)
@@ -132,6 +135,20 @@ class MainApp(QMainWindow):
                 self.ui.stackedWidget.setCurrentWidget(self.ui.waitroom_page)
             elif result == "0":  # błąd
                 self.ui.join_room_name_field.setStyleSheet("color: red;")
+        ###
+        elif message.startswith("06"):
+            result = substr_msg(message)
+            parts = result.split(',')
+
+            decision = parts[0]
+            letter = parts[1]
+            lives = int(parts[2])
+
+            if decision == "0":
+                if self.ui.fails_label.text() == "":
+                    self.ui.fails_label.setText(letter.upper())
+                old = self.ui.fails_label.text()
+                self.ui.fails_label.setText(old + ", " + letter.upper())
         ###
         elif message.startswith("69"):
             self.sig_has_connected.emit()
