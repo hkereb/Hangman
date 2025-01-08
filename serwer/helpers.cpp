@@ -61,9 +61,10 @@ void sendPlayersToClients(const Lobby* lobby, int ignoreFd) {
     }
 }
 
-void sendWordAndPointsToClients(const Lobby* lobby, const Player* player) {
+// update rankingu i hasła dla WSZYSTKICH z pokoju
+void sendWordAndPointsToClients(const Lobby* lobby, const Player* playerWhoGuessed) {
     std::string msgWord = lobby->game.wordInProgress;
-    std::string msgPoints = player->nick + "," + std::to_string(player->points);
+    std::string msgPoints = playerWhoGuessed->nick + "," + std::to_string(playerWhoGuessed->points);
 
     // wysłanie do wszystkich klientów z pokoju
     for (const auto& player : lobby->players) {
@@ -71,19 +72,16 @@ void sendWordAndPointsToClients(const Lobby* lobby, const Player* player) {
         sendToClient(player.sockfd, "77", msgPoints);
     }
 }
-void sendLivesToClients(const Lobby* lobby) {
-    std::string msgLives;
 
-    for (size_t i = 0; i < lobby->players.size(); ++i) {
-        msgLives += lobby->players[i].nick + ":" + std::to_string(lobby->players[i].lives);
-        if (i != lobby->players.size() - 1) {
-            msgLives += ",";
-        }
-    }
+// update wisielców PRZECIWNIKÓW dla WSZYSTKICH graczy z pokoju
+void sendLivesToClients(const Lobby* lobby, const Player* playerWhoMissed) {
+    std::string msgLives = playerWhoMissed->nick + "," + std::to_string(playerWhoMissed->lives);
 
-    // wysłanie do wszystkich klientów z pokoju
+    // wysłanie do wszystkich klientów z pokoju oprócz tego gracza
     for (const auto& player : lobby->players) {
-        sendToClient(player.sockfd, "76", msgLives);
+        if (player.nick != playerWhoMissed->nick) {
+               sendToClient(player.sockfd, "76", msgLives);
+        }
     }
 }
 

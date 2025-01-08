@@ -141,7 +141,7 @@ void handleClientMessage(int clientFd, std::string msg) {
         if (lobbyIt != lobbies.end()) {
             lobbyIt->startGame();
             for (const auto& player : lobbyIt->players) {  // powiadomienie graczy
-                sendToClient(player.sockfd, "73", lobbyIt->game.wordInProgress);
+                sendToClient(player.sockfd, "73", lobbyIt->game.wordInProgress + "," + std::to_string(player.maxLives));
             }
         }
         else {
@@ -173,6 +173,8 @@ void handleClientMessage(int clientFd, std::string msg) {
             return;
         }
 
+        // todo sprawdzić czy litera jest w failed klienta
+
         if (std::find(game.wordInProgress.begin(), game.wordInProgress.end(), letter) != game.wordInProgress.end()) {
             sendToClient(clientFd, "06", "0"); // litera już zgadnięta
             return;
@@ -196,11 +198,11 @@ void handleClientMessage(int clientFd, std::string msg) {
             playerIt->points += 25 * occurrences;
 
             // 3. wysłanie graczowi odpowiedzi na jego literę
-            std::string msgBody = "1," + std::string(1,letter) + ",";
+            std::string msgBody = "1," + std::string(1,letter);
             sendToClient(clientFd, "06", msgBody);
 
             // 4. powiadomienie wszystkich graczy o stanie gry
-            sendWordAndPointsToClients(&*lobbyIt);
+            sendWordAndPointsToClients(&*lobbyIt, &*playerIt);
 
             if (std::all_of(game.wordInProgress.begin(), game.wordInProgress.end(), [](char c) { return c != '_'; })) {
                 game.nextRound();
@@ -210,14 +212,16 @@ void handleClientMessage(int clientFd, std::string msg) {
                     return;
                 }
                 for (const auto& player : lobbyIt->players) {
-                    sendToClient(player.sockfd, "73", game.wordInProgress);
+                    sendToClient(player.sockfd, "XX", game.wordInProgress);
                 }
             }
         }
         else {
+            // todo nie odbierać życia jeżeli litera się powtórzyła
             playerIt->lives--;
             std::string msgBody = "0," + std::string(1,letter) + "," + std::to_string(playerIt->lives);
             sendToClient(clientFd, "06", msgBody);
+            sendLivesToClients(&*lobbyIt, &*playerIt);
 
             // sprawdzenie czy nie był to ostatni gracz, który mógł zgadywać (i właśnie nie stracił ostatniej szansy)
             if (playerIt->lives == 0) {
