@@ -44,14 +44,14 @@ void Game::nextRound() {
     currentWord = wordList[currentRound - 1];
     std::cout << "new word to guess: " + currentWord + "\n";
     //wordInProgress.resize(currentWord.size(), '_');  // resetowanie odgadnietych liter
-    encodeWord(currentWord, guessedLetters);
+    encodeWord();
 
     for (auto& player : players) {
         player.lives = player.maxLives;  // ustawianie domyslnej liczby żyć
     }
 }
 
-void Game::encodeWord(const std::string& currentWord, std::vector<char> guessedLetters) {
+void Game::encodeWord() {
     wordInProgress.clear();
     for (char c : currentWord) {
         if (std::find(guessedLetters.begin(), guessedLetters.end(), c) != guessedLetters.end()) {

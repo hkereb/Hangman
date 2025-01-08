@@ -14,7 +14,6 @@ struct Player {
     int points;
     int lives;
     int maxLives;
-    std::vector<char> guessedLetters;
     std::vector<char> failedLetters;
 
     Player() {

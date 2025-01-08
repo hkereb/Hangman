@@ -153,22 +153,13 @@ void handleClientMessage(int clientFd, std::string msg) {
             }
         }
         else {
-            sendToClient(clientFd, "05", "0");  // Pokój nie istnieje
+            sendToClient(clientFd, "73", "0");  // Pokój nie istnieje
         }
     }
     // TODO hania - dostować gui
     else if (msg.substr(0, 2) == "06") {  // Próba zgadnięcia litery
-        std::string letter = messageSubstring(msg);
-        if (letter.size() == 1) {
-            char lowercaseLetter = std::tolower(letter[0]);
-        }
-        else {
-            perror("Wrong message type");
-            //todo wiadomość o błędzie do klienta
-            return;
-        }
-        char lowercaseLetter = std::tolower(letter[0]);
-        char letter = msg[2];
+       char letter = messageSubstring(msg)[0];
+        // todo klient musi zawsze wysyłać małe litery
 
         auto lobbyIt = std::find_if(lobbies.begin(), lobbies.end(), [clientFd](const Lobby& lobby) {
             return std::any_of(lobby.players.begin(), lobby.players.end(), [clientFd](const Player& player) {
@@ -176,66 +167,76 @@ void handleClientMessage(int clientFd, std::string msg) {
             });
         });
 
-        if (lobbyIt != lobbies.end()) {
-            auto& game = lobbyIt->game;
-            auto playerIt = std::find_if(lobbyIt->players.begin(), lobbyIt->players.end(), [clientFd](const Player& player) {
-                return player.sockfd == clientFd;
-            });
+        if (lobbyIt == lobbies.end()) {
+            sendToClient(clientFd, "06", "0"); // nie znaleziono lobby
+            return;
+        }
+        auto& game = lobbyIt->game;
+        auto playerIt = std::find_if(lobbyIt->players.begin(), lobbyIt->players.end(), [clientFd](const Player& player) {
+            return player.sockfd == clientFd;
+        });
 
-            if (playerIt != lobbyIt->players.end()) {
-                if (playerIt->lives <= 0) {
-                    sendToClient(clientFd, "06", "0\nnoLivesLeft\n");
-                    return;
-                }
+        if (playerIt == lobbyIt->players.end()) {
+            sendToClient(clientFd, "06", "0"); // nie znaleziono gracza
+        }
 
-                if (std::find(game.wordInProgress.begin(), game.wordInProgress.end(), letter) != game.wordInProgress.end()) {
-                    sendToClient(clientFd, "06", "0\nletterAlreadyGuessed\n");
-                    return;
-                }
+        if (playerIt->lives == 0) {
+            sendToClient(clientFd, "06", "0"); // brak żyć TO POPRAWIĆ
+            return;
+        }
 
-                bool isCorrect = false;
-                for (size_t i = 0; i < game.currentWord.size(); ++i) {
-                    if (game.currentWord[i] == letter && game.wordInProgress[i] == '_') {
-                        game.wordInProgress[i] = letter;
-                        isCorrect = true;
-                    }
-                }
+        if (std::find(game.wordInProgress.begin(), game.wordInProgress.end(), letter) != game.wordInProgress.end()) {
+            sendToClient(clientFd, "06", "0"); // litera już zgadnięta
+            return;
+        }
 
-                if (isCorrect) {
-                    int occurrences = std::count(game.currentWord.begin(), game.currentWord.end(), letter);
-                    playerIt->points += 25 * occurrences;
-
-                        std::string currentWordState(game.wordInProgress.begin(), game.wordInProgress.end());
-                    for (const auto& player : lobbyIt->players) {
-                        sendToClient(player.sockfd, "06", "1\nwordState\n" + currentWordState + "\n");
-                    }
-
-                    if (std::all_of(game.wordInProgress.begin(), game.wordInProgress.end(), [](char c) { return c != '_'; })) {
-                        for (const auto& player : lobbyIt->players) {
-                            sendToClient(player.sockfd, "06", "1\nwordGuessed\n" + game.currentWord + "\n");
-                        }
-                        game.nextRound();
-                    }
-                } else {
-                    playerIt->lives--;
-                    if (playerIt->lives > 0) {
-                        sendToClient(clientFd, "06", "0\nwrongGuess\n");
-                    } else {
-                        sendToClient(clientFd, "06", "0\nnoLivesLeft\n");
-
-                        if (std::all_of(lobbyIt->players.begin(), lobbyIt->players.end(), [](const Player& player) { return player.lives <= 0; })) {
-                            for (const auto& player : lobbyIt->players) {
-                                sendToClient(player.sockfd, "06", "0\nallPlayersOut\n");
-                            }
-                            game.nextRound();
-                        }
-                    }
-                }
-            } else {
-                sendToClient(clientFd, "06", "0\nplayerNotFound\n");
+        bool isCorrect = false;
+        for (size_t i = 0; i < game.currentWord.size(); ++i) {
+            if (game.currentWord[i] == letter && game.wordInProgress[i] == '_') {
+                game.wordInProgress[i] = letter;
+                isCorrect = true;
             }
-        } else {
-            sendToClient(clientFd, "06", "0\nlobbyNotFound\n");
+        }
+
+        if (isCorrect) {
+            // 1. update hasła w strukturze
+            lobbyIt->game.guessedLetters.push_back(letter);
+            lobbyIt->game.encodeWord();
+
+            // 2. dodanie graczowi punktów
+            int occurrences = std::count(game.currentWord.begin(), game.currentWord.end(), letter);
+            playerIt->points += 25 * occurrences;
+
+            // 3. wysłanie graczowi odpowiedzi na jego literę
+            sendToClient(clientFd, "06", "1" + letter);
+
+            // 4. powiadomienie wszystkich graczy o stanie gry
+            sendGameUpdatesToClients(&*lobbyIt);
+
+            // todo sprawdzić czy to nie koniec rundy (udało się zgadnąć hasło)
+            if (std::all_of(game.wordInProgress.begin(), game.wordInProgress.end(), [](char c) { return c != '_'; })) {
+                for (const auto& player : lobbyIt->players) {
+                    sendToClient(player.sockfd, "78", "1\nwordGuessed\n" + game.currentWord + "\n");
+                }
+                game.nextRound();
+            }
+        }
+        else {
+            playerIt->lives--;
+            if (playerIt->lives > 0) {
+                sendToClient(clientFd, "06", "0\nwrongGuess\n");
+            }
+            else {
+                sendToClient(clientFd, "06", "0\nnoLivesLeft\n");
+
+                // todo sprawdzić czy koniec gry (wszyscy powiesili wisielce)
+                if (std::all_of(lobbyIt->players.begin(), lobbyIt->players.end(), [](const Player& player) { return player.lives <= 0; })) {
+                    for (const auto& player : lobbyIt->players) {
+                        sendToClient(player.sockfd, "06", "0\nallPlayersOut\n");
+                    }
+                    game.nextRound();
+                }
+            }
         }
     }
     // TODO hania - dostować gui
