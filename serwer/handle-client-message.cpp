@@ -68,7 +68,7 @@ void handleClientMessage(int clientFd, std::string msg) {
         }
 
         // dodanie lobby do listy
-        lobbies.push_back(newLobby);
+        lobbies.push_back(std::move(newLobby));
         lobbyCount++;
         lobbyNames.push_back(lobbyName);
 
@@ -172,8 +172,8 @@ void handleClientMessage(int clientFd, std::string msg) {
 
         // todo sprawdzić czy litera jest w failed klienta (dlaczego char nie działa a string tak?)
 
-        if (!game->guessedLetters.empty()) {
-            if (std::find(game->guessedLetters.begin(), game->guessedLetters.end(), letter) != game->guessedLetters.end()) {
+        if (!game.guessedLetters.empty()) {
+            if (std::find(game.guessedLetters.begin(), game.guessedLetters.end(), letter) != game.guessedLetters.end()) {
                 sendToClient(clientFd, "06", "2," + std::string(1,letter)); // litera już zgadnięta
                 return;
             }
@@ -186,20 +186,20 @@ void handleClientMessage(int clientFd, std::string msg) {
         }
 
         bool isCorrect = false;
-        for (size_t i = 0; i < game->currentWord.size(); ++i) {
-            if (game->currentWord[i] == letter && game->wordInProgress[i] == '_') {
-                game->wordInProgress[i] = letter;
+        for (size_t i = 0; i < game.currentWord.size(); ++i) {
+            if (game.currentWord[i] == letter && game.wordInProgress[i] == '_') {
+                game.wordInProgress[i] = letter;
                 isCorrect = true;
             }
         }
 
         if (isCorrect) {
             // 1. update hasła w strukturze
-            game->guessedLetters.push_back(letter);
-            game->encodeWord();
+            game.guessedLetters.push_back(letter);
+            game.encodeWord();
 
             // 2. dodanie graczowi punktów
-            int occurrences = std::count(game->currentWord.begin(), game->currentWord.end(), letter);
+            int occurrences = std::count(game.currentWord.begin(), game.currentWord.end(), letter);
             playerIt->points += 25 * occurrences;
 
             // 3. wysłanie graczowi odpowiedzi na jego literę
@@ -209,17 +209,17 @@ void handleClientMessage(int clientFd, std::string msg) {
             // 4. powiadomienie wszystkich graczy o stanie gry
             sendWordAndPointsToClients(&*lobbyIt, &*playerIt);
 
-            if (game->wordInProgress == game->currentWord) {
+            if (game.wordInProgress == game.currentWord) {
                 std::cout << "HASŁO ZGADNIĘTE w lobby: " + lobbyIt->name + "\n";
-                game->nextRound();
+                game.nextRound();
                 // todo sprawdzić czy to nie koniec całej gry
-                if (!game->isGameActive) {
+                if (!game.isGameActive) {
                     // gra się zakończyła, wysłać właściwy sygnał i informacje [78]
                     return;
                 }
                 for (auto& player : lobbyIt->players) {
                     player.failedLetters.clear();
-                    sendToClient(player.sockfd, "79", game->wordInProgress + "," + std::to_string(lobbyIt->game->currentRound) + "," + std::to_string(lobbyIt->roundsAmount));
+                    sendToClient(player.sockfd, "79", game.wordInProgress + "," + std::to_string(lobbyIt->game.currentRound) + "," + std::to_string(lobbyIt->roundsAmount));
                 }
             }
         }
@@ -237,7 +237,7 @@ void handleClientMessage(int clientFd, std::string msg) {
                     for (const auto& player : lobbyIt->players) {
                         sendToClient(player.sockfd, "78", "tu będzie coś");
                     }
-                    game->nextRound();
+                    game.nextRound();
                 }
             }
         }
@@ -280,17 +280,17 @@ void handleClientMessage(int clientFd, std::string msg) {
     //
     //     if (lobbyIt != lobbies.end()) {
     //         std::string gameState = "Game state in room: " + roomName + "\n";
-    //         gameState += "Current round: " + std::to_string(lobbyIt->game->currentRound) + "/" + std::to_string(lobbyIt->roundsAmount) + "\n";
-    //         gameState += "Game over: " + std::string(lobbyIt->game->isGameActive ? "Yes" : "No") + "\n";
+    //         gameState += "Current round: " + std::to_string(lobbyIt->game.currentRound) + "/" + std::to_string(lobbyIt->roundsAmount) + "\n";
+    //         gameState += "Game over: " + std::string(lobbyIt->game.isGameActive ? "Yes" : "No") + "\n";
     //         gameState += "Difficulty: " + std::to_string(lobbyIt->difficulty) + "\n";
     //
     //         for (auto& player : lobbyIt->players) {
     //             gameState += player.nick + ": " + std::to_string(player.points) + "\n";
     //         }
     //
-    //         gameState += "Guessing word: " + lobbyIt->game->currentWord + "\n";
+    //         gameState += "Guessing word: " + lobbyIt->game.currentWord + "\n";
     //         gameState += "Guessed letters: ";
-    //         for (char letter : lobbyIt->game->wordInProgress) {
+    //         for (char letter : lobbyIt->game.wordInProgress) {
     //             gameState += letter;
     //         }
     //

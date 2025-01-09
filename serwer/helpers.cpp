@@ -63,7 +63,7 @@ void sendPlayersToClients(const Lobby* lobby, int ignoreFd) {
 
 // update rankingu i hasła dla WSZYSTKICH z pokoju
 void sendWordAndPointsToClients(const Lobby* lobby, const Player* playerWhoGuessed) {
-    std::string msgWord = lobby->game->wordInProgress;
+    std::string msgWord = lobby->game.wordInProgress;
     std::string msgPoints = playerWhoGuessed->nick + "," + std::to_string(playerWhoGuessed->points);
 
     // wysłanie do wszystkich klientów z pokoju
@@ -87,7 +87,7 @@ void sendLivesToClients(const Lobby* lobby, const Player* playerWhoMissed) {
 
 void sendStartToClients(const Lobby* lobby) {
     for (const auto& player : lobby->players) {
-        std::string msgBody = lobby->game->wordInProgress + ":" + std::to_string(lobby->roundsAmount) + ":" + player.nick + ":";
+        std::string msgBody = lobby->game.wordInProgress + ":" + std::to_string(lobby->roundsAmount) + ":" + player.nick + ":";
         int count = 0;
 
         for (const auto& opponent : lobby->players) {
@@ -105,7 +105,7 @@ void sendStartToClients(const Lobby* lobby) {
 }
 
 void isStartAllowed(const Lobby* lobby) {
-    if (!lobby->game->isGameActive) {
+    if (!lobby->game.isGameActive) {
         if (lobby->playersCount >= 2) {
             sendToClient(lobby->players[0].sockfd, "72", "1");
         }
@@ -160,8 +160,8 @@ void removeFromLobby(int clientFd) {
         if (playerIt != lobby.players.end()) {
             std::cout << "Player: " << playerIt->nick << ", got removed from lobby: " << lobby.name << "\n";
             lobby.playersCount--;
-            if (lobby.game->isGameActive) { // gra trwa (game page)
-                auto& gamePlayers = lobby.game->players;
+            if (lobby.game.isGameActive) { // gra trwa (game page)
+                auto& gamePlayers = lobby.game.players;
                 auto gamePlayerIt = std::find_if(gamePlayers.begin(), gamePlayers.end(), [clientFd](const Player& player) {
                     return player.sockfd == clientFd;
                 });
@@ -186,11 +186,3 @@ void removeFromLobby(int clientFd) {
     }
 }
 
-std::string convertTime(int time) {
-    int minutes = time/60;
-    int seconds = time%60;
-    std::stringstream ss;
-    ss << minutes << ":" << std::setw(2) << std::setfill('0') << seconds;
-    
-    return ss.str();
-}

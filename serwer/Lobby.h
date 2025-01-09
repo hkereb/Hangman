@@ -21,19 +21,9 @@ struct Lobby {
     int roundsAmount;
     int roundDuration;
 
-    std::unique_ptr<Game> game;
+    Game game;
 
-    Lobby() {
-        this->name = "";
-        this->password = "";
-        this->playersCount = 0;
-        this->difficulty = 1;
-        this->roundsAmount = 5;
-        this->roundDuration = 60;
-        this->game = std::make_unique<Game>();
-    }
-
-    
+    Lobby() : playersCount(0), difficulty(1), roundsAmount(5), roundDuration(60) {}
 
 
     void startGame();
