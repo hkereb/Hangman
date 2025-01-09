@@ -150,7 +150,6 @@ void handleClientMessage(int clientFd, std::string msg) {
     }
     else if (msg.substr(0, 2) == "06") {  // Próba zgadnięcia litery
        char letter = messageSubstring(msg)[0];
-        // todo klient musi zawsze wysyłać małe litery
 
         auto lobbyIt = std::find_if(lobbies.begin(), lobbies.end(), [clientFd](const Lobby& lobby) {
             return std::any_of(lobby.players.begin(), lobby.players.end(), [clientFd](const Player& player) {
@@ -175,13 +174,17 @@ void handleClientMessage(int clientFd, std::string msg) {
 
         // todo sprawdzić czy litera jest w failed klienta
 
-        if (std::find(game.wordInProgress.begin(), game.wordInProgress.end(), letter) != game.wordInProgress.end()) {
-            sendToClient(clientFd, "06", "2," + letter); // litera już zgadnięta
-            return;
+        if (!game.guessedLetters.empty()) {
+            if (std::find(game.guessedLetters.begin(), game.guessedLetters.end(), letter) != game.guessedLetters.end()) {
+                sendToClient(clientFd, "06", "2," + letter); // litera już zgadnięta
+                return;
+            }
         }
-        if (std::find(playerIt->failedLetters.begin(), playerIt->failedLetters.end(), letter) != playerIt->failedLetters.end()) {
-            sendToClient(clientFd, "06", "3," + letter); // litera została już wcześniej wykorzystana jako fail
-            return;
+        if (!playerIt->failedLetters.empty()) {
+            if (std::find(playerIt->failedLetters.begin(), playerIt->failedLetters.end(), letter) != playerIt->failedLetters.end()) {
+                sendToClient(clientFd, "06", "3," + letter); // litera została już wcześniej wykorzystana jako fail
+                return;
+            }
         }
 
         bool isCorrect = false;
@@ -202,7 +205,7 @@ void handleClientMessage(int clientFd, std::string msg) {
             playerIt->points += 25 * occurrences;
 
             // 3. wysłanie graczowi odpowiedzi na jego literę
-            std::string msgBody = "1," + letter;
+            std::string msgBody = "1," + std::string(1,letter); //todo sprawdź czemu tu char nie działa
             sendToClient(clientFd, "06", msgBody);
 
             // 4. powiadomienie wszystkich graczy o stanie gry
