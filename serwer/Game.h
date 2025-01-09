@@ -2,10 +2,17 @@
 #define GAME_H
 
 #include <string>
+#include <sstream>
+#include <iomanip>
 #include <vector>
 #include <chrono>
 #include <algorithm>
+#include <iostream>
+#include <random>
+#include <atomic>
+#include <thread>
 #include "Player.h"
+#include "sendToClient.h"
 
 namespace Levels {
     constexpr int EASY = 1;
@@ -26,26 +33,47 @@ struct Game {
     bool isGameActive;
     std::chrono::steady_clock::time_point timeStart;
 
-    Game() {
-        this->roundsAmount = 5;
-        this->roundDuration = 60;
-        this->currentRound = 0;
-        this->difficulty = Levels::EASY;
-        this->isGameActive = false;
+    std::atomic<int> timeLeftInRound;
+    std::atomic<bool> isRoundActive;
+    std::thread timerThread;
+
+    Game() : timeLeftInRound(0), isRoundActive(false) {}
+
+    // move constructor
+    Game(Game&& other) noexcept
+        : wordList(std::move(other.wordList)),
+          currentWord(std::move(other.currentWord)),
+          wordInProgress(std::move(other.wordInProgress)),
+          guessedLetters(std::move(other.guessedLetters)),
+          players(std::move(other.players)),
+          roundDuration(other.roundDuration),
+          currentRound(other.currentRound),
+          roundsAmount(other.roundsAmount),
+          difficulty(other.difficulty),
+          isGameActive(other.isGameActive),
+          timeStart(other.timeStart),
+          timeLeftInRound(other.timeLeftInRound.load()),
+          isRoundActive(other.isRoundActive.load()) {
+
+        if (other.timerThread.joinable()) {
+            timerThread = std::move(other.timerThread);
+        }
     }
 
-    Game(int roundsAmount, int roundDuration, int difficulty) {
-        this->roundsAmount = roundsAmount;
-        this->roundDuration = roundDuration;
-        this->currentRound = 0;
-        this->difficulty = difficulty;
-        this->isGameActive = false;
+
+
+    ~Game() {
+        stopTimer(); 
     }
 
     void initializeWordList();
     void startGame();
     void nextRound();
     void encodeWord();
+    void startTimer();
+    void stopTimer();
+    void resetGame(int roundsAmount, int roundDuration, int difficulty);
+    std::string convertTime(int time);
 };
 
 #endif // GAME_H

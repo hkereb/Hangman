@@ -6,7 +6,7 @@ void Lobby::startGame() {
         player.points = 0;
     }
 
-    game = Game(roundsAmount, roundDuration, difficulty);
+    game.resetGame(roundsAmount, roundDuration, difficulty);
     game.players = players;
     game.startGame();
 

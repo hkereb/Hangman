@@ -68,7 +68,7 @@ void handleClientMessage(int clientFd, std::string msg) {
         }
 
         // dodanie lobby do listy
-        lobbies.push_back(newLobby);
+        lobbies.push_back(std::move(newLobby));
         lobbyCount++;
         lobbyNames.push_back(lobbyName);
 

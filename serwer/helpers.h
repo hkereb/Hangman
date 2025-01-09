@@ -6,14 +6,16 @@
 #include <iostream>
 #include <sys/socket.h>
 #include <string.h>
+#include <string>
+#include <sstream>
+#include <iomanip>
 #include "network.h"
 #include "Settings.h"
 #include "Player.h"
-#include "Game.h"
 #include "Lobby.h"
 
 
-void sendToClient(int clientFd, const std::string& commandNumber, const std::string& body);
+
 void sendLobbiesToClients(std::vector<std::string> lobbyNames, int clientFd = -1);
 void sendPlayersToClients(const Lobby* lobby, int ignoreFd = -1);
 void isStartAllowed(const Lobby* lobby);

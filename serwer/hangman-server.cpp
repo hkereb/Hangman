@@ -93,7 +93,7 @@ int main() {
                         perror("client got disconnected");
 
                         removeFromLobby(events[n].data.fd);
-
+                        
                         // remove player from global list
                         auto playerIt = std::find_if(players.begin(), players.end(), [n, events](const Player& player) {
                             return player.sockfd == events[n].data.fd;
@@ -112,6 +112,7 @@ int main() {
                         // Clean up resources
                         close(events[n].data.fd);
                         epoll_ctl(efd, EPOLL_CTL_DEL, events[n].data.fd, &ev);
+                        clientBuffers.erase(events[n].data.fd);  // clean up client buffers
                         fdsToWatch--;
                         break;
                     }

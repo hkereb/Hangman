@@ -1,6 +1,4 @@
 #include "Game.h"
-#include <iostream>
-#include <random>
 
 void Game::initializeWordList() {
     std::vector<std::string> availableWords = {
@@ -35,6 +33,7 @@ void Game::startGame() {
 void Game::nextRound() {
     if (currentRound >= roundsAmount) {
         isGameActive = false;  // zakonczenie gry
+        stopTimer();
         return;
     }
 
@@ -49,6 +48,9 @@ void Game::nextRound() {
     for (auto& player : players) {
         player.lives = player.maxLives;  // ustawianie domyslnej liczby żyć
     }
+
+    stopTimer();
+    startTimer();
 }
 
 void Game::encodeWord() {
@@ -61,3 +63,67 @@ void Game::encodeWord() {
         }
     }
 }
+
+
+
+std::string Game::convertTime(int time) {
+    int minutes = time/60;
+    int seconds = time%60;
+    std::stringstream ss;
+    ss << minutes << ":" << std::setw(2) << std::setfill('0') << seconds;
+    
+    return ss.str();
+}
+
+void Game::startTimer() {
+    isRoundActive = true;
+    timeLeftInRound = roundDuration;
+
+    timerThread = std::thread([this]() {
+        while (isRoundActive && timeLeftInRound > 0) {
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+            timeLeftInRound--;
+
+            std::string messageBody = convertTime(timeLeftInRound);
+            for (const auto& player : players) {
+                sendToClient(player.sockfd, "11", messageBody);
+            }
+
+            if (timeLeftInRound <= 0) {
+                isRoundActive = false;
+
+                for (const auto& player : players) {
+                    sendToClient(player.sockfd, "12", "Round time over");
+                }
+            }
+        }
+    });
+}
+
+void Game::stopTimer() {
+    isRoundActive = false;
+    if (timerThread.joinable()) {
+        timerThread.join();
+    }
+}
+
+void Game::resetGame(int roundsAmount, int roundDuration, int difficulty) {
+    roundsAmount = roundsAmount;
+    roundDuration = roundDuration;
+    difficulty = difficulty;
+    currentRound = 0;
+    isGameActive = false;
+    wordList.clear();
+    currentWord.clear();
+    wordInProgress.clear();
+    guessedLetters.clear();
+
+    // Stop any running timer
+    stopTimer();
+
+    // Reset players' state if needed
+    for (auto& player : players) {
+        player.points = 0; // Reset scores or other player data
+    }
+}
+

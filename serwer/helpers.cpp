@@ -161,6 +161,15 @@ void removeFromLobby(int clientFd) {
             std::cout << "Player: " << playerIt->nick << ", got removed from lobby: " << lobby.name << "\n";
             lobby.playersCount--;
             if (lobby.game.isGameActive) { // gra trwa (game page)
+                auto& gamePlayers = lobby.game.players;
+                auto gamePlayerIt = std::find_if(gamePlayers.begin(), gamePlayers.end(), [clientFd](const Player& player) {
+                    return player.sockfd == clientFd;
+                });
+                if (gamePlayerIt != gamePlayers.end()) {
+                    std::cout << "Removing player " << gamePlayerIt->nick << " from game.\n";
+                    gamePlayers.erase(gamePlayerIt);
+                }
+
                 for (auto & player : lobby.players) {
                     if (playerIt->nick != player.nick) {
                         sendToClient(player.sockfd, "74", playerIt->nick);
@@ -176,3 +185,4 @@ void removeFromLobby(int clientFd) {
         }
     }
 }
+
