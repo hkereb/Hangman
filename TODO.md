@@ -29,6 +29,6 @@
 - [x] 73\\[zaszyfrowane_hasło,życia,lista_przeciwników] - sygnał do rozpoczęcia nowej rundy (gdy pierwszy raz to przejście do game page)
 - [x] 74\\[nick] - klient o podanym nicku opuścił rozgrywkę w jej trakcie
 - [x] 75\\[hasło] - update info o haśle
-- [x] 76\\[nick1:życia,nick2:życia,..] - update wisielców
-- [x] 77\\[nick1:punkty,nick2:punkty,..] - update rankingu
+- [x] 76\\[nick:życia] - update wisielca przeciwnika
+- [x] 77\\[nick:punkty] - update rankingu
 - [x] 78\\[] - koniec gry

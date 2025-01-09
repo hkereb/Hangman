@@ -29,7 +29,7 @@ class MainApp(QMainWindow):
         self.ui.setupUi(self)
 
         # strona startowa
-        self.ui.stackedWidget.setCurrentWidget(self.ui.game_page)
+        self.ui.stackedWidget.setCurrentWidget(self.ui.nick_page)
 
         # walidator adresu IP
         ip_regex = QRegularExpression(r'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$')
@@ -69,7 +69,7 @@ class MainApp(QMainWindow):
             10: ":images/10-lives.png"
         }
 
-        self.ui.player0_label.setPixmap(QPixmap(self.image_paths[6]))
+        self.ui.player0_label.setPixmap(QPixmap(self.image_paths[10]))
         self.ui.player1_label.setPixmap(QPixmap(self.image_paths[10]))
         self.ui.player2_label.setPixmap(QPixmap(self.image_paths[10]))
         self.ui.player3_label.setPixmap(QPixmap(self.image_paths[10]))
@@ -252,18 +252,22 @@ class MainApp(QMainWindow):
         ###
         elif message.startswith("73"):
             msg = substr_msg(message)
-            parts = msg.split(";")
+            parts = msg.split(":")
             word = parts[0]
             spaced_word = " ".join(word)
             self.ui.word_label.setText(spaced_word)
 
-            opponents = parts[1]
+            your_nick = parts[1]
+
+            self.ui.ranking_list.addItem(f"{your_nick}: 0")
+
+            opponents = parts[2]
             nicks = opponents.split(",")
 
-            for i in range(0, 4):
-                if nicks[i] != "":
-                    self.player_names_labels[i].setText(nicks[i])
-                    #self.player_labels[i].setGraphicsEffect(self.opacity[i].setOpacity(1.0))
+            for i, nick in enumerate(nicks):
+                self.player_names_labels[i].setText(nicks[i])
+                self.opacity[i].setOpacity(1.0)
+                self.ui.ranking_list.addItem(f"{nick}: 0")
 
             self.ui.stackedWidget.setCurrentWidget(self.ui.game_page)
         ###
@@ -272,10 +276,15 @@ class MainApp(QMainWindow):
             spaced_word = " ".join(word)
             self.ui.word_label.setText(spaced_word)
         ###
-        elif message.startswith("75"):
-            word = substr_msg(message).upper()
-            spaced_word = " ".join(word)
-            self.ui.word_label.setText(spaced_word)
+        elif message.startswith("76"):
+            msg = substr_msg(message)
+            info = msg.split(",")
+            nick = info[0]
+            lives = int(info[1])
+            for i, player_name in enumerate(self.player_names_labels):
+                if player_name.text() == nick:
+                    self.player_labels[i].setPixmap(QPixmap(self.image_paths[lives]))
+                    break
 
     def on_ip_changed(self):
         if self.ui.ip_field.hasAcceptableInput():
