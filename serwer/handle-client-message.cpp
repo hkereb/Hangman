@@ -209,22 +209,23 @@ void handleClientMessage(int clientFd, std::string msg) {
             // 4. powiadomienie wszystkich graczy o stanie gry
             sendWordAndPointsToClients(&*lobbyIt, &*playerIt);
 
-            if (std::all_of(game.wordInProgress.begin(), game.wordInProgress.end(), [](char c) { return c != '_'; })) {
+            if (game.wordInProgress == game.currentWord) {
+                std::cout << "HASŁO ZGADNIĘTE w lobby: " + lobbyIt->name + "\n";
                 game.nextRound();
                 // todo sprawdzić czy to nie koniec całej gry
                 if (!game.isGameActive) {
                     // gra się zakończyła, wysłać właściwy sygnał i informacje [78]
                     return;
                 }
-                for (const auto& player : lobbyIt->players) {
-                    sendToClient(player.sockfd, "XX", game.wordInProgress);
+                for (auto& player : lobbyIt->players) {
+                    player.failedLetters.clear();
+                    sendToClient(player.sockfd, "79", game.wordInProgress + "," + std::to_string(lobbyIt->game.currentRound) + "," + std::to_string(lobbyIt->roundsAmount));
                 }
             }
         }
         else {
-            // todo nie odbierać życia jeżeli litera się powtórzyła
             playerIt->lives--;
-            playerIt->failedLetters.push_back(letter); // todo być może nie potrzebne
+            playerIt->failedLetters.push_back(letter);
             std::string msgBody = "0," + std::string(1,letter) + "," + std::to_string(playerIt->lives);
             sendToClient(clientFd, "06", msgBody);
             sendLivesToClients(&*lobbyIt, &*playerIt);

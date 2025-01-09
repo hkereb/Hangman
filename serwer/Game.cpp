@@ -43,7 +43,7 @@ void Game::nextRound() {
     // ustawienie slowa do odgadniecia na aktualna runde
     currentWord = wordList[currentRound - 1];
     std::cout << "new word to guess: " + currentWord + "\n";
-    //wordInProgress.resize(currentWord.size(), '_');  // resetowanie odgadnietych liter
+    guessedLetters.clear();
     encodeWord();
 
     for (auto& player : players) {
