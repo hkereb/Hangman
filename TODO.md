@@ -20,13 +20,13 @@
 - [x] 01\\[bool] - potwierdzenie ustawienia nicku (pętla while z podawaniem nicku do skutku powinna być po stronie klienta, więc potrzebna jest flaga), bool zapisany jako 0 lub 1
 - [x] 02\\[bool] - potwierdzenie stworzenia pokoj
 - [x] 03\\[bool] - potwierdzenie dołączenia do pokoju
-- [x] 06\\[bool,litera] - odpowiedź na próbę zgadnięcia litery
+- [x] 06\\[bool,litera,<życia>] - odpowiedź na próbę zgadnięcia litery (życia jeżeli bool = 0)
 
 - [x] 69\\[hello!] - potwierdzenie nawiązania połączenia
 - [x] 70\\[nazwa1,..,nazwa99] - przesłanie listy nazw pokoi
 - [x] 71\\[bool,nazwa1,..,nazwa99] - przesłanie listy nazw graczy w danym pokoju
 - [x] 72\\[bool] - pozwolenie na rozpoczęcie gry (0 jeżeli gracze opuszczą waitroom jeszcze zanim zacznie się gra i jest <2)
-- [x] 73\\[zaszyfrowane_hasło] - sygnał do rozpoczęcia nowej rundy (gdy pierwszy raz to przejście do game page)
+- [x] 73\\[zaszyfrowane_hasło,życia,lista_przeciwników] - sygnał do rozpoczęcia nowej rundy (gdy pierwszy raz to przejście do game page)
 - [x] 74\\[nick] - klient o podanym nicku opuścił rozgrywkę w jej trakcie
 - [x] 75\\[hasło] - update info o haśle
 - [x] 76\\[nick1:życia,nick2:życia,..] - update wisielców

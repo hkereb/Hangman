@@ -2,7 +2,7 @@ import sys
 from os.path import split
 
 from ui_skeleton import Ui_MainWindow
-from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox
+from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox, QGraphicsOpacityEffect
 from PySide6.QtCore import QObject, Signal, QThread, QRegularExpression, QTime
 from PySide6.QtGui import QRegularExpressionValidator, QPixmap
 
@@ -28,7 +28,7 @@ class MainApp(QMainWindow):
         self.ui.setupUi(self)
 
         # strona startowa
-        self.ui.stackedWidget.setCurrentWidget(self.ui.game_page)
+        self.ui.stackedWidget.setCurrentWidget(self.ui.nick_page)
 
         # walidator adresu IP
         ip_regex = QRegularExpression(r'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$')
@@ -54,17 +54,61 @@ class MainApp(QMainWindow):
 
         self.ui.rounds_number_spin.setMinimum(1)
 
-        self.ui.player0_label.setPixmap(QPixmap("klient/images/0-lives-no-eyes.png"))
-        self.ui.player0_label.setScaledContents(True)
-        self.ui.player1_label.setPixmap(QPixmap("klient/images/0-lives-no-eyes.png"))
-        self.ui.player1_label.setScaledContents(True)
-        self.ui.player2_label.setPixmap(QPixmap("klient/images/0-lives-no-eyes.png"))
-        self.ui.player2_label.setScaledContents(True)
-        self.ui.player3_label.setPixmap(QPixmap("klient/images/0-lives-no-eyes.png"))
-        self.ui.player3_label.setScaledContents(True)
-        self.ui.player4_label.setPixmap(QPixmap("klient/images/0-lives-no-eyes.png"))
-        self.ui.player4_label.setScaledContents(True)
+        self.image_paths = {
+            0: "klient/images/0-lives-no-eyes.png",
+            1: "klient/images/1-lives.png",
+            2: "klient/images/2-lives.png",
+            3: "klient/images/3-lives.png",
+            4: "klient/images/4-lives.png",
+            5: "klient/images/5-lives.png",
+            6: "klient/images/6-lives.png",
+            7: "klient/images/7-lives.png",
+            8: "klient/images/8-lives.png",
+            9: "klient/images/9-lives.png",
+            10: "klient/images/10-lives.png"
+        }
 
+        self.ui.player0_label.setPixmap(QPixmap(self.image_paths[10]))
+        self.ui.player1_label.setPixmap(QPixmap(self.image_paths[10]))
+        self.ui.player2_label.setPixmap(QPixmap(self.image_paths[10]))
+        self.ui.player3_label.setPixmap(QPixmap(self.image_paths[10]))
+        self.ui.player4_label.setPixmap(QPixmap(self.image_paths[10]))
+        self.ui.player0_label.setScaledContents(True)
+        self.ui.player1_label.setScaledContents(True)
+        self.ui.player2_label.setScaledContents(True)
+        self.ui.player3_label.setScaledContents(True)
+        self.ui.player4_label.setScaledContents(True)
+        self.opacity_effect1 = QGraphicsOpacityEffect()
+        self.opacity_effect1.setOpacity(0.5)
+        self.opacity_effect2 = QGraphicsOpacityEffect()
+        self.opacity_effect2.setOpacity(0.5)
+        self.opacity_effect3 = QGraphicsOpacityEffect()
+        self.opacity_effect3.setOpacity(0.5)
+        self.opacity_effect4 = QGraphicsOpacityEffect()
+        self.opacity_effect4.setOpacity(0.5)
+        self.ui.player1_label.setGraphicsEffect(self.opacity_effect1)
+        self.ui.player2_label.setGraphicsEffect(self.opacity_effect2)
+        self.ui.player3_label.setGraphicsEffect(self.opacity_effect3)
+        self.ui.player4_label.setGraphicsEffect(self.opacity_effect4)
+
+        self.player_names_labels = [
+            self.ui.player1_name_label,
+            self.ui.player2_name_label,
+            self.ui.player3_name_label,
+            self.ui.player4_name_label
+        ]
+        self.player_labels = [
+            self.ui.player1_label,
+            self.ui.player2_label,
+            self.ui.player3_label,
+            self.ui.player4_label
+        ]
+        self.opacity = [
+            self.opacity_effect1,
+            self.opacity_effect2,
+            self.opacity_effect3,
+            self.opacity_effect4
+        ]
 
         # connect
         self.ui.connect_btn.clicked.connect(self.submit_ip)
@@ -159,15 +203,16 @@ class MainApp(QMainWindow):
 
             decision = parts[0]
             letter = parts[1]
-            if decision == "0":
-                lives = int(parts[2])
 
             if decision == "0":
                 if self.ui.fails_label.text() == "":
                     self.ui.fails_label.setText(letter.upper())
-                old = self.ui.fails_label.text()
-                self.ui.fails_label.setText(old + ", " + letter.upper())
-                #todo zmienić wisielca
+                else:
+                    old = self.ui.fails_label.text()
+                    self.ui.fails_label.setText(old + ", " + letter.upper())
+
+                lives = int(parts[2])
+                self.ui.player0_label.setPixmap(QPixmap(self.image_paths[lives]))
         ###
         elif message.startswith("69"):
             self.sig_has_connected.emit()
@@ -206,18 +251,25 @@ class MainApp(QMainWindow):
         ###
         elif message.startswith("73"):
             msg = substr_msg(message)
-            parts = msg.split(",")
+            parts = msg.split(";")
             word = parts[0]
             spaced_word = " ".join(word)
-            starting_lives = parts[1]
-
             self.ui.word_label.setText(spaced_word)
-            self.ui.player0_label.setText(starting_lives)
-            self.ui.player1_label.setText(starting_lives)
-            self.ui.player2_label.setText(starting_lives)
-            self.ui.player3_label.setText(starting_lives)
-            self.ui.player4_label.setText(starting_lives)
+
+            opponents = parts[1]
+            nicks = opponents.split(",")
+
+            for i in range(0, 4):
+                if nicks[i] != "":
+                    self.player_names_labels[i].setText(nicks[i])
+                    self.player_labels[i].setGraphicsEffect(self.opacity[i].setOpacity(1.0))
+
             self.ui.stackedWidget.setCurrentWidget(self.ui.game_page)
+        ###
+        elif message.startswith("75"):
+            word = substr_msg(message).upper()
+            spaced_word = " ".join(word)
+            self.ui.word_label.setText(spaced_word)
         ###
         elif message.startswith("75"):
             word = substr_msg(message).upper()
