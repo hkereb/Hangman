@@ -14,6 +14,7 @@
 - [x] 70\\[] - prośba o przesłanie listy pokoi
 - [x] 71\\[] - prośba o przesłanie listy nicków graczy obecnych w danym pokoju
 - [x] 73\\[] - prośba o rozpoczęcie gry w pokoju gracza
+- [x] 80\\[] - prośba o nową rundę (minął czas)
 
 
 #### Serwer -> Klient:

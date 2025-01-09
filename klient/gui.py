@@ -21,6 +21,7 @@ class MainApp(QMainWindow):
     sig_connect = Signal(str)
     sig_has_connected = Signal()
     sig_submit_letter = Signal(str)
+    sig_time_ran_out = Signal(str)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -221,6 +222,9 @@ class MainApp(QMainWindow):
         elif message.startswith("11"):
             time = substr_msg(message)
             self.ui.time2_label_2.setText(time)
+        ###
+        elif message.startswith("12"):
+            self.sig_time_ran_out.emit("")
         ###
         elif message.startswith("69"):
             self.sig_has_connected.emit()

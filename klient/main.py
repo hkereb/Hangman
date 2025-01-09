@@ -40,6 +40,7 @@ if __name__ == "__main__":
         window.sig_players_list.connect(lambda message: client.send_to_server("71", ""))
         window.sig_start.connect(lambda message: client.send_to_server("73", ""))
         window.sig_submit_letter.connect(lambda letter: client.send_to_server("06", f"{letter}"))
+        window.sig_time_ran_out.connect(lambda message: client.send_to_server("80", ""))
 
         window.submit_nick()
 
