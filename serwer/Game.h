@@ -25,7 +25,7 @@ struct Game {
     std::string currentWord;
     std::string wordInProgress;
     std::vector<char> guessedLetters;
-    std::vector<Player> players;
+    std::vector<Player*> players;
     int roundDuration;
     int currentRound;
     int roundsAmount;

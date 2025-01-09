@@ -46,7 +46,7 @@ void Game::nextRound() {
     encodeWord();
 
     for (auto& player : players) {
-        player.lives = player.maxLives;  // ustawianie domyślnej liczby żyć
+        player->lives = player->maxLives;  // ustawianie domyślnej liczby żyć
     }
 
     stopTimer();

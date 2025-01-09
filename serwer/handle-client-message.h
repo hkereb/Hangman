@@ -16,6 +16,6 @@
 #include "Lobby.h"
 #include <cctype>
 
-void handleClientMessage(int clientFd, std::string msg);
+void handleClientMessage(int clientFd, const std::string& msg);
 
 #endif
