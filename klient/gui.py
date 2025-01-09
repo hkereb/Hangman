@@ -1,5 +1,6 @@
 import sys
 from os.path import split
+import resources
 
 from ui_skeleton import Ui_MainWindow
 from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox, QGraphicsOpacityEffect
@@ -28,7 +29,7 @@ class MainApp(QMainWindow):
         self.ui.setupUi(self)
 
         # strona startowa
-        self.ui.stackedWidget.setCurrentWidget(self.ui.nick_page)
+        self.ui.stackedWidget.setCurrentWidget(self.ui.game_page)
 
         # walidator adresu IP
         ip_regex = QRegularExpression(r'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$')
@@ -55,20 +56,20 @@ class MainApp(QMainWindow):
         self.ui.rounds_number_spin.setMinimum(1)
 
         self.image_paths = {
-            0: "klient/images/0-lives-no-eyes.png",
-            1: "klient/images/1-lives.png",
-            2: "klient/images/2-lives.png",
-            3: "klient/images/3-lives.png",
-            4: "klient/images/4-lives.png",
-            5: "klient/images/5-lives.png",
-            6: "klient/images/6-lives.png",
-            7: "klient/images/7-lives.png",
-            8: "klient/images/8-lives.png",
-            9: "klient/images/9-lives.png",
-            10: "klient/images/10-lives.png"
+            0: ":images/0-lives-no-eyes.png",
+            1: ":images/1-lives.png",
+            2: ":images/2-lives.png",
+            3: ":images/3-lives.png",
+            4: ":images/4-lives.png",
+            5: ":images/5-lives.png",
+            6: ":images/6-lives.png",
+            7: ":images/7-lives.png",
+            8: ":images/8-lives.png",
+            9: ":images/9-lives.png",
+            10: ":images/10-lives.png"
         }
 
-        self.ui.player0_label.setPixmap(QPixmap(self.image_paths[10]))
+        self.ui.player0_label.setPixmap(QPixmap(self.image_paths[6]))
         self.ui.player1_label.setPixmap(QPixmap(self.image_paths[10]))
         self.ui.player2_label.setPixmap(QPixmap(self.image_paths[10]))
         self.ui.player3_label.setPixmap(QPixmap(self.image_paths[10]))
