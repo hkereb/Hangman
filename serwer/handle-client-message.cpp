@@ -140,8 +140,8 @@ void handleClientMessage(int clientFd, const std::string& msg) {
     else if (msg.substr(0, 2) == "73") {  // Start gry
         // todo tutaj szukać tylko po ownerach (players[0])
         auto lobbyIt = std::find_if(lobbies.begin(), lobbies.end(), [clientFd](const Lobby& lobby) {
-            return std::any_of(lobby.players.begin(), lobby.players.end(), [clientFd](Player* player) {
-                return player->sockfd == clientFd;
+            return std::any_of(lobby.players.begin(), lobby.players.end(), [clientFd, &lobby](Player* player) {
+                return !lobby.players.empty() && lobby.players[0]->sockfd == clientFd;
             });
         });
 

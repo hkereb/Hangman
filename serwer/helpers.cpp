@@ -3,19 +3,19 @@
 extern std::vector<Player> players;
 extern std::vector<Lobby> lobbies;
 
-void sendToClient(int clientFd, const std::string& commandNumber, const std::string& body) {
-    if (commandNumber.size() != 2) {
-        std::cerr << "Error: Command number must consist of 2 characters";
-        return;
-    }
-
-    std::string fullMessage = commandNumber + "\\" + body + "\n";
-    ssize_t bytesSent = send(clientFd, fullMessage.c_str(), fullMessage.size(), 0);
-
-    if (bytesSent == -1) {
-        std::cerr << "Error: Failed to send message to client with socket " << clientFd << ".\n";
-    }
-}
+// void sendToClient(int clientFd, const std::string& commandNumber, const std::string& body) {
+//     if (commandNumber.size() != 2) {
+//         std::cerr << "Error: Command number must consist of 2 characters";
+//         return;
+//     }
+//
+//     std::string fullMessage = commandNumber + "\\" + body + "\n";
+//     ssize_t bytesSent = send(clientFd, fullMessage.c_str(), fullMessage.size(), 0);
+//
+//     if (bytesSent == -1) {
+//         std::cerr << "Error: Failed to send message to client with socket " << clientFd << ".\n";
+//     }
+// }
 
 void sendLobbiesToClients(std::vector<std::string> lobbyNames, int clientFd) {
     std::string messageBody;
@@ -189,12 +189,13 @@ void removeFromLobby(int clientFd) {
             lobby.playersCount--;
             if (lobby.game.isGameActive) { // gra trwa (game page)
                 auto& gamePlayers = lobby.game.players;
-                auto gamePlayerIt = std::find_if(gamePlayers.begin(), gamePlayers.end(), [clientFd](const Player& player) {
-                    return player.sockfd == clientFd;
+                auto gamePlayerIt = std::find_if(gamePlayers.begin(), gamePlayers.end(), [clientFd](const Player* player) {
+                    return player->sockfd == clientFd;
                 });
+
                 if (gamePlayerIt != gamePlayers.end()) {
-                    std::cout << "Removing player " << gamePlayerIt->nick << " from game.\n";
-                    gamePlayers.erase(gamePlayerIt);
+                    std::cout << "Removing player " << (*gamePlayerIt)->nick << " from game.\n";
+                    gamePlayers.erase(gamePlayerIt); // Usuwamy gracza z gry
                 }
 
                 for (auto & player : lobby.players) {
@@ -208,6 +209,7 @@ void removeFromLobby(int clientFd) {
                 isStartAllowed(&lobby);
             }
             lobby.players.erase(playerIt);
+
             break;
         }
     }

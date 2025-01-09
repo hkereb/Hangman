@@ -15,6 +15,7 @@
 #include "Game.h"
 #include "Lobby.h"
 #include <cctype>
+#include "sendToClient.h"
 
 void handleClientMessage(int clientFd, const std::string& msg);
 

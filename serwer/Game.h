@@ -73,7 +73,7 @@ struct Game {
     void startTimer();
     void stopTimer();
     void resetGame(int roundsAmount, int roundDuration, int difficulty);
-    std::string convertTime(int time);
+    static std::string convertTime(int time);
 };
 
 #endif // GAME_H

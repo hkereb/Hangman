@@ -13,8 +13,7 @@
 #include "Settings.h"
 #include "Player.h"
 #include "Lobby.h"
-
-
+#include "sendToClient.h"
 
 void sendLobbiesToClients(std::vector<std::string> lobbyNames, int clientFd = -1);
 void sendPlayersToClients(const Lobby* lobby, int ignoreFd = -1);
