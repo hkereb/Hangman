@@ -259,7 +259,7 @@ class MainApp(QMainWindow):
 
             your_nick = parts[1]
 
-            self.ui.ranking_list.addItem(f"{your_nick}: 0")
+            self.ui.ranking_list.addItem(f"0    {your_nick}")
 
             opponents = parts[2]
             nicks = opponents.split(",")
@@ -267,7 +267,7 @@ class MainApp(QMainWindow):
             for i, nick in enumerate(nicks):
                 self.player_names_labels[i].setText(nicks[i])
                 self.opacity[i].setOpacity(1.0)
-                self.ui.ranking_list.addItem(f"{nick}: 0")
+                self.ui.ranking_list.addItem(f"0    {nick}")
 
             self.ui.stackedWidget.setCurrentWidget(self.ui.game_page)
         ###
@@ -285,6 +285,24 @@ class MainApp(QMainWindow):
                 if player_name.text() == nick:
                     self.player_labels[i].setPixmap(QPixmap(self.image_paths[lives]))
                     break
+        ###
+        elif message.startswith("77"):
+            msg = substr_msg(message)
+            info = msg.split(",")
+            nick = info[0]
+            points = int(info[1])
+
+            for i in range(self.ui.ranking_list.count()):
+                item = self.ui.ranking_list.item(i)
+                item_info = item.text().split("    ")
+                item_nick = item_info[1]
+
+                if item_nick == nick:
+                    item.setText(f"{points}    {nick}")
+                    break
+
+            self.updateRanking()
+
 
     def on_ip_changed(self):
         if self.ui.ip_field.hasAcceptableInput():
@@ -309,3 +327,19 @@ class MainApp(QMainWindow):
         selected_item = self.ui.rooms_list.currentItem()
         if selected_item:
             self.ui.join_room_name_field.setText(selected_item.text())
+
+    def updateRanking(self):
+        items = []
+        for i in range(self.ui.ranking_list.count()):
+            item = self.ui.ranking_list.item(i)
+            item_info = item.text().split("    ")
+
+            points = int(item_info[0])
+            nick = item_info[1]
+            items.append((points, nick))
+
+        items.sort(reverse=True, key=lambda x: x[0])
+        self.ui.ranking_list.clear()
+
+        for points, nick in items:
+            self.ui.ranking_list.addItem(f"{points}    {nick}")
