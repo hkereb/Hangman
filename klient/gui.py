@@ -308,6 +308,33 @@ class MainApp(QMainWindow):
 
             self.updateRanking()
         ###
+        elif message.startswith("78"):
+            msg = substr_msg(message)
+            info = msg.split(";")
+            ranking = info[0]
+            all_words = info[1]
+
+            players = ranking.split(",")
+            words = all_words.split(",")
+
+            items = []
+            for player in players:
+                player_info = player.split(":")
+                nick = player_info[0]
+                points = player_info[1]
+                items.append((points, nick))
+
+            items.sort(reverse=True, key=lambda x: x[0])
+            self.ui.ranking_list.clear()
+
+            for points, nick in items:
+                self.ui.ranking_list_2.addItem(f"{points}    {nick}")
+
+            for word in words:
+                self.ui.all_words_list.addItem(word.upper())
+
+            self.ui.stackedWidget.setCurrentWidget(self.ui.end_page)
+        ###
         elif message.startswith("79"):
             msg = substr_msg(message)
             info = msg.split(",")

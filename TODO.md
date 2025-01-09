@@ -31,5 +31,5 @@
 - [x] 75\\[hasło] - update info o haśle
 - [x] 76\\[nick:życia] - update wisielca przeciwnika
 - [x] 77\\[nick:punkty] - update rankingu
-- [ ] 78\\[] - koniec gry
+- [x] 78\\[nick:punkty,nick:punkty;słowo1,słowo2] - koniec gry
 - [x] 79\\[zaszyfrowane_hasło,runda,runda_max] - nowa runda
