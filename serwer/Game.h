@@ -5,6 +5,9 @@
 #include <vector>
 #include <chrono>
 #include <algorithm>
+#include <iostream>
+#include <random>
+#include <atomic>
 #include "Player.h"
 
 namespace Levels {
