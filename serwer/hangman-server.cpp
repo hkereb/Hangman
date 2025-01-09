@@ -100,14 +100,13 @@ int main() {
                         });
 
                         if (playerIt != players.end()) {
-                            players.erase(playerIt); 
-                            std::cout << "Player with nickname " << playerIt->nick << " removed from global player list.\n";
-                            
                             auto nicknameIt = std::find(playersNicknames.begin(), playersNicknames.end(), playerIt->nick);
                             if (nicknameIt != playersNicknames.end()) {
                                 playersNicknames.erase(nicknameIt);  // Remove the nickname
                                 //std::cout << "Player's nickname removed: " << playerIt->nick << "\n";
                             }
+                            std::cout << "Player with nickname " << playerIt->nick << " removed from global player list.\n";
+                            players.erase(playerIt);
                         }
 
                         // Clean up resources

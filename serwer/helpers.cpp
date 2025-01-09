@@ -73,7 +73,7 @@ void sendWordAndPointsToClients(const Lobby* lobby, const Player* playerWhoGuess
     }
 }
 
-// update wisielców PRZECIWNIKÓW dla WSZYSTKICH graczy z pokoju
+// update wisielca PRZECIWNIKA dla WSZYSTKICH graczy z pokoju oprócz niego
 void sendLivesToClients(const Lobby* lobby, const Player* playerWhoMissed) {
     std::string msgLives = playerWhoMissed->nick + "," + std::to_string(playerWhoMissed->lives);
 
@@ -87,7 +87,7 @@ void sendLivesToClients(const Lobby* lobby, const Player* playerWhoMissed) {
 
 void sendStartToClients(const Lobby* lobby) {
     for (const auto& player : lobby->players) {
-        std::string msgBody = lobby->game.wordInProgress + ";";
+        std::string msgBody = lobby->game.wordInProgress + ":" + player.nick + ":";
         int count = 0;
 
         for (const auto& opponent : lobby->players) {
@@ -99,16 +99,10 @@ void sendStartToClients(const Lobby* lobby) {
                 msgBody += opponent.nick;
             }
         }
-        // dopełnienie
-        while (count < 4) {
-            msgBody += ",";
-            count++;
-        }
 
         sendToClient(player.sockfd, "73", msgBody);
     }
 }
-
 
 void isStartAllowed(const Lobby* lobby) {
     if (!lobby->game.isGameActive) {

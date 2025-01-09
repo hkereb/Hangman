@@ -140,9 +140,7 @@ void handleClientMessage(int clientFd, std::string msg) {
 
         if (lobbyIt != lobbies.end()) {
             lobbyIt->startGame();
-            for (const auto& player : lobbyIt->players) {  // powiadomienie graczy
-                sendStartToClients(&*lobbyIt);
-            }
+            sendStartToClients(&*lobbyIt);
         }
         else {
             sendToClient(clientFd, "73", "0");  // Pokój nie istnieje
@@ -172,17 +170,17 @@ void handleClientMessage(int clientFd, std::string msg) {
             return;
         }
 
-        // todo sprawdzić czy litera jest w failed klienta
+        // todo sprawdzić czy litera jest w failed klienta (dlaczego char nie działa a string tak?)
 
         if (!game.guessedLetters.empty()) {
             if (std::find(game.guessedLetters.begin(), game.guessedLetters.end(), letter) != game.guessedLetters.end()) {
-                sendToClient(clientFd, "06", "2," + letter); // litera już zgadnięta
+                sendToClient(clientFd, "06", "2," + std::string(1,letter)); // litera już zgadnięta
                 return;
             }
         }
         if (!playerIt->failedLetters.empty()) {
             if (std::find(playerIt->failedLetters.begin(), playerIt->failedLetters.end(), letter) != playerIt->failedLetters.end()) {
-                sendToClient(clientFd, "06", "3," + letter); // litera została już wcześniej wykorzystana jako fail
+                sendToClient(clientFd, "06", "3," + std::string(1,letter)); // litera została już wcześniej wykorzystana jako fail
                 return;
             }
         }
