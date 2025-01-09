@@ -13,9 +13,8 @@ struct Lobby {
     std::string name;
     std::string password;
     int playersCount;
-    std::vector<Player> players;
-    Player owner;
-    std::map<int, time_t> joinTimes;
+    std::vector<Player*> players;
+    Player* owner;
 
     int difficulty;
     int roundsAmount;
@@ -23,12 +22,18 @@ struct Lobby {
 
     Game game;
 
-    Lobby() : playersCount(0), difficulty(1), roundsAmount(5), roundDuration(60) {}
-
+    Lobby() :
+    name(""),
+    password(""),
+    playersCount(0),
+    players({}),
+    owner(nullptr),
+    difficulty(1),
+    roundsAmount(5),
+    roundDuration(60){}
 
     void startGame();
     void setOwner();
-
 };
 
 #endif // LOBBY_H

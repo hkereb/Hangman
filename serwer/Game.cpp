@@ -31,22 +31,22 @@ void Game::startGame() {
 }
 
 void Game::nextRound() {
-    if (currentRound >= roundsAmount) {
-        isGameActive = false;  // zakonczenie gry
+    if (currentRound == roundsAmount) {
+        isGameActive = false;  // zakończenie gry
         stopTimer();
         return;
     }
 
-    currentRound++;  // zwiekszenie numeru rundy
+    currentRound++;  // zwiększenie numeru rundy
 
-    // ustawienie slowa do odgadniecia na aktualna runde
+    // ustawienie słowa do odgadnięcia na aktualną rundę
     currentWord = wordList[currentRound - 1];
     std::cout << "new word to guess: " + currentWord + "\n";
     guessedLetters.clear();
     encodeWord();
 
     for (auto& player : players) {
-        player.lives = player.maxLives;  // ustawianie domyslnej liczby żyć
+        player->lives = player->maxLives;  // ustawianie domyślnej liczby żyć
     }
 
     stopTimer();
@@ -64,18 +64,17 @@ void Game::encodeWord() {
     }
 }
 
-
-
 std::string Game::convertTime(int time) {
     int minutes = time/60;
     int seconds = time%60;
     std::stringstream ss;
     ss << minutes << ":" << std::setw(2) << std::setfill('0') << seconds;
-    
+
     return ss.str();
 }
 
 void Game::startTimer() {
+    stopTimer();
     isRoundActive = true;
     timeLeftInRound = roundDuration;
 
@@ -86,14 +85,14 @@ void Game::startTimer() {
 
             std::string messageBody = convertTime(timeLeftInRound);
             for (const auto& player : players) {
-                sendToClient(player.sockfd, "11", messageBody);
+                sendToClient(player->sockfd, "11", messageBody);
             }
 
             if (timeLeftInRound <= 0) {
                 isRoundActive = false;
 
                 for (const auto& player : players) {
-                    sendToClient(player.sockfd, "12", "Round time over");
+                    sendToClient(player->sockfd, "12", "Round time over");
                 }
             }
         }
@@ -108,9 +107,9 @@ void Game::stopTimer() {
 }
 
 void Game::resetGame(int roundsAmount, int roundDuration, int difficulty) {
-    roundsAmount = roundsAmount;
-    roundDuration = roundDuration;
-    difficulty = difficulty;
+    this->roundsAmount = roundsAmount;
+    this->roundDuration = roundDuration;
+    this->difficulty = difficulty;
     currentRound = 0;
     isGameActive = false;
     wordList.clear();
@@ -123,7 +122,7 @@ void Game::resetGame(int roundsAmount, int roundDuration, int difficulty) {
 
     // Reset players' state if needed
     for (auto& player : players) {
-        player.points = 0; // Reset scores or other player data
+        player->points = 0; // Reset scores or other player data
     }
 }
 

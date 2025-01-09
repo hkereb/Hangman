@@ -25,7 +25,7 @@ struct Game {
     std::string currentWord;
     std::string wordInProgress;
     std::vector<char> guessedLetters;
-    std::vector<Player> players;
+    std::vector<Player*> players;
     int roundDuration;
     int currentRound;
     int roundsAmount;
@@ -73,7 +73,7 @@ struct Game {
     void startTimer();
     void stopTimer();
     void resetGame(int roundsAmount, int roundDuration, int difficulty);
-    std::string convertTime(int time);
+    static std::string convertTime(int time);
 };
 
 #endif // GAME_H

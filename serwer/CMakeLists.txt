@@ -11,6 +11,7 @@ set(SOURCES
     handle-client-message.cpp
     Game.cpp
     Lobby.cpp
+        sendToClient.cpp
 )
 
 # pliki naglowkowe
@@ -22,6 +23,7 @@ set(HEADERS
     Lobby.h
     Player.h
     Settings.h
+        sendToClient.h
 )
 
 # plik wykonywalny
