@@ -18,7 +18,7 @@ struct Player {
 
     Player() {
         this->nick = "";
-        this->sockfd = -1; // Initialize to -1 instead of NULL for better clarity
+        this->sockfd = -1;
         this->isOwner = false;
         this->points = 0;
         this->maxLives = 10;

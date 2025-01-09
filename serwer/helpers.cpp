@@ -104,6 +104,32 @@ void sendStartToClients(const Lobby* lobby) {
     }
 }
 
+void sendEndToClients(const Lobby* lobby) {
+    std::string msgBody;
+    int count1 = 0;
+    for (const auto& player : lobby->players) {
+        count1++;
+        if (count1 != 1) {
+            msgBody += ",";
+        }
+        msgBody += player.nick + ":" + std::to_string(player.points);
+    }
+    msgBody += ";";
+
+    int count2 = 0;
+    for (const auto& word : lobby->game.wordList) {
+        count2++;
+        if (count2 != 1) {
+            msgBody += ",";
+        }
+        msgBody += word;
+    }
+
+    for (const auto& player : lobby->players) {
+        sendToClient(player.sockfd, "78", msgBody);
+    }
+}
+
 void isStartAllowed(const Lobby* lobby) {
     if (!lobby->game.isGameActive) {
         if (lobby->playersCount >= 2) {

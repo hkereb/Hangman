@@ -31,22 +31,22 @@ void Game::startGame() {
 }
 
 void Game::nextRound() {
-    if (currentRound >= roundsAmount) {
-        isGameActive = false;  // zakonczenie gry
+    if (currentRound == roundsAmount) {
+        isGameActive = false;  // zakończenie gry
         stopTimer();
         return;
     }
 
-    currentRound++;  // zwiekszenie numeru rundy
+    currentRound++;  // zwiększenie numeru rundy
 
-    // ustawienie slowa do odgadniecia na aktualna runde
+    // ustawienie słowa do odgadnięcia na aktualną rundę
     currentWord = wordList[currentRound - 1];
     std::cout << "new word to guess: " + currentWord + "\n";
     guessedLetters.clear();
     encodeWord();
 
     for (auto& player : players) {
-        player.lives = player.maxLives;  // ustawianie domyslnej liczby żyć
+        player.lives = player.maxLives;  // ustawianie domyślnej liczby żyć
     }
 
     stopTimer();
@@ -71,7 +71,7 @@ std::string Game::convertTime(int time) {
     int seconds = time%60;
     std::stringstream ss;
     ss << minutes << ":" << std::setw(2) << std::setfill('0') << seconds;
-    
+
     return ss.str();
 }
 

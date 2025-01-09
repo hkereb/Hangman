@@ -11,7 +11,7 @@ extern int lobbyCount;
 void handleClientMessage(int clientFd, std::string msg) {
     auto playerIt = std::find_if(players.begin(), players.end(), [clientFd](const Player& player) {
             return player.sockfd == clientFd;
-        });
+    });
 
     if (msg.substr(0, 2) == "01") {// Ustawienie nicku
         std::string nick = messageSubstring(msg);
@@ -212,9 +212,9 @@ void handleClientMessage(int clientFd, std::string msg) {
             if (game.wordInProgress == game.currentWord) {
                 std::cout << "HASŁO ZGADNIĘTE w lobby: " + lobbyIt->name + "\n";
                 game.nextRound();
-                // todo sprawdzić czy to nie koniec całej gry
+                std::cout << playerIt->points + "\n";
                 if (!game.isGameActive) {
-                    // gra się zakończyła, wysłać właściwy sygnał i informacje [78]
+                    sendEndToClients(&*lobbyIt); // 78 - koniec gry
                     return;
                 }
                 for (auto& player : lobbyIt->players) {

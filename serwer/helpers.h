@@ -25,5 +25,6 @@ void removeFromLobby(int clientFd);
 void sendWordAndPointsToClients(const Lobby* lobby, const Player* playerWhoGuessed);
 void sendLivesToClients(const Lobby* lobby, const Player* playerWhoMissed);
 void sendStartToClients(const Lobby* lobby);
+void sendEndToClients(const Lobby* lobby);
 
 #endif // COMMUNICATION_FUNCTIONS_H
