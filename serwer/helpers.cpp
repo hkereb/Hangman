@@ -85,6 +85,29 @@ void sendLivesToClients(const Lobby* lobby, const Player* playerWhoMissed) {
     }
 }
 
+void sendStartToClients(const Lobby* lobby) {
+    for (const auto& player : lobby->players) {
+        std::string msgBody = lobby->game.wordInProgress + ";";
+        size_t count = 0;
+
+        for (const auto& opponent : lobby->players) {
+            if (opponent.nick != player.nick) {
+                msgBody += opponent.nick;
+                msgBody += ",";
+                count++;
+            }
+        }
+        // dopełnienie
+        while (count < 3) {
+            msgBody += ",";
+            count++;
+        }
+
+        sendToClient(player.sockfd, "73", msgBody);
+    }
+}
+
+
 void isStartAllowed(const Lobby* lobby) {
     if (!lobby->game.isGameActive) {
         if (lobby->playersCount >= 2) {

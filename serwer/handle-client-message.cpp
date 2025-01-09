@@ -141,7 +141,7 @@ void handleClientMessage(int clientFd, std::string msg) {
         if (lobbyIt != lobbies.end()) {
             lobbyIt->startGame();
             for (const auto& player : lobbyIt->players) {  // powiadomienie graczy
-                sendToClient(player.sockfd, "73", lobbyIt->game.wordInProgress + "," + std::to_string(player.maxLives));
+                sendStartToClients(&*lobbyIt);
             }
         }
         else {
@@ -176,7 +176,11 @@ void handleClientMessage(int clientFd, std::string msg) {
         // todo sprawdzić czy litera jest w failed klienta
 
         if (std::find(game.wordInProgress.begin(), game.wordInProgress.end(), letter) != game.wordInProgress.end()) {
-            sendToClient(clientFd, "06", "0"); // litera już zgadnięta
+            sendToClient(clientFd, "06", "2," + letter); // litera już zgadnięta
+            return;
+        }
+        if (std::find(playerIt->failedLetters.begin(), playerIt->failedLetters.end(), letter) != playerIt->failedLetters.end()) {
+            sendToClient(clientFd, "06", "3," + letter); // litera została już wcześniej wykorzystana jako fail
             return;
         }
 
@@ -198,7 +202,7 @@ void handleClientMessage(int clientFd, std::string msg) {
             playerIt->points += 25 * occurrences;
 
             // 3. wysłanie graczowi odpowiedzi na jego literę
-            std::string msgBody = "1," + std::string(1,letter);
+            std::string msgBody = "1," + letter;
             sendToClient(clientFd, "06", msgBody);
 
             // 4. powiadomienie wszystkich graczy o stanie gry
@@ -219,6 +223,7 @@ void handleClientMessage(int clientFd, std::string msg) {
         else {
             // todo nie odbierać życia jeżeli litera się powtórzyła
             playerIt->lives--;
+            playerIt->failedLetters.push_back(letter); // todo być może nie potrzebne
             std::string msgBody = "0," + std::string(1,letter) + "," + std::to_string(playerIt->lives);
             sendToClient(clientFd, "06", msgBody);
             sendLivesToClients(&*lobbyIt, &*playerIt);
