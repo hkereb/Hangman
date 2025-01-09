@@ -26,9 +26,10 @@
 - [x] 70\\[nazwa1,..,nazwa99] - przesłanie listy nazw pokoi
 - [x] 71\\[bool,nazwa1,..,nazwa99] - przesłanie listy nazw graczy w danym pokoju
 - [x] 72\\[bool] - pozwolenie na rozpoczęcie gry (0 jeżeli gracze opuszczą waitroom jeszcze zanim zacznie się gra i jest <2)
-- [x] 73\\[zaszyfrowane_hasło,życia,lista_przeciwników] - sygnał do rozpoczęcia nowej rundy (gdy pierwszy raz to przejście do game page)
+- [x] 73\\[zaszyfrowane_hasło,rundy,twój_nick,lista_przeciwników] - sygnał do rozpoczęcia nowej rundy (gdy pierwszy raz to przejście do game page)
 - [x] 74\\[nick] - klient o podanym nicku opuścił rozgrywkę w jej trakcie
 - [x] 75\\[hasło] - update info o haśle
 - [x] 76\\[nick:życia] - update wisielca przeciwnika
 - [x] 77\\[nick:punkty] - update rankingu
-- [x] 78\\[] - koniec gry
+- [ ] 78\\[] - koniec gry
+- [x] 79\\[zaszyfrowane_hasło,runda,runda_max] - nowa runda

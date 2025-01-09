@@ -214,6 +214,9 @@ class MainApp(QMainWindow):
 
                 lives = int(parts[2])
                 self.ui.player0_label.setPixmap(QPixmap(self.image_paths[lives]))
+                if lives == 0:
+                    self.ui.send_letter_btn.setEnabled(False)
+                    self.ui.letter_input.setReadOnly(True)
         ###
         elif message.startswith("69"):
             self.sig_has_connected.emit()
@@ -257,11 +260,13 @@ class MainApp(QMainWindow):
             spaced_word = " ".join(word)
             self.ui.word_label.setText(spaced_word)
 
-            your_nick = parts[1]
+            rounds = int(parts[1])
+            self.ui.rounds2_label.setText(f"1/{rounds}")
 
+            your_nick = parts[2]
             self.ui.ranking_list.addItem(f"0    {your_nick}")
 
-            opponents = parts[2]
+            opponents = parts[3]
             nicks = opponents.split(",")
 
             for i, nick in enumerate(nicks):
@@ -302,7 +307,21 @@ class MainApp(QMainWindow):
                     break
 
             self.updateRanking()
+        ###
+        elif message.startswith("79"):
+            msg = substr_msg(message)
+            info = msg.split(",")
+            word = info[0].upper()
+            spaced_word = " ".join(word)
+            current_round = int(info[1])
+            max_round = int(info[2])
 
+            self.ui.word_label.setText(spaced_word)
+            self.ui.rounds2_label.setText(f"{current_round}/{max_round}")
+            self.ui.fails_label.clear()
+            for i, player in enumerate(self.player_labels):
+                self.player_labels[i].setPixmap(QPixmap(self.image_paths[10]))
+            self.ui.player0_label.setPixmap(QPixmap(self.image_paths[10]))
 
     def on_ip_changed(self):
         if self.ui.ip_field.hasAcceptableInput():
