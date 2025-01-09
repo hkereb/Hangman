@@ -29,7 +29,7 @@ class MainApp(QMainWindow):
         self.ui.setupUi(self)
 
         # strona startowa
-        self.ui.stackedWidget.setCurrentWidget(self.ui.end_page)
+        self.ui.stackedWidget.setCurrentWidget(self.ui.nick_page)
 
         # walidator adresu IP
         ip_regex = QRegularExpression(r'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$')
