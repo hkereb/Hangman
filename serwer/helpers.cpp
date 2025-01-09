@@ -3,20 +3,6 @@
 extern std::vector<Player> players;
 extern std::vector<Lobby> lobbies;
 
-// void sendToClient(int clientFd, const std::string& commandNumber, const std::string& body) {
-//     if (commandNumber.size() != 2) {
-//         std::cerr << "Error: Command number must consist of 2 characters";
-//         return;
-//     }
-//
-//     std::string fullMessage = commandNumber + "\\" + body + "\n";
-//     ssize_t bytesSent = send(clientFd, fullMessage.c_str(), fullMessage.size(), 0);
-//
-//     if (bytesSent == -1) {
-//         std::cerr << "Error: Failed to send message to client with socket " << clientFd << ".\n";
-//     }
-// }
-
 void sendLobbiesToClients(std::vector<std::string> lobbyNames, int clientFd) {
     std::string messageBody;
     // przygotowanie wiadomości
@@ -87,7 +73,8 @@ void sendLivesToClients(const Lobby* lobby, const Player* playerWhoMissed) {
 
 void sendStartToClients(const Lobby* lobby) {
     for (const auto& player : lobby->players) {
-        std::string msgBody = lobby->game.wordInProgress + ":" + std::to_string(lobby->roundsAmount) + ":" + player->nick + ":";
+        std::string time = Game::convertTime(lobby->roundDuration);
+        std::string msgBody = lobby->game.wordInProgress + ";" + time + ";"+ std::to_string(lobby->roundsAmount) + ";" + player->nick + ";";
         int count = 0;
 
         for (const auto& opponent : lobby->players) {

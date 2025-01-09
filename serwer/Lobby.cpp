@@ -14,9 +14,9 @@ void Lobby::startGame() {
 }
 
 void Lobby::setOwner() {
-    if (!players.empty()) { // Sprawdzamy, czy lista graczy nie jest pusta
-        owner = players[0]; // Przypisanie wskaźnika na właściciela
-        players[0]->isOwner = true; // Dostęp do członka przez wskaźnik
+    if (!players.empty()) {
+        owner = players[0];
+        players[0]->isOwner = true;
     }
     else {
         owner = nullptr;
