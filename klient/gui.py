@@ -262,7 +262,7 @@ class MainApp(QMainWindow):
             for i in range(0, 4):
                 if nicks[i] != "":
                     self.player_names_labels[i].setText(nicks[i])
-                    self.player_labels[i].setGraphicsEffect(self.opacity[i].setOpacity(1.0))
+                    #self.player_labels[i].setGraphicsEffect(self.opacity[i].setOpacity(1.0))
 
             self.ui.stackedWidget.setCurrentWidget(self.ui.game_page)
         ###
