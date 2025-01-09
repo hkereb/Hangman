@@ -218,6 +218,10 @@ class MainApp(QMainWindow):
                     self.ui.send_letter_btn.setEnabled(False)
                     self.ui.letter_input.setReadOnly(True)
         ###
+        elif message.startswith("11"):
+            time = substr_msg(message)
+            self.ui.time2_label_2.setText(time)
+        ###
         elif message.startswith("69"):
             self.sig_has_connected.emit()
         ###
@@ -252,21 +256,24 @@ class MainApp(QMainWindow):
             else:
                 self.ui.start_btn.setVisible(False)
                 print("Gra NIE może zostać rozpoczęta.")
-        ###
+        ### init gry
         elif message.startswith("73"):
             msg = substr_msg(message)
-            parts = msg.split(":")
+            parts = msg.split(";")
             word = parts[0]
             spaced_word = " ".join(word)
             self.ui.word_label.setText(spaced_word)
 
-            rounds = int(parts[1])
+            time = parts[1]
+            self.ui.time2_label_2.setText(time)
+
+            rounds = int(parts[2])
             self.ui.rounds2_label.setText(f"1/{rounds}")
 
-            your_nick = parts[2]
+            your_nick = parts[3]
             self.ui.ranking_list.addItem(f"0    {your_nick}")
 
-            opponents = parts[3]
+            opponents = parts[4]
             nicks = opponents.split(",")
 
             for i, nick in enumerate(nicks):
@@ -325,8 +332,7 @@ class MainApp(QMainWindow):
                 items.append((points, nick))
 
             items.sort(reverse=True, key=lambda x: x[0])
-            self.ui.ranking_list.clear()
-
+            self.ui.ranking_list_2.clear()
             for points, nick in items:
                 self.ui.ranking_list_2.addItem(f"{points}    {nick}")
 
