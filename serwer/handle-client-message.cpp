@@ -138,10 +138,9 @@ void handleClientMessage(int clientFd, const std::string& msg) {
         }
     }
     else if (msg.substr(0, 2) == "73") {  // Start gry
-        // todo tutaj szukać tylko po ownerach (players[0])
         auto lobbyIt = std::find_if(lobbies.begin(), lobbies.end(), [clientFd](const Lobby& lobby) {
             return std::any_of(lobby.players.begin(), lobby.players.end(), [clientFd, &lobby](Player* player) {
-                return !lobby.players.empty() && lobby.players[0]->sockfd == clientFd;
+                return !lobby.players.empty() && lobby.owner->sockfd == clientFd;
             });
         });
 
@@ -224,7 +223,6 @@ void handleClientMessage(int clientFd, const std::string& msg) {
             if (game.wordInProgress == game.currentWord) {
                 std::cout << "HASŁO ZGADNIĘTE w lobby: " + lobbyIt->name + "\n";
                 game.nextRound();
-                std::cout << (*playerIt)->points + "\n";
                 if (!game.isGameActive) {
                     sendEndToClients(&*lobbyIt); // 78 - koniec gry
                     return;
@@ -247,11 +245,34 @@ void handleClientMessage(int clientFd, const std::string& msg) {
                 // todo sprawdzić czy koniec gry (wszyscy powiesili wisielce)
                 if (std::all_of(lobbyIt->players.begin(), lobbyIt->players.end(), [](const Player* player) { return player->lives <= 0; })) {
                     for (const auto& player : lobbyIt->players) {
-                        sendToClient(player->sockfd, "78", "tu będzie coś");
+                        sendToClient(player->sockfd, "78", "");
                     }
                     game.nextRound();
                 }
             }
+        }
+    }
+    else if (msg.substr(0, 2) == "80") {  // czas się skończył, nowa runda
+        auto lobbyIt = std::find_if(lobbies.begin(), lobbies.end(), [clientFd](const Lobby& lobby) {
+            return std::any_of(lobby.players.begin(), lobby.players.end(), [clientFd, &lobby](Player* player) {
+                return !lobby.players.empty() && lobby.owner->sockfd == clientFd;
+            });
+        });
+
+        if (lobbyIt != lobbies.end()) {
+            std::cout << "CZAS MINĄŁ w lobby: " + lobbyIt->name + "\n";
+            lobbyIt->game.nextRound();
+            if (!lobbyIt->game.isGameActive) {
+                sendEndToClients(&*lobbyIt); // 78 - koniec gry
+                return;
+            }
+            for (auto& player : lobbyIt->players) {
+                player->failedLetters.clear();
+                sendToClient(player->sockfd, "79", lobbyIt->game.wordInProgress + "," + std::to_string(lobbyIt->game.currentRound) + "," + std::to_string(lobbyIt->roundsAmount));
+            }
+        }
+        else {
+            sendToClient(clientFd, "79", "0");  // Pokój nie istnieje
         }
     }
     // TODO hania - dostować gui

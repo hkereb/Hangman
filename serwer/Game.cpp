@@ -1,4 +1,5 @@
 #include "Game.h"
+#include "helpers.h"
 
 void Game::initializeWordList() {
     std::vector<std::string> availableWords = {
@@ -45,7 +46,7 @@ void Game::nextRound() {
     guessedLetters.clear();
     encodeWord();
 
-    for (auto& player : players) {
+    for (const auto& player : players) {
         player->lives = player->maxLives;  // ustawianie domyślnej liczby żyć
     }
 
@@ -65,8 +66,8 @@ void Game::encodeWord() {
 }
 
 std::string Game::convertTime(int time) {
-    int minutes = time/60;
-    int seconds = time%60;
+    const int minutes = time/60;
+    const int seconds = time%60;
     std::stringstream ss;
     ss << minutes << ":" << std::setw(2) << std::setfill('0') << seconds;
 
@@ -91,9 +92,11 @@ void Game::startTimer() {
             if (timeLeftInRound <= 0) {
                 isRoundActive = false;
 
-                for (const auto& player : players) {
-                    sendToClient(player->sockfd, "12", "Round time over");
-                }
+                // todo - być może zbędna wiadomość, bardziej liczy się zaczęcie nowej gry + reset timera
+                // for (const auto& player : players) {
+                //     sendToClient(player->sockfd, "12", "");
+                // }
+                sendToClient(players[0]->sockfd, "12", "");
             }
         }
     });
@@ -117,12 +120,10 @@ void Game::resetGame(int roundsAmount, int roundDuration, int difficulty) {
     wordInProgress.clear();
     guessedLetters.clear();
 
-    // Stop any running timer
     stopTimer();
 
-    // Reset players' state if needed
     for (auto& player : players) {
-        player->points = 0; // Reset scores or other player data
+        player->points = 0;
     }
 }
 

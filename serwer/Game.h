@@ -11,6 +11,7 @@
 #include <random>
 #include <atomic>
 #include <thread>
+
 #include "Player.h"
 #include "sendToClient.h"
 
@@ -37,7 +38,9 @@ struct Game {
     std::atomic<bool> isRoundActive;
     std::thread timerThread;
 
-    Game() : timeLeftInRound(0), isRoundActive(false) {}
+    Game() :
+    timeLeftInRound(0),
+    isRoundActive(false) {}
 
     // move constructor
     Game(Game&& other) noexcept
@@ -60,8 +63,6 @@ struct Game {
         }
     }
 
-
-
     ~Game() {
         stopTimer(); 
     }
@@ -69,6 +70,7 @@ struct Game {
     void initializeWordList();
     void startGame();
     void nextRound();
+    void endRound();
     void encodeWord();
     void startTimer();
     void stopTimer();
