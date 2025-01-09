@@ -21,7 +21,8 @@
 - [x] 02\\[bool] - potwierdzenie stworzenia pokoj
 - [x] 03\\[bool] - potwierdzenie dołączenia do pokoju
 - [x] 06\\[bool,litera,<życia>] - odpowiedź na próbę zgadnięcia litery (życia jeżeli bool = 0)
-
+- [x] 11\\[] - update pozostałego czasu rundy
+- [x] 12\\[] - wyczerpał się czas przewidziany na rundę 
 - [x] 69\\[hello!] - potwierdzenie nawiązania połączenia
 - [x] 70\\[nazwa1,..,nazwa99] - przesłanie listy nazw pokoi
 - [x] 71\\[bool,nazwa1,..,nazwa99] - przesłanie listy nazw graczy w danym pokoju
