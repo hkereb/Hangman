@@ -61,6 +61,49 @@ void sendPlayersToClients(const Lobby* lobby, int ignoreFd) {
     }
 }
 
+// update rankingu i hasła dla WSZYSTKICH z pokoju
+void sendWordAndPointsToClients(const Lobby* lobby, const Player* playerWhoGuessed) {
+    std::string msgWord = lobby->game.wordInProgress;
+    std::string msgPoints = playerWhoGuessed->nick + "," + std::to_string(playerWhoGuessed->points);
+
+    // wysłanie do wszystkich klientów z pokoju
+    for (const auto& player : lobby->players) {
+        sendToClient(player.sockfd, "75", msgWord);
+        sendToClient(player.sockfd, "77", msgPoints);
+    }
+}
+
+// update wisielca PRZECIWNIKA dla WSZYSTKICH graczy z pokoju oprócz niego
+void sendLivesToClients(const Lobby* lobby, const Player* playerWhoMissed) {
+    std::string msgLives = playerWhoMissed->nick + "," + std::to_string(playerWhoMissed->lives);
+
+    // wysłanie do wszystkich klientów z pokoju oprócz tego gracza
+    for (const auto& player : lobby->players) {
+        if (player.nick != playerWhoMissed->nick) {
+               sendToClient(player.sockfd, "76", msgLives);
+        }
+    }
+}
+
+void sendStartToClients(const Lobby* lobby) {
+    for (const auto& player : lobby->players) {
+        std::string msgBody = lobby->game.wordInProgress + ":" + std::to_string(lobby->roundsAmount) + ":" + player.nick + ":";
+        int count = 0;
+
+        for (const auto& opponent : lobby->players) {
+            if (opponent.nick != player.nick) {
+                count++;
+                if (count != 1) {
+                    msgBody += ",";
+                }
+                msgBody += opponent.nick;
+            }
+        }
+
+        sendToClient(player.sockfd, "73", msgBody);
+    }
+}
+
 void isStartAllowed(const Lobby* lobby) {
     if (!lobby->game.isGameActive) {
         if (lobby->playersCount >= 2) {

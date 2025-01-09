@@ -45,7 +45,7 @@ struct Game {
     void initializeWordList();
     void startGame();
     void nextRound();
-    void encodeWord(const std::string& currentWord, std::vector<char> guessedLetters);
+    void encodeWord();
 };
 
 #endif // GAME_H
