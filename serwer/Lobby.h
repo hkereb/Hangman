@@ -5,7 +5,8 @@
 #include <vector>
 #include <map>
 #include <ctime>
-#include "Player.h"
+#include <iostream>
+#include <memory>
 #include "Game.h"
 
 struct Lobby {
@@ -20,7 +21,7 @@ struct Lobby {
     int roundsAmount;
     int roundDuration;
 
-    Game game;
+    std::unique_ptr<Game> game;
 
     Lobby() {
         this->name = "";
@@ -29,10 +30,15 @@ struct Lobby {
         this->difficulty = 1;
         this->roundsAmount = 5;
         this->roundDuration = 60;
+        this->game = std::make_unique<Game>();
     }
+
+    
+
 
     void startGame();
     void setOwner();
+
 };
 
 #endif // LOBBY_H

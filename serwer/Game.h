@@ -8,7 +8,9 @@
 #include <iostream>
 #include <random>
 #include <atomic>
+#include <thread>
 #include "Player.h"
+#include "helpers.h"
 
 namespace Levels {
     constexpr int EASY = 1;
@@ -29,12 +31,18 @@ struct Game {
     bool isGameActive;
     std::chrono::steady_clock::time_point timeStart;
 
+    std::atomic<int> timeLeftInRound;
+    std::atomic<bool> isRoundActive;
+    std::thread timerThread;
+
     Game() {
         this->roundsAmount = 5;
         this->roundDuration = 60;
         this->currentRound = 0;
         this->difficulty = Levels::EASY;
         this->isGameActive = false;
+        this->timeLeftInRound = 0;
+        this->isRoundActive = false;
     }
 
     Game(int roundsAmount, int roundDuration, int difficulty) {
@@ -49,6 +57,9 @@ struct Game {
     void startGame();
     void nextRound();
     void encodeWord();
+    void startTimer();
+    void stopTimer();
+    void broadcastTimeToClients();
 };
 
 #endif // GAME_H

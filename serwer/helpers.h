@@ -6,6 +6,9 @@
 #include <iostream>
 #include <sys/socket.h>
 #include <string.h>
+#include <string>
+#include <sstream>
+#include <iomanip>
 #include "network.h"
 #include "Settings.h"
 #include "Player.h"
@@ -23,5 +26,6 @@ void removeFromLobby(int clientFd);
 void sendWordAndPointsToClients(const Lobby* lobby, const Player* playerWhoGuessed);
 void sendLivesToClients(const Lobby* lobby, const Player* playerWhoMissed);
 void sendStartToClients(const Lobby* lobby);
+std::string convertTime(int time);
 
 #endif // COMMUNICATION_FUNCTIONS_H
