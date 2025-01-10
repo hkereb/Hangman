@@ -4,7 +4,7 @@ import threading
 
 class NetworkClient(QThread):
     message_received = Signal(str)
-    error_occurred = Signal(str)
+    sig_server_disconnected = Signal(str)
     sig_cant_connect = Signal(str)
 
     def __init__(self, server_ip, server_port, parent=None):
@@ -38,9 +38,8 @@ class NetworkClient(QThread):
             while True:
                 data = self.socket.recv(1024).decode('utf-8')
                 if data:
-                    buffer += data # dodanie nowych danych do bufora
+                    buffer += data
 
-                    # rozdzielenie wiadomości na podstawie znaku końca wiadomości '\n'
                     messages = buffer.split("\n")
 
                     for message in messages[:-1]:  # obsługa pełnych wiadomości
@@ -49,8 +48,12 @@ class NetworkClient(QThread):
 
                     # częściowa wiadomość
                     buffer = messages[-1]
-        except Exception as e:
-            self.error_occurred.emit(str(e))
+                else:  # połączenie zostało zamknięte
+                    raise ConnectionError("Server has closed the connection.")
+        except (socket.error, ConnectionError) as e:
+            self.sig_server_disconnected.emit(str(e))
+            self.isConnected = False
+            self.socket.close()
 
     def send_to_server(self, command_number, body):
         if self.socket:
@@ -61,4 +64,4 @@ class NetworkClient(QThread):
                 message = command_number_bytes + b"\\" + body_bytes + b"\n"
                 self.socket.sendall(message)
             except Exception as e:
-                self.error_occurred.emit(str(e))
+                self.sig_server_disconnected.emit(str(e))

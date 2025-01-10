@@ -400,3 +400,45 @@ class MainApp(QMainWindow):
 
         for points, nick in items:
             self.ui.ranking_list.addItem(f"{points}    {nick}")
+
+    def reset_ui(self):
+        self.ui.stackedWidget.setCurrentWidget(self.ui.nick_page)
+
+        # klient może chcieć zachować nick i IP
+        #self.ui.nick_field.clear()
+        #self.ui.ip_field.setText("192.168.100.8")
+
+        # text fieldy
+        self.ui.create_name_field.clear()
+        self.ui.create_password_field.clear()
+        self.ui.join_room_name_field.clear()
+        self.ui.join_password_field.clear()
+        self.ui.letter_input.clear()
+        self.ui.fails_label.clear()
+
+        # ustawienia pokoju
+        self.ui.time_edit.setTime(QTime(0, 0, 30))
+        self.ui.rounds_number_spin.setValue(1)
+        self.ui.level_combobox.setCurrentIndex(0)
+
+        # listy
+        self.ui.rooms_list.clear()
+        self.ui.ranking_list.clear()
+        self.ui.players_list.clear()
+        self.ui.all_words_list.clear()
+        self.ui.ranking_list_2.clear()
+
+        # obrazki
+        for label in self.player_labels:
+            label.setPixmap(QPixmap(self.image_paths[10]))
+
+        for effect in self.opacity:
+            effect.setOpacity(0.5)
+
+        for name_label in self.player_names_labels:
+            name_label.setText("")
+
+        # przyciski
+        self.ui.send_letter_btn.setEnabled(True)
+        self.ui.letter_input.setReadOnly(False)
+        self.ui.start_btn.setVisible(False)

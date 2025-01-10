@@ -30,8 +30,12 @@ if __name__ == "__main__":
             window.submit_nick()
 
 
-    def connection_error(error_message):
-        qtc.QTimer.singleShot(0, lambda: qtw.QMessageBox.critical(window, "Connection Error",f"Cannot connect to the server:\n{error_message}"))
+    def handle_cant_connect(error_message):
+        qtw.QMessageBox.critical(window, "Connection Error",f"Cannot connect to the server:\n{error_message}")
+
+    def handle_connection_error(error_message):
+        qtw.QMessageBox.critical(window, "Connection Error",f"The connection with the server has been lost:\n{error_message}")
+        window.reset_ui()
 
     def unlock_other_signals():
         window.sig_submit_nick.connect(lambda nick: client.send_to_server("01", f"{nick}"))
@@ -46,7 +50,8 @@ if __name__ == "__main__":
         window.submit_nick()
 
 
-    client.sig_cant_connect.connect(lambda error_msg: connection_error(error_msg))
+    client.sig_cant_connect.connect(lambda error_msg: handle_cant_connect(error_msg))
+    client.sig_server_disconnected.connect(lambda error_msg: handle_connection_error(error_msg))
     window.sig_connect.connect(try_connect)
     window.sig_has_connected.connect(unlock_other_signals)
     ####################################
