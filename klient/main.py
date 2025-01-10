@@ -31,8 +31,7 @@ if __name__ == "__main__":
 
 
     def connection_error(error_message):
-        print("cant connnect")
-        qtw.QMessageBox.critical(window, "Connection Error", f"Cannot connect to the server:\n{error_message}")
+        qtc.QTimer.singleShot(0, lambda: qtw.QMessageBox.critical(window, "Connection Error",f"Cannot connect to the server:\n{error_message}"))
 
     def unlock_other_signals():
         window.sig_submit_nick.connect(lambda nick: client.send_to_server("01", f"{nick}"))

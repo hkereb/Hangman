@@ -126,16 +126,18 @@ class MainApp(QMainWindow):
         self.ui.send_letter_btn.clicked.connect(self.submit_letter)
 
     def submit_nick(self):
-        if not self.ui.nick_field.text().strip():
-            QMessageBox.warning(self, "Info", "Nickname field is obligatory!")
-            return
-
         nick = self.ui.nick_field.text()
 
         self.sig_submit_nick.emit(nick)
         print(f"Nick submitted: {nick}")
 
     def submit_ip(self):
+        if not self.ui.nick_field.text().strip():
+            QMessageBox.warning(self, "Info", "Nickname field is obligatory!")
+            return
+        if not self.ui.ip_field.text().strip():
+            QMessageBox.warning(self, "Info", "IP field is obligatory!")
+            return
         ip = self.ui.ip_field.text()
 
         self.sig_connect.emit(ip)
