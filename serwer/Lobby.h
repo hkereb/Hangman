@@ -32,6 +32,37 @@ struct Lobby {
     roundsAmount(5),
     roundDuration(60){}
 
+    // Move constructor
+    Lobby(Lobby&& other) noexcept
+        : name(std::move(other.name)),
+          password(std::move(other.password)),
+          playersCount(other.playersCount),
+          players(std::move(other.players)),
+          owner(other.owner),
+          difficulty(other.difficulty),
+          roundsAmount(other.roundsAmount),
+          roundDuration(other.roundDuration),
+          game(std::move(other.game)) {
+        other.owner = nullptr;
+    }
+
+
+    Lobby& operator=(Lobby&& other) noexcept {
+        if (this != &other) {
+            name = std::move(other.name);
+            password = std::move(other.password);
+            playersCount = other.playersCount;
+            players = std::move(other.players);
+            owner = other.owner;
+            other.owner = nullptr;
+            difficulty = other.difficulty;
+            roundsAmount = other.roundsAmount;
+            roundDuration = other.roundDuration;
+            game = std::move(other.game);
+        }
+        return *this;
+    }
+
     void startGame();
     void setOwner();
 };

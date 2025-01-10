@@ -63,6 +63,29 @@ struct Game {
         }
     }
 
+    Game& operator=(Game&& other) noexcept {    
+        if (this != &other) {
+            wordList = std::move(other.wordList);
+            currentWord = std::move(other.currentWord);
+            wordInProgress = std::move(other.wordInProgress);
+            guessedLetters = std::move(other.guessedLetters);
+            players = std::move(other.players);
+            roundDuration = other.roundDuration;
+            currentRound = other.currentRound;
+            roundsAmount = other.roundsAmount;
+            difficulty = other.difficulty;
+            isGameActive = other.isGameActive;
+            timeStart = other.timeStart;
+            timeLeftInRound.store(other.timeLeftInRound.load());
+            isRoundActive.store(other.isRoundActive.load());
+
+            if (timerThread.joinable()) {
+                timerThread = std::move(other.timerThread);
+            }
+        }
+        return *this;
+    }
+
     ~Game() {
         stopTimer(); 
     }

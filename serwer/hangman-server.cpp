@@ -109,6 +109,7 @@ int main() {
                             players.erase(playerIt);
                         }
                         sendLobbiesToClients(lobbyNames);
+
                         // Clean up resources
                         close(events[n].data.fd);
                         epoll_ctl(efd, EPOLL_CTL_DEL, events[n].data.fd, &ev);
