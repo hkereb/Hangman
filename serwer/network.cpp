@@ -43,6 +43,13 @@ int startListening() {
             continue;
         }
 
+        int opt = 1;
+        if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
+            perror("setsockopt");
+            close(sockfd);
+            continue;
+        }
+
         // make the sock non-blocking
         setNonBlocking(sockfd);
 
