@@ -72,13 +72,14 @@ void handleClientMessage(int clientFd, const std::string& msg) {
             newLobby.setOwner();
         }
 
-        // dodanie lobby do listy
-        lobbies.push_back(std::move(newLobby));
         lobbyCount++;
         lobbyNames.push_back(lobbyName);
 
         sendLobbiesToClients(lobbyNames);
         sendPlayersToClients(&newLobby);
+
+        // dodanie lobby do listy
+        lobbies.push_back(std::move(newLobby));
 
         sendToClient(clientFd, "02", "1");  // stworzono lobby
         std::cout << "Lobby created successfully: " << lobbyName << "\n";
@@ -129,9 +130,8 @@ void handleClientMessage(int clientFd, const std::string& msg) {
             lobbyIt->players.push_back(&*playerIt);  // Dodaj gracza do pokoju
             lobbyIt->playersCount++;
             sendToClient(clientFd, "03", "1");  // Sukces
-            auto& lobby = *lobbyIt;
-            sendPlayersToClients(&lobby);
-            isStartAllowed(&lobby);
+            sendPlayersToClients(&*lobbyIt);
+            isStartAllowed(&*lobbyIt);
         }
         else {
             sendToClient(clientFd, "03", "0");  // Nie znaleziono gracza
