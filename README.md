@@ -1,5 +1,5 @@
-# hangman-sk2-2024
-Hangman - wieloosobowa gra sieciowa
+# Hangman - wieloosobowa gra sieciowa
+Projekt na przedmiot Sieci Komputerowe 2
 
 ## Autorzy:
 Hanna Kerebińska, 155877\
