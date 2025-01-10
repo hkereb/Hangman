@@ -63,6 +63,7 @@ struct Game {
         }
     }
 
+    // move assignment operator
     Game& operator=(Game&& other) noexcept {    
         if (this != &other) {
             wordList = std::move(other.wordList);

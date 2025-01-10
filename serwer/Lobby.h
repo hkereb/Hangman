@@ -46,7 +46,7 @@ struct Lobby {
         other.owner = nullptr;
     }
 
-
+    // move assignment operator
     Lobby& operator=(Lobby&& other) noexcept {
         if (this != &other) {
             name = std::move(other.name);
