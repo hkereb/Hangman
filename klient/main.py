@@ -21,14 +21,11 @@ if __name__ == "__main__":
     def try_connect(ip):
         global client
         if not client.isConnected:
-            try:
-                client = NetworkClient(ip, SERVER_PORT, time_to_wait=3)
-                client.connect_to_server()
+            client.server_ip = ip
+            client.server_port = SERVER_PORT
+            client.connect_to_server()
+            if client.isConnected:
                 client.message_received.connect(window.handle_server_response)
-
-            except Exception as e:
-                # qtw.QMessageBox.warning(window, "Info", f"Can't connect to server")
-                pass
         else:
             window.submit_nick()
 
@@ -36,8 +33,6 @@ if __name__ == "__main__":
     def connection_error(error_message):
         print("cant connnect")
         qtw.QMessageBox.critical(window, "Connection Error", f"Cannot connect to the server:\n{error_message}")
-        client.message_received.disconnect(window.handle_server_response)
-        window.sig_submit_nick.disconnect()
 
     def unlock_other_signals():
         window.sig_submit_nick.connect(lambda nick: client.send_to_server("01", f"{nick}"))
@@ -52,7 +47,7 @@ if __name__ == "__main__":
         window.submit_nick()
 
 
-    client.sig_cant_connect.connect(connection_error)
+    client.sig_cant_connect.connect(lambda error_msg: connection_error(error_msg))
     window.sig_connect.connect(try_connect)
     window.sig_has_connected.connect(unlock_other_signals)
     ####################################

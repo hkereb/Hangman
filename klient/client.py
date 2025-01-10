@@ -7,15 +7,19 @@ class NetworkClient(QThread):
     error_occurred = Signal(str)
     sig_cant_connect = Signal(str)
 
-    def __init__(self, server_ip, server_port, time_to_wait, parent=None):
+    def __init__(self, server_ip, server_port, parent=None):
         super(NetworkClient, self).__init__(parent)
-        self.time_wait = time_to_wait
+        self.time_wait = 2
         self.server_ip = server_ip
         self.server_port = server_port
         self.socket = None
         self.isConnected = False
 
+    def run(self):
+        self.connect_to_server()
+
     def connect_to_server(self):
+        print(f"I will try to connect to: {self.server_ip}")
         try:
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.socket.settimeout(self.time_wait)
@@ -25,6 +29,7 @@ class NetworkClient(QThread):
             self.isConnected = True
             threading.Thread(target=self.listen_to_server, daemon=True).start()
         except Exception as e:
+            print(f"FAILED to connect to: {self.server_ip}")
             self.sig_cant_connect.emit(str(e))
 
     def listen_to_server(self):
