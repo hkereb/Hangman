@@ -126,16 +126,18 @@ class MainApp(QMainWindow):
         self.ui.send_letter_btn.clicked.connect(self.submit_letter)
 
     def submit_nick(self):
-        if not self.ui.nick_field.text().strip():
-            QMessageBox.warning(self, "Info", "Nickname field is obligatory!")
-            return
-
         nick = self.ui.nick_field.text()
 
         self.sig_submit_nick.emit(nick)
         print(f"Nick submitted: {nick}")
 
     def submit_ip(self):
+        if not self.ui.nick_field.text().strip():
+            QMessageBox.warning(self, "Info", "Nickname field is obligatory!")
+            return
+        if not self.ui.ip_field.text().strip():
+            QMessageBox.warning(self, "Info", "IP field is obligatory!")
+            return
         ip = self.ui.ip_field.text()
 
         self.sig_connect.emit(ip)
@@ -176,7 +178,8 @@ class MainApp(QMainWindow):
         self.ui.letter_input.clear()
 
     def handle_server_response(self, message):
-        print("serwer: " + message)
+        if not message.startswith("11"):
+            print("serwer: " + message)
         if message.startswith("01"):
             result = substr_msg(message)
             if result == "1":  # nick zaakceptowany
@@ -318,7 +321,7 @@ class MainApp(QMainWindow):
                     break
 
             self.updateRanking()
-        ###
+        ### koniec gry
         elif message.startswith("78"):
             msg = substr_msg(message)
             info = msg.split(";")
@@ -328,23 +331,17 @@ class MainApp(QMainWindow):
             players = ranking.split(",")
             words = all_words.split(",")
 
-            items = []
-            for player in players:
-                player_info = player.split(":")
-                nick = player_info[0]
-                points = player_info[1]
-                items.append((points, nick))
-
+            items = [(int(player.split(":")[1]), player.split(":")[0]) for player in players]
             items.sort(reverse=True, key=lambda x: x[0])
+
             self.ui.ranking_list_2.clear()
-            for points, nick in items:
-                self.ui.ranking_list_2.addItem(f"{points}    {nick}")
+            self.ui.ranking_list_2.addItems([f"{points}    {nick}" for points, nick in items])
 
             for word in words:
                 self.ui.all_words_list.addItem(word.upper())
 
             self.ui.stackedWidget.setCurrentWidget(self.ui.end_page)
-        ###
+        ### następna runda
         elif message.startswith("79"):
             msg = substr_msg(message)
             info = msg.split(",")
@@ -380,6 +377,7 @@ class MainApp(QMainWindow):
 
     def is_at_waitroom_page(self, index):
         if self.ui.stackedWidget.widget(index) == self.ui.waitroom_page:
+            print("emmited 71 through changing page")
             self.sig_players_list.emit("")
 
     def on_list_item_selected(self):
@@ -402,3 +400,45 @@ class MainApp(QMainWindow):
 
         for points, nick in items:
             self.ui.ranking_list.addItem(f"{points}    {nick}")
+
+    def reset_ui(self):
+        self.ui.stackedWidget.setCurrentWidget(self.ui.nick_page)
+
+        # klient może chcieć zachować nick i IP
+        #self.ui.nick_field.clear()
+        #self.ui.ip_field.setText("192.168.100.8")
+
+        # text fieldy
+        self.ui.create_name_field.clear()
+        self.ui.create_password_field.clear()
+        self.ui.join_room_name_field.clear()
+        self.ui.join_password_field.clear()
+        self.ui.letter_input.clear()
+        self.ui.fails_label.clear()
+
+        # ustawienia pokoju
+        self.ui.time_edit.setTime(QTime(0, 0, 30))
+        self.ui.rounds_number_spin.setValue(1)
+        self.ui.level_combobox.setCurrentIndex(0)
+
+        # listy
+        self.ui.rooms_list.clear()
+        self.ui.ranking_list.clear()
+        self.ui.players_list.clear()
+        self.ui.all_words_list.clear()
+        self.ui.ranking_list_2.clear()
+
+        # obrazki
+        for label in self.player_labels:
+            label.setPixmap(QPixmap(self.image_paths[10]))
+
+        for effect in self.opacity:
+            effect.setOpacity(0.5)
+
+        for name_label in self.player_names_labels:
+            name_label.setText("")
+
+        # przyciski
+        self.ui.send_letter_btn.setEnabled(True)
+        self.ui.letter_input.setReadOnly(False)
+        self.ui.start_btn.setVisible(False)
