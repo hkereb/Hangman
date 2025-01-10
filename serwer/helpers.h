@@ -1,5 +1,5 @@
-#ifndef COMMUNICATION_FUNCTIONS_H
-#define COMMUNICATION_FUNCTIONS_H
+#ifndef HELPERS_H
+#define HELPERS_H
 
 #include <string>
 #include <vector>
@@ -17,13 +17,16 @@
 
 void sendLobbiesToClients(std::vector<std::string> lobbyNames, int clientFd = -1);
 void sendPlayersToClients(const Lobby* lobby, int ignoreFd = -1);
-void isStartAllowed(const Lobby* lobby);
-Settings parseSettings(const std::string& msg);
-std::string messageSubstring(std::string msg);
-void removeFromLobby(int clientFd);
 void sendWordAndPointsToClients(const Lobby* lobby, const Player* playerWhoGuessed);
 void sendLivesToClients(const Lobby* lobby, const Player* playerWhoMissed);
 void sendStartToClients(const Lobby* lobby);
 void sendEndToClients(const Lobby* lobby);
 
-#endif // COMMUNICATION_FUNCTIONS_H
+void isStartAllowed(const Lobby* lobby);
+Settings parseSettings(const std::string& msg);
+std::string messageSubstring(std::string msg);
+
+void removeFromLobby(int clientFd);
+void removeEmptyLobbies();
+
+#endif // HELPERS_H

@@ -2,6 +2,7 @@
 
 extern std::vector<Player> players;
 extern std::vector<Lobby> lobbies;
+extern std::vector<std::string> lobbyNames;
 
 void sendLobbiesToClients(std::vector<std::string> lobbyNames, int clientFd) {
     std::string messageBody;
@@ -200,5 +201,20 @@ void removeFromLobby(int clientFd) {
             break;
         }
     }
+    removeEmptyLobbies();
 }
 
+void removeEmptyLobbies() {
+    for (auto n = lobbies.begin(); n != lobbies.end();) {
+        if (n->players.size() < 1) {
+            std::cout << "Lobby removal: " << n->name << "\n"; 
+            auto lobbyNameIt = std::find(lobbyNames.begin(), lobbyNames.end(), n->name);
+            if (lobbyNameIt != lobbyNames.end()) {
+                lobbyNames.erase(lobbyNameIt);
+            }
+            n = lobbies.erase(n);
+        } else {
+            ++n;
+        }
+    }
+}
