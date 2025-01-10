@@ -108,7 +108,7 @@ int main() {
                             std::cout << "Player with nickname " << playerIt->nick << " removed from global player list.\n";
                             players.erase(playerIt);
                         }
-
+                        sendLobbiesToClients(lobbyNames);
                         // Clean up resources
                         close(events[n].data.fd);
                         epoll_ctl(efd, EPOLL_CTL_DEL, events[n].data.fd, &ev);
