@@ -360,6 +360,9 @@ class MainApp(QMainWindow):
                 self.player_labels[i].setPixmap(QPixmap(self.image_paths[10]))
             self.ui.player0_label.setPixmap(QPixmap(self.image_paths[10]))
 
+            self.ui.send_letter_btn.isEnabled(True)
+            self.ui.letter_input.setReadOnly(False)
+
     def on_ip_changed(self):
         if self.ui.ip_field.hasAcceptableInput():
             self.ui.ip_field.setStyleSheet("color: green;")
