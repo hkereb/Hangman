@@ -176,7 +176,8 @@ class MainApp(QMainWindow):
         self.ui.letter_input.clear()
 
     def handle_server_response(self, message):
-        print("serwer: " + message)
+        if not message.startswith("11"):
+            print("serwer: " + message)
         if message.startswith("01"):
             result = substr_msg(message)
             if result == "1":  # nick zaakceptowany
@@ -318,7 +319,7 @@ class MainApp(QMainWindow):
                     break
 
             self.updateRanking()
-        ###
+        ### koniec gry
         elif message.startswith("78"):
             msg = substr_msg(message)
             info = msg.split(";")
@@ -328,23 +329,17 @@ class MainApp(QMainWindow):
             players = ranking.split(",")
             words = all_words.split(",")
 
-            items = []
-            for player in players:
-                player_info = player.split(":")
-                nick = player_info[0]
-                points = player_info[1]
-                items.append((points, nick))
-
+            items = [(int(player.split(":")[1]), player.split(":")[0]) for player in players]
             items.sort(reverse=True, key=lambda x: x[0])
+
             self.ui.ranking_list_2.clear()
-            for points, nick in items:
-                self.ui.ranking_list_2.addItem(f"{points}    {nick}")
+            self.ui.ranking_list_2.addItems([f"{points}    {nick}" for points, nick in items])
 
             for word in words:
                 self.ui.all_words_list.addItem(word.upper())
 
             self.ui.stackedWidget.setCurrentWidget(self.ui.end_page)
-        ###
+        ### następna runda
         elif message.startswith("79"):
             msg = substr_msg(message)
             info = msg.split(",")
@@ -380,6 +375,7 @@ class MainApp(QMainWindow):
 
     def is_at_waitroom_page(self, index):
         if self.ui.stackedWidget.widget(index) == self.ui.waitroom_page:
+            print("emmited 71 through changing page")
             self.sig_players_list.emit("")
 
     def on_list_item_selected(self):

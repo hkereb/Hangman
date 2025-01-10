@@ -410,4 +410,5 @@ class Ui_MainWindow(object):
         self.all_words_label.setText(QCoreApplication.translate("MainWindow", u"Words", None))
         self.restart_btn.setText(QCoreApplication.translate("MainWindow", u"PLAY AGAIN", None))
         self.end_back_btn.setText(QCoreApplication.translate("MainWindow", u"BACK", None))
+        self.waitroom_back_btn.setText(QCoreApplication.translate("MainWindow", u"BACK", None))
         pass

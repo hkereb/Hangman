@@ -5,6 +5,7 @@ import threading
 class NetworkClient(QThread):
     message_received = Signal(str)
     error_occurred = Signal(str)
+    sig_cant_connect = Signal(str)
 
     def __init__(self, server_ip, server_port, time_to_wait, parent=None):
         super(NetworkClient, self).__init__(parent)
@@ -17,11 +18,14 @@ class NetworkClient(QThread):
     def connect_to_server(self):
         try:
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.socket.settimeout(self.time_wait)
             self.socket.connect((self.server_ip, self.server_port))
+            # todo być może zmienić
+            self.socket.settimeout(None)
             self.isConnected = True
             threading.Thread(target=self.listen_to_server, daemon=True).start()
         except Exception as e:
-            self.error_occurred.emit(str(e))
+            self.sig_cant_connect.emit(str(e))
 
     def listen_to_server(self):
         try:
