@@ -360,7 +360,7 @@ class MainApp(QMainWindow):
                 self.player_labels[i].setPixmap(QPixmap(self.image_paths[10]))
             self.ui.player0_label.setPixmap(QPixmap(self.image_paths[10]))
 
-            self.ui.send_letter_btn.isEnabled(True)
+            self.ui.send_letter_btn.setEnabled(True)
             self.ui.letter_input.setReadOnly(False)
 
     def on_ip_changed(self):
