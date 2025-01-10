@@ -1,2 +1,6 @@
 # hangman-sk2-2024
-Wisielec - gra sieciowa, wieloosobowa
+Hangman - wieloosobowa gra sieciowa
+
+## Autorzy:
+Hanna Kerebińska, 155877\
+Wojciech Wróbel, 155952
