@@ -244,10 +244,15 @@ void handleClientMessage(int clientFd, const std::string& msg) {
             if ((*playerIt)->lives == 0) {
                 // todo sprawdzić czy koniec gry (wszyscy powiesili wisielce)
                 if (std::all_of(lobbyIt->players.begin(), lobbyIt->players.end(), [](const Player* player) { return player->lives <= 0; })) {
-                    for (const auto& player : lobbyIt->players) {
-                        sendToClient(player->sockfd, "78", "");
-                    }
                     game.nextRound();
+                    if (!game.isGameActive) {
+                        sendEndToClients(&*lobbyIt); // 78 - koniec gry
+                        return;
+                    }
+                    for (auto& player : lobbyIt->players) {
+                        player->failedLetters.clear();
+                        sendToClient(player->sockfd, "79", game.wordInProgress + "," + std::to_string(lobbyIt->game.currentRound) + "," + std::to_string(lobbyIt->roundsAmount));
+                    }
                 }
             }
         }
