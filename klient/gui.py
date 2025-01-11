@@ -56,7 +56,7 @@ class MainApp(QMainWindow):
         self.ui.ip_field.setText("192.168.100.8")
 
         self.ui.time_edit.setDisplayFormat("mm:ss")
-        self.ui.time_edit.setTime(QTime(0,0,30))
+        self.ui.time_edit.setTime(QTime(0,0,20))
         self.ui.time_edit.setMinimumTime(QTime(0,0,5))
         self.ui.time_edit.setMaximumTime(QTime(0,5,0))
 
@@ -229,7 +229,7 @@ class MainApp(QMainWindow):
             if result == "1":  # nick zaakceptowany
                 self.ui.stackedWidget.setCurrentWidget(self.ui.create_or_join_page)
             elif result == "01":  # nick odrzucony
-                QMessageBox.information(self, "Nickanme cannot be assigned", "Nickname has already been taken")
+                QMessageBox.information(self, "Nickname cannot be assigned", "Nickname has already been taken")
                 self.ui.nick_field.clear()
             elif result == "02":  # nie znaleziono gracza
                 QMessageBox.critical(self, "Nickname cannot be assigned", "Player has not been found\nTry reconnecting")
@@ -535,7 +535,7 @@ class MainApp(QMainWindow):
         self.ui.create_password_field.clear()
         self.ui.join_room_name_field.clear()
         self.ui.join_password_field.clear()
-        self.ui.time_edit.setTime(QTime(0, 0, 30))
+        self.ui.time_edit.setTime(QTime(0, 0, 20))
         self.ui.rounds_number_spin.setValue(1)
         self.ui.level_combobox.setCurrentIndex(0)
         self.ui.rooms_list.clear()
