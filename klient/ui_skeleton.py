@@ -214,7 +214,7 @@ class Ui_MainWindow(object):
         self.word_label.setGeometry(QRect(370, 170, 381, 61))
         font3 = QFont()
         font3.setFamilies([u"Javanese Text"])
-        font3.setPointSize(30)
+        font3.setPointSize(26)
         self.word_label.setFont(font3)
         self.word_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.rounds1_label = QLabel(self.game_page)

@@ -14,6 +14,7 @@ class NetworkClient(QThread):
         self.server_port = server_port
         self.socket = None
         self.isConnected = False
+        self.intentional_disconnect = False
 
     def run(self):
         self.connect_to_server()
@@ -51,9 +52,10 @@ class NetworkClient(QThread):
                 else:  # połączenie zostało zamknięte
                     raise ConnectionError("Server has closed the connection.")
         except (socket.error, ConnectionError) as e:
-            self.sig_server_disconnected.emit(str(e))
-            self.isConnected = False
-            self.socket.close()
+            if not self.intentional_disconnect:
+                self.sig_server_disconnected.emit(str(e))
+                self.isConnected = False
+                self.socket.close()
 
     def send_to_server(self, command_number, body):
         if self.socket:
@@ -65,3 +67,12 @@ class NetworkClient(QThread):
                 self.socket.sendall(message)
             except Exception as e:
                 self.sig_server_disconnected.emit(str(e))
+
+    def disconnect(self):
+        try:
+            if self.socket:
+                self.socket.close()
+            self.isConnected = False
+            print("Disconnected from the server (per request).")
+        except Exception as e:
+            print(f"Error during disconnection (per request): {e}")

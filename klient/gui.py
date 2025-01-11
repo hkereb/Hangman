@@ -1,5 +1,8 @@
 import sys
 from os.path import split
+
+from PySide6 import QtGui
+
 import resources
 
 from ui_skeleton import Ui_MainWindow
@@ -22,6 +25,8 @@ class MainApp(QMainWindow):
     sig_has_connected = Signal()
     sig_submit_letter = Signal(str)
     sig_time_ran_out = Signal(str)
+    sig_leave_room = Signal(str) # todo usunąć niepotrzebne stringi z sygnałów
+    sig_disconnect_me = Signal(str)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -43,6 +48,9 @@ class MainApp(QMainWindow):
 
         self.ui.level_combobox.addItems(["easy", "medium", "hard"])
 
+        self.ui.nick_field.setMaxLength(20)
+
+        self.ui.start_btn.setVisible(False)
         self.ui.start_btn.setEnabled(False)
 
         self.ui.ip_field.setText("192.168.100.8")
@@ -69,6 +77,8 @@ class MainApp(QMainWindow):
             9: ":images/9-lives.png",
             10: ":images/10-lives.png"
         }
+
+        self.setWindowIcon(QtGui.QIcon(self.image_paths[1]))
 
         self.ui.player0_label.setPixmap(QPixmap(self.image_paths[10]))
         self.ui.player1_label.setPixmap(QPixmap(self.image_paths[10]))
@@ -112,7 +122,7 @@ class MainApp(QMainWindow):
             self.opacity_effect4
         ]
 
-        # connect
+        # CONNECT
         self.ui.connect_btn.clicked.connect(self.submit_ip)
         self.ui.ip_field.textChanged.connect(self.on_ip_changed)
         self.ui.stackedWidget.currentChanged.connect(self.is_at_create_or_join_page)
@@ -124,6 +134,10 @@ class MainApp(QMainWindow):
         self.ui.letter_input.textChanged.connect(self.on_letter_changed)
         self.ui.letter_input.returnPressed.connect(self.submit_letter)
         self.ui.send_letter_btn.clicked.connect(self.submit_letter)
+        self.ui.waitroom_back_btn.clicked.connect(self.leave_room)
+        self.ui.end_back_btn.clicked.connect(self.leave_room)
+        self.ui.create_join_back_btn.clicked.connect(self.back_to_nick_page)
+        self.ui.leave_room_btn.clicked.connect(self.leave_room)
 
     def submit_nick(self):
         nick = self.ui.nick_field.text()
@@ -184,9 +198,28 @@ class MainApp(QMainWindow):
 
         self.ui.stackedWidget.setCurrentWidget(self.ui.waitroom_page)
 
+    def leave_room(self):
+        self.sig_leave_room.emit("")
+        print("Let me leave the room, please")
+
+    def back_to_nick_page(self):
+        msg_box = QMessageBox(self)
+        msg_box.setIcon(QMessageBox.Icon.Information)
+        msg_box.setWindowTitle("Information")
+        msg_box.setText("This action will disconnect you from the current server.\nDo you want to continue?")
+        msg_box.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+
+        reply = msg_box.exec_()
+
+        if reply == QMessageBox.StandardButton.Yes:
+            self.clean_create_or_join_page()
+            self.ui.stackedWidget.setCurrentWidget(self.ui.nick_page)
+            self.sig_disconnect_me.emit("")
+
     def handle_server_response(self, message):
-        if not message.startswith("11"):
+        if not message.startswith("11"): # ignoruj timer
             print("serwer: " + message)
+        ### decyzja o nicku
         if message.startswith("01"):
             result = substr_msg(message)
             if result == "1":  # nick zaakceptowany
@@ -194,21 +227,21 @@ class MainApp(QMainWindow):
             elif result == "0":  # nick odrzucony
                 QMessageBox.warning(self, "Info", "Nickname has already been taken!")
                 self.ui.nick_field.setStyleSheet("color: red;")
-        ###
+        ### decyzja o utworzeniu pokoju
         elif message.startswith("02"):
             result = substr_msg(message)
             if result == "1":  # pokój pomyślnie stworzony
                 self.ui.stackedWidget.setCurrentWidget(self.ui.waitroom_page)
             elif result == "0":  # błąd
                 self.ui.create_name_field.setStyleSheet("color: red;")
-        ###
+        ### decyzja o dołączeniu do pokoju
         elif message.startswith("03"):
             result = substr_msg(message)
             if result == "1":  # pomyślnie dołączono do pokoju
                 self.ui.stackedWidget.setCurrentWidget(self.ui.waitroom_page)
             elif result == "0":  # błąd
                 self.ui.join_room_name_field.setStyleSheet("color: red;")
-        ###
+        ### odpowiedź na literę w grze
         elif message.startswith("06"):
             result = substr_msg(message)
             parts = result.split(',')
@@ -228,17 +261,28 @@ class MainApp(QMainWindow):
                 if lives == 0:
                     self.ui.send_letter_btn.setEnabled(False)
                     self.ui.letter_input.setReadOnly(True)
-        ###
+        ### odpowiedź na usunięcie z pokoju
+        elif message.startswith("09"):
+            result = substr_msg(message)
+            if result == "1":  # pomyślnie usunięto gracza z pokoju
+                self.clean_create_or_join_page()
+                self.clean_waitroom_page()
+                self.clean_game_page()
+                self.clean_end_page()
+                self.ui.stackedWidget.setCurrentWidget(self.ui.create_or_join_page)
+            elif result == "0":  # błąd
+                pass
+        ### aktualny timer w grze
         elif message.startswith("11"):
             time = substr_msg(message)
             self.ui.time2_label_2.setText(time)
-        ###
+        ### koniec czasu w grze
         elif message.startswith("12"):
             self.sig_time_ran_out.emit("")
-        ###
+        ### udało się połączyć pod IP
         elif message.startswith("69"):
             self.sig_has_connected.emit()
-        ###
+        ### lista dostępnych pokoi
         elif message.startswith("70"):
             nicks_encoded = substr_msg(message)
             nicks = nicks_encoded.split(",")
@@ -249,7 +293,7 @@ class MainApp(QMainWindow):
                 self.ui.rooms_list.addItem(lobby)
 
             print("Lista pokoi została zaktualizowana.")
-        ###
+        ### lista graczy w danym pokoju
         elif message.startswith("71"):
             nicks_encoded = substr_msg(message)
             nicks = nicks_encoded.split(",")
@@ -260,9 +304,10 @@ class MainApp(QMainWindow):
                 self.ui.players_list.addItem(nick)
 
             print("Lista graczy w pokoju została zaktualizowana.")
-        ###
+        ### decyzja czy można rozpocząć grę
         elif message.startswith("72"):
             decision = substr_msg(message)
+            self.ui.start_btn.setVisible(True)
 
             if decision == "1":
                 self.ui.start_btn.setEnabled(True)
@@ -296,12 +341,12 @@ class MainApp(QMainWindow):
                 self.ui.ranking_list.addItem(f"0    {nick}")
 
             self.ui.stackedWidget.setCurrentWidget(self.ui.game_page)
-        ###
+        ### update hasła w grze
         elif message.startswith("75"):
             word = substr_msg(message).upper()
             spaced_word = " ".join(word)
             self.ui.word_label.setText(spaced_word)
-        ###
+        ### update wisielców
         elif message.startswith("76"):
             msg = substr_msg(message)
             info = msg.split(",")
@@ -311,7 +356,7 @@ class MainApp(QMainWindow):
                 if player_name.text() == nick:
                     self.player_labels[i].setPixmap(QPixmap(self.image_paths[lives]))
                     break
-        ###
+        ### update rankingu
         elif message.startswith("77"):
             msg = substr_msg(message)
             info = msg.split(",")
@@ -366,6 +411,26 @@ class MainApp(QMainWindow):
 
             self.ui.send_letter_btn.setEnabled(True)
             self.ui.letter_input.setReadOnly(False)
+        ### jeden z graczy opuścił trwającą grę
+        elif message.startswith("80"):
+            nick = substr_msg(message)
+
+            for i, name_label in enumerate(self.player_names_labels):
+                if name_label.text() == nick:
+                    self.player_names_labels[i].setText("")
+                    self.player_labels[i].setPixmap(QPixmap(self.image_paths[10]))
+                    self.opacity[i].setOpacity(0.5)
+                    break
+
+            for i in range(self.ui.ranking_list.count()):
+                item = self.ui.ranking_list.item(i)
+                item_info = item.text().split("    ")
+
+                list_nick = item_info[1]
+
+                if nick == list_nick:
+                    self.ui.ranking_list.takeItem(i)
+                    break
 
     def on_ip_changed(self):
         if self.ui.ip_field.hasAcceptableInput():
@@ -431,6 +496,7 @@ class MainApp(QMainWindow):
 
     def clean_waitroom_page(self):
         self.ui.players_list.clear()
+        self.ui.start_btn.setVisible(False)
         self.ui.start_btn.setEnabled(False)
 
     def clean_game_page(self):
