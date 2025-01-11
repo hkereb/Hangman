@@ -37,3 +37,6 @@
 - [x] 78\\[nick:punkty,nick:punkty;słowo1,słowo2] - koniec gry
 - [x] 79\\[zaszyfrowane_hasło,runda,runda_max] - nowa runda
 - [x] 81\\[nick] - gracz opuścił pokój w trakcie gry
+- [x] 82\\[bool] - odpowiedź na gotowość do gry
+- [x] 83\\[] - gracz został wyrzucony z gry bo był jedyny w pokoju
+ 

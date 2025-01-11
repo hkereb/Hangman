@@ -4,7 +4,6 @@ extern std::vector<std::shared_ptr<Player>> players;
 extern std::vector<std::shared_ptr<Lobby>> lobbies;
 extern std::vector<std::string> playersNicknames;
 extern std::vector<std::string> lobbyNames;
-extern int lobbyCount;
 
 void handleClientMessage(int clientFd, const std::string& msg) {
     if (msg.substr(0, 2) == "01") { // Ustawienie nicku
@@ -65,7 +64,6 @@ void handleClientMessage(int clientFd, const std::string& msg) {
         newLobby->playersCount++;
         newLobby->setOwner();
 
-        lobbyCount++;
         lobbyNames.push_back(lobbyName);
 
         lobbies.push_back(newLobby);
@@ -77,7 +75,6 @@ void handleClientMessage(int clientFd, const std::string& msg) {
         (*playerIt)->isReadyToPlay = true;
         (*playerIt)->lobbyName = lobbyName;
         std::cout << "Lobby created successfully: " << lobbyName << "\n";
-        std::cout << "Current lobby count: " << lobbyCount << "\n";
     }
     else if (msg.substr(0, 2) == "03") {  // Dołączanie do pokoju
         std::string lobbyInfo = messageSubstring(msg);
@@ -310,6 +307,7 @@ void handleClientMessage(int clientFd, const std::string& msg) {
 
             sendToClient(clientFd, "09", "1");
             // todo sprawdzić czy tu nie trzeba usunąć pokoju bo a) podczas gry został jeden gracz b) w pokoju bez gry jest 0 graczy
+            removeEmptyLobbies();
         }
         else {
             sendToClient(clientFd, "09", "0");
