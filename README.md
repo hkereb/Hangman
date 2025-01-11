@@ -3,4 +3,5 @@ Projekt na przedmiot Sieci Komputerowe 2
 
 ## Autorzy:
 Hanna Kerebińska, 155877\
-Wojciech Wróbel, 155952
+Wojciech Wróbel, 155952\
+grupa lab. 8
