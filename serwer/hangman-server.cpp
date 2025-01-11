@@ -15,10 +15,10 @@
 #include <list>
 #include <unordered_map>
 
-std::vector<Player> players;
+std::vector<std::shared_ptr<Player>> players;
 std::vector<std::string> playersNicknames;
 
-std::vector<Lobby> lobbies;
+std::vector<std::shared_ptr<Lobby>> lobbies;
 int lobbyCount = 0;
 std::vector<std::string> lobbyNames;
 
@@ -74,6 +74,7 @@ int main() {
 
                 printf("server: new connection established.\n");
                 setNonBlocking(newFd);
+                // todo nasłuchiwać jescze na EPOLLERR i EPOLLUP - rozłączyć w przypadku either
                 ev.events = EPOLLIN | EPOLLET;
                 ev.data.fd = newFd;
                 if (epoll_ctl(efd, EPOLL_CTL_ADD, newFd, &ev) < 0) {
@@ -81,9 +82,10 @@ int main() {
                 }
                 fdsToWatch++;
 
-                Player newPlayer;
-                newPlayer.sockfd = newFd;
+                auto newPlayer = std::make_shared<Player>();
+                newPlayer->sockfd = newFd;
                 players.push_back(newPlayer);
+
 
                 sendToClient(newFd, "69", "hello!");
             } else {
@@ -114,7 +116,7 @@ int main() {
                     clientBuffers.erase(events[n].data.fd);  // clean up client buffers
                     fdsToWatch--;
 
-                    continue; 
+                    continue;
                 }
                 //std::cout << "clientfd" << std::endl;
                 while (true) {
@@ -129,16 +131,16 @@ int main() {
                         removeFromLobby(events[n].data.fd);
                         
                         // remove player from global list
-                        auto playerIt = std::find_if(players.begin(), players.end(), [n, events](const Player& player) {
-                            return player.sockfd == events[n].data.fd;
+                        auto playerIt = std::find_if(players.begin(), players.end(), [n](const std::shared_ptr<Player>& player) {
+                            return player->sockfd == n;
                         });
 
                         if (playerIt != players.end()) {
-                            auto nicknameIt = std::find(playersNicknames.begin(), playersNicknames.end(), playerIt->nick);
+                            auto nicknameIt = std::find(playersNicknames.begin(), playersNicknames.end(), (*playerIt)->nick);
                             if (nicknameIt != playersNicknames.end()) {
-                                playersNicknames.erase(nicknameIt);  // Remove the nickname
+                                playersNicknames.erase(nicknameIt);
                             }
-                            std::cout << "Player with nickname " << playerIt->nick << " removed from global player list.\n";
+                            std::cout << "Player with nickname " << (*playerIt)->nick << " removed from global player list.\n";
                             players.erase(playerIt);
                         }
                         sendLobbiesToClients(lobbyNames);
