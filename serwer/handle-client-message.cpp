@@ -38,8 +38,7 @@ void handleClientMessage(int clientFd, const std::string& msg) {
         auto lobbyIt = std::find_if(lobbies.begin(), lobbies.end(), [&lobbyName](const std::shared_ptr<Lobby>& lobby) {
            return lobby->name == lobbyName;
         });
-        // todo dodać wszędzie sprawdzanie nullptr
-        if (lobbyIt != lobbies.end() && *lobbyIt != nullptr) {
+        if (lobbyIt != lobbies.end()) {
             sendToClient(clientFd, "02", "01");
             std::cout << "Failed to create lobby. Name already taken: " << lobbyName << "\n";
             return;
@@ -47,7 +46,7 @@ void handleClientMessage(int clientFd, const std::string& msg) {
         auto playerIt = std::find_if(players.begin(), players.end(), [clientFd](const std::shared_ptr<Player>& player) {
            return player->sockfd == clientFd;
         });
-        if (playerIt == players.end() && *playerIt != nullptr) {
+        if (playerIt == players.end()) {
             sendToClient(clientFd, "02", "02"); // Nie znaleziono gracza
             return;
         }
@@ -140,7 +139,6 @@ void handleClientMessage(int clientFd, const std::string& msg) {
             return;
         }
 
-
         // SUCCESS
         (*lobbyIt)->startGame();
         sendStartToClients(lobbyIt->get());
@@ -171,8 +169,6 @@ void handleClientMessage(int clientFd, const std::string& msg) {
             sendToClient(clientFd, "06", "03"); // koniec żyć (dla pewności)
             return;
         }
-
-        // todo dlaczego char nie działa a string tak?
 
         if (!game.guessedLetters.empty()) {
             if (std::find(game.guessedLetters.begin(), game.guessedLetters.end(), letter) != game.guessedLetters.end()) {
@@ -205,7 +201,7 @@ void handleClientMessage(int clientFd, const std::string& msg) {
             (*playerIt)->points += 25 * occurrences;
 
             // 3. wysłanie graczowi odpowiedzi na jego literę
-            std::string msgBody = "1," + std::string(1,letter); //todo sprawdź czemu tu char nie działa
+            std::string msgBody = "1," + std::string(1,letter);
             sendToClient(clientFd, "06", msgBody);
 
             // 4. powiadomienie wszystkich graczy o stanie gry
@@ -306,7 +302,6 @@ void handleClientMessage(int clientFd, const std::string& msg) {
             }
             (*lobbyIt)->setOwner();
             sendToClient(clientFd, "09", "1");
-            // todo sprawdzić czy tu nie trzeba usunąć pokoju bo a) podczas gry został jeden gracz b) w pokoju bez gry jest 0 graczy
             removeEmptyLobbies();
         }
         else {
@@ -330,13 +325,6 @@ void handleClientMessage(int clientFd, const std::string& msg) {
         sendPlayersToClients(lobbyIt->get(), -1, clientFd);
     }
     else if (msg.substr(0, 2) == "82") { // gracz gotowy do rozpoczęcia gry
-        //todo check this out:
-        // auto lobbyIt = std::find_if(lobbies.begin(), lobbies.end(), [clientFd](Lobby& lobby) {
-        //     auto playerIt = std::find_if(lobby.players.begin(), lobby.players.end(), [clientFd](Player* player) {
-        //         return player->sockfd == clientFd;
-        //     });
-        //     return playerIt != lobby.players.end();
-        // });
         std::string state = messageSubstring(msg);
 
         auto playerIt = std::find_if(players.begin(), players.end(), [clientFd](const std::shared_ptr<Player>& player) {
@@ -362,8 +350,6 @@ void handleClientMessage(int clientFd, const std::string& msg) {
             sendToClient(clientFd, "82", "01"); // nie znaleziono lobby
             return;
         }
-        //todo sprawdzić
-    
 
         if (state == "1") {
             (*playerIt)->isReadyToPlay = true;
