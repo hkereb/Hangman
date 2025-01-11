@@ -32,19 +32,15 @@ void sendPlayersToClients(const Lobby* lobby, int ignoreFd) {
 
     // przygotowanie wiadomości
     for (size_t i = 0; i < lobby->players.size(); ++i) {
-        if (lobby->players[i]->sockfd != ignoreFd) {
-            msgBody += lobby->players[i]->nick;
-            if (i != lobby->players.size() - 1) {
-                msgBody += ",";
-            }
+        msgBody += lobby->players[i]->nick;
+        if (i != lobby->players.size() - 1) {
+            msgBody += ",";
         }
     }
 
     // wysłanie do wszystkich klientów z pokoju
     for (const auto& player : lobby->players) {
-        if (player->sockfd != ignoreFd) {
-            sendToClient(player->sockfd, "71", msgBody);
-        }
+        sendToClient(player->sockfd, "71", msgBody);
     }
 }
 
@@ -200,12 +196,11 @@ void removeFromLobby(int clientFd) {
                 }
 
             }
-            else { // gra nie trwa (waitroom lub end page)
-                sendPlayersToClients(&lobby, playerToRemove->sockfd);
-                isStartAllowed(&lobby);
-            }
+            isStartAllowed(&lobby);
             lobby.players.erase(playerIt);
-
+            lobby.playersCount = lobby.players.size();
+            lobby.setOwner();
+            sendPlayersToClients(&lobby);
             break;
         }
     }
@@ -226,8 +221,3 @@ void removeEmptyLobbies() {
         }
     }
 }
-
-int getLobbyCount() {
-    return lobbies.size();
-}
-

@@ -104,10 +104,20 @@ void handleClientMessage(int clientFd, const std::string& msg) {
             return;
         }
 
+<<<<<<< HEAD
         // FAIL
         if (password != lobbyIt->password) {
             sendToClient(clientFd, "03", "01");  // niepoprawne hasło
             return;
+=======
+        if (playerIt != players.end()) {
+            lobbyIt->players.push_back(&*playerIt);  // Dodaj gracza do pokoju
+            lobbyIt->playersCount++;
+            lobbyIt->playersCount = lobbyIt->players.size();
+            sendToClient(clientFd, "03", "1");  // Sukces
+            sendPlayersToClients(&*lobbyIt);
+            isStartAllowed(&*lobbyIt);
+>>>>>>> 9438138 (branch rebase)
         }
         if (lobbyIt->playersCount >= MAXPLAYERS) {
             sendToClient(clientFd, "03", "02"); // osiągnięto max ilość graczy

@@ -63,7 +63,7 @@ int main() {
 
         for (int n = 0; n < ready; ++n) {
             if (events[n].data.fd == sockfd) {
-                // std::cout << "sockfd" << std::endl;
+                std::cout << "sockfd: " << sockfd << std::endl;
                 sockaddr_in clientAddr{};
                 socklen_t addrSize = sizeof(clientAddr);
                 int newFd = accept(events[n].data.fd, (struct sockaddr *)&clientAddr, &addrSize);
@@ -98,9 +98,11 @@ int main() {
                     char buffer[1024] = {0};
                     int bytesReceived = recv(events[n].data.fd, buffer, sizeof(buffer) - 1, 0);
                     if (bytesReceived <= 0) {
+
                         if (errno == EAGAIN || errno == EWOULDBLOCK) {
                             break;
                         }
+
                         perror("client got disconnected");
 
                         removeFromLobby(events[n].data.fd);
@@ -129,10 +131,12 @@ int main() {
                     }
                     
                     sendLobbiesToClients(lobbyNames);
+
                     clientBuffers[events[n].data.fd] += std::string(buffer, bytesReceived);
 
                     std::string& clientBuffer = clientBuffers[events[n].data.fd];
                     size_t pos;
+
                     while ((pos = clientBuffer.find('\n')) != std::string::npos) {
                         std::string clientMessage = clientBuffer.substr(0, pos);
                         clientBuffer.erase(0, pos + 1);
