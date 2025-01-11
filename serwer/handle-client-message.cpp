@@ -358,7 +358,7 @@ void handleClientMessage(int clientFd, const std::string& msg) {
             sendToClient(clientFd, "82", "01"); // nie znaleziono lobby
             return;
         }
-        auto& game = lobbyIt->game;
+        // auto& game = lobbyIt->game;
 
         if (state == "1") {
             playerIt->isReadyToPlay = true;
