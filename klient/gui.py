@@ -138,6 +138,7 @@ class MainApp(QMainWindow):
         self.ui.end_back_btn.clicked.connect(self.leave_room)
         self.ui.create_join_back_btn.clicked.connect(self.back_to_nick_page)
         self.ui.leave_room_btn.clicked.connect(self.leave_room)
+        self.ui.restart_btn.clicked.connect(self.play_again)
 
     def submit_nick(self):
         nick = self.ui.nick_field.text()
@@ -249,7 +250,7 @@ class MainApp(QMainWindow):
                 self.ui.stackedWidget.setCurrentWidget(self.ui.waitroom_page)
             elif result == "01":  # niepoprawne hasło
                 QMessageBox.information(self, "Cannot join the Room", "Incorrect password")
-                self.ui.join_room_name_field.clear()
+                self.ui.join_password_field.clear()
             elif result == "02":  # max graczy
                 QMessageBox.information(self, "Cannot join the Room", "The Room is full")
             elif result == "03":  # trwa gra
@@ -343,12 +344,14 @@ class MainApp(QMainWindow):
                 print("Gra może zostać rozpoczęta.")
             elif decision == "01":
                 self.ui.start_btn.setEnabled(False)
-                QMessageBox.information(self, "Cannot start the game", "There is not enough players (minimum of 2) in the Room")
-                print("Gra NIE może zostać rozpoczęta.")
+                if self.ui.stackedWidget.currentWidget() == self.ui.waitroom_page:
+                    #QMessageBox.information(self, "Cannot start the game", "There is not enough players (minimum of 2) in the Room")
+                    print("Gra NIE może zostać rozpoczęta.")
             elif decision == "02":
                 self.ui.start_btn.setEnabled(False)
-                QMessageBox.information(self, "Cannot start the game", "Not all players are ready to play again")
-                print("Gra NIE może zostać rozpoczęta.")
+                if self.ui.stackedWidget.currentWidget() == self.ui.waitroom_page:
+                    QMessageBox.information(self, "Cannot start the game", "Not all players are ready to play again")
+                    print("Gra NIE może zostać rozpoczęta.")
         ### init gry
         elif message.startswith("73"):
             msg = substr_msg(message)
@@ -484,14 +487,16 @@ class MainApp(QMainWindow):
             self.ui.letter_input.setText(letter.upper())
 
     def is_at_create_or_join_page(self, index):
-        if self.ui.stackedWidget.widget(index) == self.ui.create_or_join_page:
+        if self.ui.stackedWidget.currentWidget() == self.ui.create_or_join_page:
             self.sig_rooms_list.emit("")
 
-    def is_at_waitroom_page(self, index):
-        if self.ui.stackedWidget.widget(index) == self.ui.waitroom_page:
+    def is_at_waitroom_page(self):
+        if self.ui.stackedWidget.currentWidget() == self.ui.waitroom_page:
             print("emmited 71 through changing page")
             self.sig_players_list.emit("")
-            self.sig_ready_to_play.emit("")
+            self.sig_ready_to_play.emit("1")
+        else:
+            self.sig_ready_to_play.emit("0")
 
     def on_list_item_selected(self):
         selected_item = self.ui.rooms_list.currentItem()
@@ -546,6 +551,7 @@ class MainApp(QMainWindow):
         self.ui.ranking_list.clear()
         self.ui.send_letter_btn.setEnabled(True)
         self.ui.letter_input.setReadOnly(False)
+        self.ui.player0_label.setPixmap(QPixmap(self.image_paths[10]))
         for label in self.player_labels:
             label.setPixmap(QPixmap(self.image_paths[10]))
 
