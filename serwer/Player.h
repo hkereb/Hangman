@@ -14,6 +14,7 @@ struct Player {
     int lives;
     int maxLives;
     std::vector<char> failedLetters;
+    bool isReadyToPlay;
 
     Player() {
         this->nick = "";
@@ -24,5 +25,6 @@ struct Player {
         this->lives = this->maxLives;
         this->lobbyName = "";
         this->failedLetters = {};
+        this->isReadyToPlay = false;
     }
 };

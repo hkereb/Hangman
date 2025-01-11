@@ -75,7 +75,7 @@ void sendLivesToClients(const Lobby* lobby, const Player* playerWhoMissed) {
 void sendStartToClients(const Lobby* lobby) {
     for (const auto& player : lobby->players) {
         std::string time = Game::convertTime(lobby->roundDuration);
-        std::string msgBody = lobby->game.wordInProgress + ";" + time + ";"+ std::to_string(lobby->roundsAmount) + ";" + player->nick + ";";
+        std::string msgBody = "1;" + lobby->game.wordInProgress + ";" + time + ";"+ std::to_string(lobby->roundsAmount) + ";" + player->nick + ";";
         int count = 0;
 
         for (const auto& opponent : lobby->players) {
@@ -119,14 +119,20 @@ void sendEndToClients(const Lobby* lobby) {
 }
 
 void isStartAllowed(const Lobby* lobby) {
-    if (!lobby->game.isGameActive) {
-        if (lobby->playersCount >= 2) {
-            sendToClient(lobby->players[0]->sockfd, "72", "1");
-        }
-        else {
-            sendToClient(lobby->players[0]->sockfd, "72", "0");
+    if (lobby->game.isGameActive) {
+        return;
+    }
+    if (lobby->playersCount < 2) {
+        sendToClient(lobby->players[0]->sockfd, "72", "01"); // brakuje graczy
+        return;
+    }
+    for (const Player* player : lobby->players) {
+        if (!player->isReadyToPlay) {
+            sendToClient(lobby->players[0]->sockfd, "72", "02"); // nie wszyscy gracze są gotowi (nie wrócili po grze do waitroom)
+            return;
         }
     }
+    sendToClient(lobby->players[0]->sockfd, "72", "1");
 }
 
 Settings parseSettings(const std::string& msg) {
