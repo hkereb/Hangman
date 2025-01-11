@@ -75,6 +75,7 @@ void handleClientMessage(int clientFd, const std::string& msg) {
 
         sendToClient(clientFd, "02", "1");
         playerIt->isReadyToPlay = true;
+        playerIt->lobbyName = lobbyName;
         std::cout << "Lobby created successfully: " << lobbyName << "\n";
         std::cout << "Current lobby count: " << lobbyCount << "\n";
     }
@@ -129,6 +130,7 @@ void handleClientMessage(int clientFd, const std::string& msg) {
         lobbyIt->playersCount++;
         sendToClient(clientFd, "03", "1");
         playerIt->isReadyToPlay = true;
+        playerIt->lobbyName = lobbyName;
         sendPlayersToClients(&*lobbyIt);
         isStartAllowed(&*lobbyIt);
     }
@@ -267,33 +269,6 @@ void handleClientMessage(int clientFd, const std::string& msg) {
             sendToClient(clientFd, "79", "0");  // Pokój nie istnieje
         }
     }
-    // TODO hania - dostować gui
-    // else if (msg.substr(0, 2) == "07") {  // Restart gry
-    //     std::string roomName = messageSubstring(msg);
-    //
-    //     auto lobbyIt = std::find_if(lobbies.begin(), lobbies.end(), [&roomName](const Lobby& lobby) {
-    //         return lobby.name == roomName;
-    //     });
-    //
-    //     if (lobbyIt != lobbies.end()) {
-    //         auto ownerIt = std::find_if(lobbyIt->players.begin(), lobbyIt->players.end(), [](const Player& player) {
-    //             return player.isOwner;  // szukamy obecnego wlasciciela lobby
-    //         });
-    //
-    //         if (ownerIt != lobbyIt->players.end() && ownerIt->sockfd == clientFd) {
-    //             std::cout << "Restart gry w pokoju: " << roomName << "\n";
-    //             // restart gry w tym lobby
-    //             lobbyIt->startGame();
-    //             for (const auto& player : lobbyIt->players) {  // powiadomienie graczy
-    //                 sendToClient(player.sockfd, "07", "1\ngameRestartSuccessful\n");
-    //             }
-    //         } else {
-    //             sendToClient(clientFd, "07", "0\nnotLobbyLeader\n");  // Gracz nie jest liderem
-    //         }
-    //     } else {
-    //         sendToClient(clientFd, "07", "0\ngameRestartFailed\n");  // Pokój nie istnieje
-    //     }
-    // }
     else if (msg.substr(0, 2) == "09") {  // Opuszczenie pokoju
         auto lobbyIt = std::find_if(lobbies.begin(), lobbies.end(), [clientFd](const Lobby& lobby) {
             return std::any_of(lobby.players.begin(), lobby.players.end(), [clientFd](const Player* player) {
@@ -337,7 +312,20 @@ void handleClientMessage(int clientFd, const std::string& msg) {
     else if (msg.substr(0, 2) == "70") { // prośba o listę pokoi (dla jednego gracza)
         sendLobbiesToClients(lobbyNames, clientFd);
     }
-    else if (msg.substr(0, 2) == "81") { // gracz gotowy do rozpoczęcia gry
+    else if (msg.substr(0, 2) == "71") { // prośba o listę graczy
+        auto lobbyIt = std::find_if(lobbies.begin(), lobbies.end(), [clientFd](const Lobby& lobby) {
+            return std::any_of(lobby.players.begin(), lobby.players.end(), [clientFd](const Player* player) {
+                return player->sockfd == clientFd;
+            });
+        });
+        if (lobbyIt == lobbies.end()) {
+            sendToClient(clientFd, "71", "01"); // nie znaleziono lobby
+            return;
+        }
+
+        sendPlayersToClients(&*lobbyIt, -1, clientFd);
+    }
+    else if (msg.substr(0, 2) == "82") { // gracz gotowy do rozpoczęcia gry
         //todo check this out:
         // auto lobbyIt = std::find_if(lobbies.begin(), lobbies.end(), [clientFd](Lobby& lobby) {
         //     auto playerIt = std::find_if(lobby.players.begin(), lobby.players.end(), [clientFd](Player* player) {
@@ -345,27 +333,40 @@ void handleClientMessage(int clientFd, const std::string& msg) {
         //     });
         //     return playerIt != lobby.players.end();
         // });
+        std::string state = messageSubstring(msg);
+
+        auto playerIt = std::find_if(players.begin(), players.end(), [clientFd](const Player& player) {
+           return player.sockfd == clientFd;
+        });
+        if (playerIt == players.end()) {
+            std::cout << "Player's socket has not been found in the players vector (socket: " << clientFd << ")";
+            sendToClient(clientFd, "82", "02");
+            return;
+        }
+
+        if (playerIt->lobbyName.empty()) {
+            std::cout << "jestem w return (ten player nie ma przypisanego lobby w struct Player)\n";
+            return;
+        }
+
         auto lobbyIt = std::find_if(lobbies.begin(), lobbies.end(), [clientFd](const Lobby& lobby) {
             return std::any_of(lobby.players.begin(), lobby.players.end(), [clientFd](const Player* player) {
                 return player->sockfd == clientFd;
             });
         });
         if (lobbyIt == lobbies.end()) {
-            sendToClient(clientFd, "81", "01"); // nie znaleziono lobby
+            sendToClient(clientFd, "82", "01"); // nie znaleziono lobby
             return;
         }
         auto& game = lobbyIt->game;
 
-        auto playerIt = std::find_if(lobbyIt->players.begin(), lobbyIt->players.end(), [clientFd](const Player* player) {
-            return player->sockfd == clientFd;
-        });
-        if (playerIt == lobbyIt->players.end()) {
-            sendToClient(clientFd, "81", "02"); // nie znaleziono gracza
+        if (state == "1") {
+            playerIt->isReadyToPlay = true;
         }
-
-        (*playerIt)->isReadyToPlay = true;
+        else {
+            playerIt->isReadyToPlay = false;
+        }
         isStartAllowed(&*lobbyIt);
-        // todo sprawdz czy można zacząć grę w pokoju (wszyscy muszą być ready), gdy gracz na page inny niż waitroom lub game_page to isReadyToPlay = false
     }
 }
 
