@@ -2,15 +2,54 @@
 #include "helpers.h"
 
 void Game::initializeWordList() {
-    std::vector<std::string> availableWords = {
-        "coddles","saccharinity","windmilling","negativism","contingents",
-        "ultradry","ecdyses","campong","demoiselle","mahjongs","fathomable",
-        "mescluns","wristlets","polymorphically","supremacists","forzandi",
-        "trilobal","crosstrees","plopped","gainsayer","transmissive","unthink",
-        "taximan","cations","preclearances","pretorial","interdominion","bregmate",
-        "osiers","fighter","gaudier","crowberries","archrivals","roamers","whiffets",
-        "aciculas","exhedrae","florilegia","catalo","reconnection","fillip","searched"
-    };
+    std::ifstream file("../words.json");
+    if (!file.is_open()) {
+        std::cerr << "unable to open words.json" << std::endl;
+        return;
+    }
+
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+    std::string jsonContent = buffer.str();
+    file.close();
+
+    std::string difficultyLevel;
+    switch (difficulty) {
+        case Levels::EASY:
+            difficultyLevel = "\"easy\"";
+            break;
+        case Levels::MEDIUM:
+            difficultyLevel = "\"medium\"";
+            break;
+        case Levels::HARD:
+            difficultyLevel = "\"hard\"";
+            break;
+        default:
+            std::cerr << "wrong difficulty" << std::endl;
+            return;
+    }
+
+    size_t startPos = jsonContent.find(difficultyLevel);
+    startPos = jsonContent.find('[', startPos);
+    size_t endPos = jsonContent.find(']', startPos);
+    if (startPos == std::string::npos || endPos == std::string::npos) {
+        std::cerr << "wrong difficulty level structure" << std::endl;
+        return;
+    }
+
+    std::string wordsArray = jsonContent.substr(startPos + 1, endPos - startPos - 1);
+
+    std::vector<std::string> availableWords;
+    size_t pos = 0;
+    while ((pos = wordsArray.find("\"word\":")) != std::string::npos) {
+        size_t start = wordsArray.find('"', pos + 7);
+        size_t end = wordsArray.find('"', start + 1);
+        if (start == std::string::npos || end == std::string::npos) {
+            break;
+        }
+        availableWords.push_back(wordsArray.substr(start + 1, end - start - 1));
+        wordsArray = wordsArray.substr(end + 1);
+    }
 
     std::random_device rd;
     std::default_random_engine engine(rd());
