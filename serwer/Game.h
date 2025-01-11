@@ -11,6 +11,7 @@
 #include <iostream>
 #include <random>
 #include <atomic>
+#include <memory>
 #include <thread>
 
 #include "Player.h"
@@ -27,7 +28,7 @@ struct Game {
     std::string currentWord;
     std::string wordInProgress;
     std::vector<char> guessedLetters;
-    std::vector<Player*> players;
+    std::vector<std::shared_ptr<Player>> players;
     int roundDuration;
     int currentRound;
     int roundsAmount;

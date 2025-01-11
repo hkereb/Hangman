@@ -1,7 +1,7 @@
 #include "helpers.h"
 
-extern std::vector<Player> players;
-extern std::vector<Lobby> lobbies;
+extern std::vector<std::shared_ptr<Player>> players;
+extern std::vector<std::shared_ptr<Lobby>> lobbies;
 extern std::vector<std::string> lobbyNames;
 
 void sendLobbiesToClients(std::vector<std::string> lobbyNames, int clientFd) {
@@ -20,8 +20,8 @@ void sendLobbiesToClients(std::vector<std::string> lobbyNames, int clientFd) {
     // wysłanie do wielu klientów (update dla klientów, którzy są już w aplikacji)
     else {
         for (const auto& player : players) {
-            if (player.lobbyName.empty()) {
-                sendToClient(player.sockfd, "70", messageBody);
+            if (player->lobbyName.empty()) {
+                sendToClient(player->sockfd, "70", messageBody);
             }
         }
     }
@@ -124,14 +124,13 @@ void sendEndToClients(const Lobby* lobby) {
 
 void isStartAllowed(const Lobby* lobby) {
     if (lobby->game.isGameActive) {
-        std::cout << "i think game is active";
         return;
     }
     if (lobby->playersCount < 2) {
         sendToClient(lobby->players[0]->sockfd, "72", "01"); // brakuje graczy
         return;
     }
-    for (const Player* player : lobby->players) {
+    for (const auto& player : lobby->players) {
         if (!player->isReadyToPlay) {
             sendToClient(lobby->players[0]->sockfd, "72", "02"); // nie wszyscy gracze są gotowi (nie wrócili po grze do waitroom)
             return;
@@ -178,36 +177,37 @@ std::string messageSubstring(std::string msg) {
 
 void removeFromLobby(int clientFd) {
     for (auto & lobby : lobbies) {
-        auto playerIt = std::find_if(lobby.players.begin(), lobby.players.end(), [clientFd](const Player* player) {
+        auto playerIt = std::find_if(lobby->players.begin(), lobby->players.end(), [clientFd](const std::shared_ptr<Player>& player) {
             return player->sockfd == clientFd;
         });
 
-        if (playerIt != lobby.players.end()) {
-            Player* playerToRemove = *playerIt;
-            std::cout << "Player: " << playerToRemove->nick << ", got removed from lobby: " << lobby.name << "\n";
-            lobby.playersCount--;
-            if (lobby.game.isGameActive) { // gra trwa (game page)
-                auto& gamePlayers = lobby.game.players;
-                auto gamePlayerIt = std::find_if(gamePlayers.begin(), gamePlayers.end(), [clientFd](const Player* player) {
+        if (playerIt != lobby->players.end()) {
+            const std::shared_ptr<Player>& playerToRemove = *playerIt;
+            playerToRemove->lobbyName = "";
+            std::cout << "Player: " << playerToRemove->nick << ", got removed from lobby: " << lobby->name << "\n";
+            lobby->playersCount--;
+            if (lobby->game.isGameActive) { // gra trwa (game page)
+                auto& gamePlayers = lobby->game.players;
+                auto gamePlayerIt = std::find_if(gamePlayers.begin(), gamePlayers.end(), [clientFd](const std::shared_ptr<Player>& player) {
                     return player->sockfd == clientFd;
                 });
 
                 if (gamePlayerIt != gamePlayers.end()) {
                     std::cout << "Removing player " << (*gamePlayerIt)->nick << " from game.\n";
-                    gamePlayers.erase(gamePlayerIt); // Usuwamy gracza z gry
+                    gamePlayers.erase(gamePlayerIt);
                 }
 
-                for (auto & player : lobby.players) {
+                for (auto & player : lobby->players) {
                     if (playerToRemove->nick != player->nick) {
                         sendToClient(player->sockfd, "74", playerToRemove->nick);
                     }
                 }
             }
             else { // gra nie trwa (waitroom lub end page)
-                sendPlayersToClients(&lobby, playerToRemove->sockfd);
-                isStartAllowed(&lobby);
+                sendPlayersToClients(lobby.get(), playerToRemove->sockfd);
+                isStartAllowed(lobby.get());
             }
-            lobby.players.erase(playerIt);
+            lobby->players.erase(playerIt);
 
             break;
         }

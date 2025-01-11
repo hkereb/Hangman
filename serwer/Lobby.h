@@ -12,8 +12,8 @@ struct Lobby {
     std::string name;
     std::string password;
     int playersCount;
-    std::vector<Player*> players;
-    Player* owner;
+    std::vector<std::shared_ptr<Player>> players;
+    std::shared_ptr<Player> owner;
 
     int difficulty;
     int roundsAmount;
