@@ -35,7 +35,7 @@ if __name__ == "__main__":
 
     def handle_connection_error(error_message):
         qtw.QMessageBox.critical(window, "Connection Error",f"The connection with the server has been lost:\n{error_message}")
-        window.reset_ui()
+        window.clean_upon_disconnect()
 
     def unlock_other_signals():
         window.sig_submit_nick.connect(lambda nick: client.send_to_server("01", f"{nick}"))
