@@ -474,6 +474,14 @@ class MainApp(QMainWindow):
                 if nick == list_nick:
                     self.ui.ranking_list.takeItem(i)
                     break
+        ### jeden z graczy opuścił trwającą grę
+        elif message.startswith("83"):
+            QMessageBox.information(self, "The game has been aborted", "Only one player remained in the game")
+            self.clean_end_page()
+            self.clean_game_page()
+            self.clean_waitroom_page()
+
+            self.ui.stackedWidget.setCurrentWidget(self.ui.waitroom_page)
 
     def on_ip_changed(self):
         if self.ui.ip_field.hasAcceptableInput():
