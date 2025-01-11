@@ -60,11 +60,6 @@ void handleClientMessage(int clientFd, const std::string& msg) {
             return;
         }
 
-        // SUCCESS
-        newLobby.players.push_back(&*playerIt);
-        newLobby.playersCount++;
-        newLobby.setOwner();
-
         lobbyNames.push_back(lobbyName);
 
         sendLobbiesToClients(lobbyNames);

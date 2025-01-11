@@ -166,3 +166,13 @@ void Game::resetGame(int roundsAmount, int roundDuration, int difficulty) {
     }
 }
 
+void Game::removePlayer(int sockfd) {
+    auto it = std::remove_if(players.begin(), players.end(), [sockfd](Player* player) {
+        return player->sockfd == sockfd;
+    });
+
+    if (it != players.end()) {
+        std::cout << "Player with socket " << sockfd << " removed from game.\n";
+        players.erase(it, players.end());
+    }
+}
