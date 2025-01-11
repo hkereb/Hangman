@@ -119,14 +119,20 @@ void sendEndToClients(const Lobby* lobby) {
 }
 
 void isStartAllowed(const Lobby* lobby) {
-    if (!lobby->game.isGameActive) {
-        if (lobby->playersCount >= 2) {
-            sendToClient(lobby->players[0]->sockfd, "72", "1");
-        }
-        else {
-            sendToClient(lobby->players[0]->sockfd, "72", "0");
+    if (lobby->game.isGameActive) {
+        return;
+    }
+    if (lobby->playersCount < 2) {
+        sendToClient(lobby->players[0]->sockfd, "72", "01"); // brakuje graczy
+        return;
+    }
+    for (const Player* player : lobby->players) {
+        if (!player->isReadyToPlay) {
+            sendToClient(lobby->players[0]->sockfd, "72", "02"); // nie wszyscy gracze są gotowi (nie wrócili po grze do waitroom)
+            return;
         }
     }
+    sendToClient(lobby->players[0]->sockfd, "72", "1");
 }
 
 Settings parseSettings(const std::string& msg) {

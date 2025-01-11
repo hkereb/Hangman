@@ -41,7 +41,8 @@ struct Game {
 
     Game() :
     timeLeftInRound(0),
-    isRoundActive(false) {}
+    isRoundActive(false),
+    isGameActive(false){}
 
     // move constructor
     Game(Game&& other) noexcept
