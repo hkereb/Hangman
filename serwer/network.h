@@ -12,8 +12,6 @@
 
 #include "constants.h"
 
-#define BACKLOG 200 // how many pending connections queue will hold
-
 int setNonBlocking(int sockfd);
 int startListening();
 

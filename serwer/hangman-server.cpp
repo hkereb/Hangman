@@ -25,7 +25,7 @@ std::vector<std::string> lobbyNames;
 int main() {
     int sockfd = startListening();
 
-    int efd = epoll_create(MAXEPOLLSIZE);
+    int efd = epoll_create1(0);
 
     epoll_event ev{};
     ev.events = EPOLLIN;
@@ -39,16 +39,23 @@ int main() {
     }
 
     int fdsToWatch = 1;
+    int eventsCapacity = fdsToWatch;
     struct epoll_event *events;
-    events = (struct epoll_event *)malloc(sizeof(struct epoll_event) * fdsToWatch);
+    events = (struct epoll_event *)malloc(sizeof(struct epoll_event) * eventsCapacity);
 
     std::unordered_map<int, std::string> clientBuffers;
 
     while (1) {  // loop for accepting incoming connections
-        int ready = epoll_wait(efd, events, fdsToWatch, -1);
+        int ready = epoll_wait(efd, events, eventsCapacity, -1);
         if (ready == -1) {
             perror("epoll_wait");
             break;
+        }
+
+        if (fdsToWatch > eventsCapacity) { // resizing events structure size
+            eventsCapacity = fdsToWatch;
+            events = (struct epoll_event*)realloc(events, sizeof(struct epoll_event) * eventsCapacity);
+            std::cout << "events structure resized" << std::endl;
         }
 
         for (int n = 0; n < ready; ++n) {

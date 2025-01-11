@@ -43,6 +43,7 @@ int startListening() {
             continue;
         }
 
+        // make it so we can reuse address
         int opt = 1;
         if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
             perror("setsockopt");
