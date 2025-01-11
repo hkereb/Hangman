@@ -61,7 +61,7 @@ void handleClientMessage(int clientFd, const std::string& msg) {
 
         // SUCCESS
         newLobby->players.push_back(*playerIt);
-        newLobby->playersCount++;
+        newLobby->playersCount = newLobby->players.size();
         newLobby->setOwner();
 
         lobbyNames.push_back(lobbyName);
@@ -124,7 +124,7 @@ void handleClientMessage(int clientFd, const std::string& msg) {
 
         // SUCCESS
         (*lobbyIt)->players.push_back(*playerIt);
-        (*lobbyIt)->playersCount++;
+        (*lobbyIt)->playersCount = (*lobbyIt)->players.size();
         sendToClient(clientFd, "03", "1");
         (*playerIt)->isReadyToPlay = true;
         (*playerIt)->lobbyName = lobbyName;
@@ -293,7 +293,7 @@ void handleClientMessage(int clientFd, const std::string& msg) {
             (*playerIt)->lobbyName = "";
 
             (*lobbyIt)->players.erase(playerIt);
-            (*lobbyIt)->playersCount--;
+            (*lobbyIt)->playersCount = (*lobbyIt)->players.size();
 
             if ((*lobbyIt)->game.isGameActive) {
                 for (const auto& player : (*lobbyIt)->players) {
@@ -304,7 +304,7 @@ void handleClientMessage(int clientFd, const std::string& msg) {
                 isStartAllowed(lobbyIt->get());
                 sendPlayersToClients(lobbyIt->get());
             }
-
+            (*lobbyIt)->setOwner();
             sendToClient(clientFd, "09", "1");
             // todo sprawdzić czy tu nie trzeba usunąć pokoju bo a) podczas gry został jeden gracz b) w pokoju bez gry jest 0 graczy
             removeEmptyLobbies();
@@ -363,7 +363,7 @@ void handleClientMessage(int clientFd, const std::string& msg) {
             return;
         }
         //todo sprawdzić
-        auto& game = (*lobbyIt)->game;
+    
 
         if (state == "1") {
             (*playerIt)->isReadyToPlay = true;

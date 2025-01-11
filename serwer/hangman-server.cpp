@@ -19,6 +19,7 @@ std::vector<std::shared_ptr<Player>> players;
 std::vector<std::string> playersNicknames;
 
 std::vector<std::shared_ptr<Lobby>> lobbies;
+int lobbyCount = 0;
 std::vector<std::string> lobbyNames;
 
 int main() {
