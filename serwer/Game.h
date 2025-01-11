@@ -102,5 +102,6 @@ struct Game {
     void startTimer();
     void stopTimer();
     void resetGame(int roundsAmount, int roundDuration, int difficulty);
+    void removePlayer(int sockfd);
     static std::string convertTime(int time);
 };

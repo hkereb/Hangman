@@ -24,5 +24,7 @@ void sendEndToClients(const Lobby* lobby);
 void isStartAllowed(const Lobby* lobby);
 Settings parseSettings(const std::string& msg);
 std::string messageSubstring(std::string msg);
+int getLobbyCount();
 
 void removeFromLobby(int clientFd);
+void removeEmptyLobbies();

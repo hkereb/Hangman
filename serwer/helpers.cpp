@@ -189,7 +189,8 @@ void removeFromLobby(int clientFd) {
 
                 if (gamePlayerIt != gamePlayers.end()) {
                     std::cout << "Removing player " << (*gamePlayerIt)->nick << " from game.\n";
-                    gamePlayers.erase(gamePlayerIt); // Usuwamy gracza z gry
+                    // gamePlayers.erase(gamePlayerIt); // Usuwamy gracza z gry
+                    lobby.game.players.erase(gamePlayerIt);
                 }
 
                 for (auto & player : lobby.players) {
@@ -197,6 +198,7 @@ void removeFromLobby(int clientFd) {
                         sendToClient(player->sockfd, "74", playerToRemove->nick);
                     }
                 }
+
             }
             else { // gra nie trwa (waitroom lub end page)
                 sendPlayersToClients(&lobby, playerToRemove->sockfd);
@@ -207,5 +209,25 @@ void removeFromLobby(int clientFd) {
             break;
         }
     }
+    removeEmptyLobbies();
+}
+
+void removeEmptyLobbies() {
+    for (auto n = lobbies.begin(); n != lobbies.end();) {
+        if (n->players.size() < 1) {
+            std::cout << "Lobby removal: " << n->name << "\n"; 
+            auto lobbyNameIt = std::find(lobbyNames.begin(), lobbyNames.end(), n->name);
+            if (lobbyNameIt != lobbyNames.end()) {
+                lobbyNames.erase(lobbyNameIt);
+            }
+            n = lobbies.erase(n);
+        } else {
+            ++n;
+        }
+    }
+}
+
+int getLobbyCount() {
+    return lobbies.size();
 }
 

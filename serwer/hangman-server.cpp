@@ -19,7 +19,6 @@ std::vector<Player> players;
 std::vector<std::string> playersNicknames;
 
 std::vector<Lobby> lobbies;
-int lobbyCount = 0;
 std::vector<std::string> lobbyNames;
 
 int main() {
@@ -54,8 +53,12 @@ int main() {
 
         if (fdsToWatch > eventsCapacity) { // resizing events structure size
             eventsCapacity = fdsToWatch;
-            events = (struct epoll_event*)realloc(events, sizeof(struct epoll_event) * eventsCapacity);
-            std::cout << "events structure resized" << std::endl;
+            events = (struct epoll_event*)realloc(events, sizeof(epoll_event) * eventsCapacity);
+            if (!events) {
+                perror("Failed to allocate memory for events array");
+                exit(EXIT_FAILURE);
+            }
+            std::cout << "events structure resized to: " << eventsCapacity << std::endl;
         }
 
         for (int n = 0; n < ready; ++n) {
@@ -116,7 +119,6 @@ int main() {
                             std::cout << "Player with nickname " << playerIt->nick << " removed from global player list.\n";
                             players.erase(playerIt);
                         }
-                        sendLobbiesToClients(lobbyNames);
 
                         // Clean up resources
                         close(events[n].data.fd);
@@ -125,6 +127,8 @@ int main() {
                         fdsToWatch--;
                         break;
                     }
+                    
+                    sendLobbiesToClients(lobbyNames);
                     clientBuffers[events[n].data.fd] += std::string(buffer, bytesReceived);
 
                     std::string& clientBuffer = clientBuffers[events[n].data.fd];

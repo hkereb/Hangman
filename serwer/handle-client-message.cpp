@@ -4,8 +4,8 @@ extern std::vector<Player> players;
 extern std::vector<Lobby> lobbies;
 extern std::vector<std::string> playersNicknames;
 extern std::vector<std::string> lobbyNames;
-extern int lobbyCount;
 
+// obsługa klienta na podstawie jego wiadomości
 void handleClientMessage(int clientFd, const std::string& msg) {
     if (msg.substr(0, 2) == "01") { // Ustawienie nicku
         std::string nick = messageSubstring(msg);
@@ -65,7 +65,6 @@ void handleClientMessage(int clientFd, const std::string& msg) {
         newLobby.playersCount++;
         newLobby.setOwner();
 
-        lobbyCount++;
         lobbyNames.push_back(lobbyName);
 
         sendLobbiesToClients(lobbyNames);
@@ -76,7 +75,8 @@ void handleClientMessage(int clientFd, const std::string& msg) {
         sendToClient(clientFd, "02", "1");
         playerIt->isReadyToPlay = true;
         std::cout << "Lobby created successfully: " << lobbyName << "\n";
-        std::cout << "Current lobby count: " << lobbyCount << "\n";
+
+        std::cout << "Current lobby count: " << getLobbyCount() << "\n";
     }
     else if (msg.substr(0, 2) == "03") {  // Dołączanie do pokoju
         std::string lobbyInfo = messageSubstring(msg);
