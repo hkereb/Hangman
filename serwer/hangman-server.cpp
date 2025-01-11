@@ -88,7 +88,8 @@ int main() {
 
 
                 sendToClient(newFd, "69", "hello!");
-            } else {
+            }
+            else {
                 if (events[n].events & (EPOLLERR | EPOLLHUP)) {
                     // epoll errors and hang ups
                     std::cout << "Error or hang-up detected on socket: " <<  events[n].data.fd << std::endl;
@@ -96,16 +97,16 @@ int main() {
                     // remove player from global list
                     removeFromLobby(events[n].data.fd);
 
-                    auto playerIt = std::find_if(players.begin(), players.end(), [n, events](const Player& player) {
-                        return player.sockfd == events[n].data.fd;
+                    auto playerIt = std::find_if(players.begin(), players.end(), [n, events](const std::shared_ptr<Player>& player) {
+                        return player->sockfd == events[n].data.fd;
                     });
 
                     if (playerIt != players.end()) {
-                        auto nicknameIt = std::find(playersNicknames.begin(), playersNicknames.end(), playerIt->nick);
+                        auto nicknameIt = std::find(playersNicknames.begin(), playersNicknames.end(), (*playerIt)->nick);
                         if (nicknameIt != playersNicknames.end()) {
-                            playersNicknames.erase(nicknameIt);  // Remove the nickname
+                            playersNicknames.erase(nicknameIt);  // Usuń nickname
                         }
-                        std::cout << "Player with nickname " << playerIt->nick << " removed from global player list.\n";
+                        std::cout << "Player with nickname " << (*playerIt)->nick << " removed from global player list.\n";
                         players.erase(playerIt);
                     }
                     sendLobbiesToClients(lobbyNames);
