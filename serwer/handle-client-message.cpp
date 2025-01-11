@@ -307,96 +307,36 @@ void handleClientMessage(int clientFd, const std::string& msg) {
     //         sendToClient(clientFd, "07", "0\ngameRestartFailed\n");  // Pokój nie istnieje
     //     }
     // }
-    // // TODO hania - dostować gui
-    // else if (msg.substr(0, 2) == "08") {  // Stan gry
-    //     std::string roomName = messageSubstring(msg);
-    //
-    //
-    //     auto lobbyIt = std::find_if(lobbies.begin(), lobbies.end(), [&roomName](const Lobby& lobby) {
-    //         return lobby.name == roomName;
-    //     });
-    //
-    //     if (lobbyIt != lobbies.end()) {
-    //         std::string gameState = "Game state in room: " + roomName + "\n";
-    //         gameState += "Current round: " + std::to_string(lobbyIt->game.currentRound) + "/" + std::to_string(lobbyIt->roundsAmount) + "\n";
-    //         gameState += "Game over: " + std::string(lobbyIt->game.isGameActive ? "Yes" : "No") + "\n";
-    //         gameState += "Difficulty: " + std::to_string(lobbyIt->difficulty) + "\n";
-    //
-    //         for (auto& player : lobbyIt->players) {
-    //             gameState += player.nick + ": " + std::to_string(player.points) + "\n";
-    //         }
-    //
-    //         gameState += "Guessing word: " + lobbyIt->game.currentWord + "\n";
-    //         gameState += "Guessed letters: ";
-    //         for (char letter : lobbyIt->game.wordInProgress) {
-    //             gameState += letter;
-    //         }
-    //
-    //         sendToClient(clientFd, "08", gameState);  // Stan gry
-    //     } else {
-    //         sendToClient(clientFd, "08", "0\ngameStateReadFailed\n");
-    //     }
-    // }
     // TODO hania - dostować gui
-    // else if (msg.substr(0, 2) == "09") {  // Opuszczenie pokoju
-    //     std::string roomName = messageSubstring(msg);
-    //
-    //     auto lobbyIt = std::find_if(lobbies.begin(), lobbies.end(), [&roomName](const Lobby& lobby) {
-    //         return lobby.name == roomName;
-    //     });
-    //
-    //     if (lobbyIt != lobbies.end()) {
-    //         auto playerIt = std::find_if(lobbyIt->players.begin(), lobbyIt->players.end(), [clientFd](const Player& player) {
-    //             return player.sockfd == clientFd;
-    //         });
-    //
-    //         if (playerIt != lobbyIt->players.end()) {
-    //             if (playerIt->isOwner) {  // jezeli byl to gracz przestaje byc ownerem
-    //                 playerIt->isOwner = false;
-    //             }
-    //
-    //             lobbyIt->joinTimes.erase(clientFd);  // usuwanie gracza z listy czasow dolaczania
-    //
-    //             lobbyIt->players.erase(playerIt);  // usuwanie gracza z listy graczy
-    //             lobbyIt->playersCount--;
-    //
-    //             if (!lobbyIt->players.empty()) {
-    //                 lobbyIt->setOwner();  // ustawienie nowego ownera gdyby obecny wlasnie wyszedl
-    //             }
-    //
-    //         }
-    //
-    //         sendToClient(clientFd, "09", "1");  // Sukces
-    //     } else {
-    //         sendToClient(clientFd, "09", "0");
-    //     }
-    // }
-    // // TODO hania zmienić numer komendy + dostosować gui
-    // else if (msg.substr(0, 2) == "10") {  // Informacje o lobby
-    //     auto lobbyIt = std::find_if(lobbies.begin(), lobbies.end(), [clientFd](const Lobby& lobby) {
-    //         return std::any_of(lobby.players.begin(), lobby.players.end(), [clientFd](const Player& player) {
-    //             return player.sockfd == clientFd;
-    //         });
-    //     });
-    //
-    //     if (lobbyIt != lobbies.end()) {
-    //         auto ownerIt = std::find_if(lobbyIt->players.begin(), lobbyIt->players.end(),
-    //             [](const Player& player) { return player.isOwner; });
-    //         std::string ownerNick;
-    //
-    //         if (ownerIt != lobbyIt->players.end()) {
-    //             ownerNick = ownerIt->nick;
-    //         } else {
-    //             ownerNick = "None";
-    //         }
-    //         std::string response = "10\nroomFound\n" + lobbyIt->name +
-    //                             "\nPlayers: " + std::to_string(lobbyIt->playersCount) +
-    //                             "\nOwner: " + ownerNick + "\n";
-    //         sendToClient(clientFd, "10", response);
-    //     } else {
-    //         sendToClient(clientFd, "10", "0");
-    //     }
-    // }
+    else if (msg.substr(0, 2) == "09") {  // Opuszczenie pokoju
+        auto lobbyIt = std::find_if(lobbies.begin(), lobbies.end(), [clientFd](const Lobby& lobby) {
+            return std::any_of(lobby.players.begin(), lobby.players.end(), [clientFd](const Player* player) {
+                return player->sockfd == clientFd;
+            });
+        });
+
+        if (lobbyIt == lobbies.end()) {
+            sendToClient(clientFd, "09", "0");
+        }
+
+        auto playerIt = std::find_if(lobbyIt->players.begin(), lobbyIt->players.end(), [clientFd](const Player* player) {
+           return player->sockfd == clientFd;
+        });
+
+        if (playerIt != lobbyIt->players.end()) {
+            (*playerIt)->isOwner = false;
+
+            lobbyIt->players.erase(playerIt);
+            lobbyIt->playersCount--;
+
+            sendToClient(clientFd, "09", "1");
+            isStartAllowed(&*lobbyIt);
+            sendPlayersToClients(&*lobbyIt);
+
+            // todo sprawdzić czy tu nie trzeba usunąć pokoju bo a) podczas gry został jeden gracz b) w pokoju bez gry jest 0 graczy
+        }
+        // todo wyślij kod błędu że nie znaleziono gracza
+    }
     else if (msg.substr(0, 2) == "70") { // prośba o listę pokoi (dla jednego gracza)
         sendLobbiesToClients(lobbyNames, clientFd);
     }
