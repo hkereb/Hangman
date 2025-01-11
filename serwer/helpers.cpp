@@ -184,6 +184,7 @@ void removeFromLobby(int clientFd) {
 
         if (playerIt != lobby.players.end()) {
             Player* playerToRemove = *playerIt;
+            playerToRemove->lobbyName = "";
             std::cout << "Player: " << playerToRemove->nick << ", got removed from lobby: " << lobby.name << "\n";
             lobby.playersCount--;
             if (lobby.game.isGameActive) { // gra trwa (game page)
