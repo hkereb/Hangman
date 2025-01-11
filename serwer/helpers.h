@@ -1,5 +1,4 @@
-#ifndef HELPERS_H
-#define HELPERS_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -27,5 +26,3 @@ Settings parseSettings(const std::string& msg);
 std::string messageSubstring(std::string msg);
 
 void removeFromLobby(int clientFd);
-
-#endif // HELPERS_H

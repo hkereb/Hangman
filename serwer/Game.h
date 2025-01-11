@@ -1,5 +1,4 @@
-#ifndef GAME_H
-#define GAME_H
+#pragma once
 
 #include <string>
 #include <sstream>
@@ -101,5 +100,3 @@ struct Game {
     void resetGame(int roundsAmount, int roundDuration, int difficulty);
     static std::string convertTime(int time);
 };
-
-#endif // GAME_H

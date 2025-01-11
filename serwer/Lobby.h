@@ -1,5 +1,4 @@
-#ifndef LOBBY_H
-#define LOBBY_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -66,5 +65,3 @@ struct Lobby {
     void startGame();
     void setOwner();
 };
-
-#endif // LOBBY_H

@@ -1,6 +1,4 @@
-
-#ifndef SENDTOCLIENT_H
-#define SENDTOCLIENT_H
+#pragma once
 
 #include <string>
 #include <sys/socket.h>
@@ -8,4 +6,3 @@
 
 void sendToClient(int clientFd, const std::string& commandNumber, const std::string& body);
 
-#endif 

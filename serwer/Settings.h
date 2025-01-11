@@ -1,5 +1,4 @@
-#ifndef SETTINGS_H
-#define SETTINGS_H
+#pragma once
 
 #include <string>
 
@@ -10,5 +9,3 @@ struct Settings {
     int roundsAmount;
     int roundDurationSec;
 };
-
-#endif // SETTINGS_H

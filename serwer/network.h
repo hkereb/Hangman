@@ -1,5 +1,4 @@
-#ifndef NETWORK_UTILS_H
-#define NETWORK_UTILS_H
+#pragma once
 
 #include <fcntl.h>
 #include <stdio.h>
@@ -14,5 +13,3 @@
 
 int setNonBlocking(int sockfd);
 int startListening();
-
-#endif // NETWORK_UTILS_H

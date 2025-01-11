@@ -1,5 +1,4 @@
-#ifndef HANDLE_CLIENT_MESSAGE_H
-#define HANDLE_CLIENT_MESSAGE_H
+#pragma once
 
 #include <string>
 #include <vector>
@@ -18,5 +17,3 @@
 #include "sendToClient.h"
 
 void handleClientMessage(int clientFd, const std::string& msg);
-
-#endif
