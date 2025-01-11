@@ -228,16 +228,14 @@ void removeEmptyLobbies() {
             removeLobby = true;
         }
         else if ((*n)->game.isGameActive && (*n)->players.size() <= 1) {
-            std::cout << "Lobby removal: " << (*n)->name << " (active game with one or fewer players)\n";
+            std::cout << "Game reset in lobby: " << (*n)->name << " (active game with one or fewer players)\n";
+
             if (!(*n)->players.empty()) {
                 auto player = (*n)->players.front();
-                player->points = 0;
-                player->failedLetters.clear();
-                player->isOwner = false;
-                player->lobbyName = "";
-                sendToClient(player->sockfd, "83", "");
+                sendToClient(player->sockfd, "83", ""); // player ma wrócić do waitroom
             }
-            removeLobby = true;
+
+            (*n)->game.resetGame((*n)->roundsAmount, (*n)->roundDuration, (*n)->difficulty);
         }
 
         if (removeLobby) {
@@ -250,5 +248,6 @@ void removeEmptyLobbies() {
             ++n;
         }
     }
+
     sendLobbiesToClients(lobbyNames);
 }
