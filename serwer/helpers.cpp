@@ -4,8 +4,9 @@ extern std::vector<std::shared_ptr<Player>> players;
 extern std::vector<std::shared_ptr<Lobby>> lobbies;
 extern std::vector<std::string> lobbyNames;
 
-void sendLobbiesToClients(std::vector<std::string> lobbyNames, int clientFd) {
+void sendLobbiesToClients(const std::vector<std::string> &lobbyNames, const int clientFd) {
     std::string messageBody;
+
     // przygotowanie wiadomości
     for (size_t i = 0; i < lobbyNames.size(); ++i) {
         messageBody += lobbyNames[i];
@@ -17,6 +18,7 @@ void sendLobbiesToClients(std::vector<std::string> lobbyNames, int clientFd) {
     if (clientFd != -1) {
         sendToClient(clientFd, "70", messageBody);
     }
+
     // wysłanie do wielu klientów (update dla klientów, którzy są już w aplikacji)
     else {
         for (const auto& player : players) {
@@ -184,6 +186,7 @@ void removeFromLobby(int clientFd) {
         if (playerIt != lobby->players.end()) {
             const std::shared_ptr<Player>& playerToRemove = *playerIt;
             playerToRemove->lobbyName = "";
+            playerToRemove->isOwner = false;
             std::cout << "Player: " << playerToRemove->nick << ", got removed from lobby: " << lobby->name << "\n";
             lobby->playersCount--;
             if (lobby->game.isGameActive) { // gra trwa (game page)
@@ -208,6 +211,7 @@ void removeFromLobby(int clientFd) {
                 isStartAllowed(lobby.get());
             }
             lobby->players.erase(playerIt);
+            lobby->setOwner();
 
             break;
         }
@@ -217,8 +221,26 @@ void removeFromLobby(int clientFd) {
 
 void removeEmptyLobbies() {
     for (auto n = lobbies.begin(); n != lobbies.end();) {
+        bool removeLobby = false;
+
         if ((*n)->players.empty()) {
-            std::cout << "Lobby removal: " << (*n)->name << "\n"; 
+            std::cout << "Lobby removal: " << (*n)->name << " (no players)\n";
+            removeLobby = true;
+        }
+        else if ((*n)->game.isGameActive && (*n)->players.size() <= 1) {
+            std::cout << "Lobby removal: " << (*n)->name << " (active game with one or fewer players)\n";
+            if (!(*n)->players.empty()) {
+                auto player = (*n)->players.front();
+                player->points = 0;
+                player->failedLetters.clear();
+                player->isOwner = false;
+                player->lobbyName = "";
+                sendToClient(player->sockfd, "83", "");
+            }
+            removeLobby = true;
+        }
+
+        if (removeLobby) {
             auto lobbyNameIt = std::find(lobbyNames.begin(), lobbyNames.end(), (*n)->name);
             if (lobbyNameIt != lobbyNames.end()) {
                 lobbyNames.erase(lobbyNameIt);
