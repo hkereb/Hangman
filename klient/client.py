@@ -25,7 +25,6 @@ class NetworkClient(QThread):
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.socket.settimeout(self.time_wait)
             self.socket.connect((self.server_ip, self.server_port))
-            # todo być może zmienić
             self.socket.settimeout(None)
             self.isConnected = True
             threading.Thread(target=self.listen_to_server, daemon=True).start()
