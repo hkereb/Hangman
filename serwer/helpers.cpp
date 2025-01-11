@@ -75,7 +75,7 @@ void sendLivesToClients(const Lobby* lobby, const Player* playerWhoMissed) {
 void sendStartToClients(const Lobby* lobby) {
     for (const auto& player : lobby->players) {
         std::string time = Game::convertTime(lobby->roundDuration);
-        std::string msgBody = lobby->game.wordInProgress + ";" + time + ";"+ std::to_string(lobby->roundsAmount) + ";" + player->nick + ";";
+        std::string msgBody = "1;" + lobby->game.wordInProgress + ";" + time + ";"+ std::to_string(lobby->roundsAmount) + ";" + player->nick + ";";
         int count = 0;
 
         for (const auto& opponent : lobby->players) {
