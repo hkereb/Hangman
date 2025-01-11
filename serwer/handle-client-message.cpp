@@ -307,7 +307,6 @@ void handleClientMessage(int clientFd, const std::string& msg) {
     //         sendToClient(clientFd, "07", "0\ngameRestartFailed\n");  // Pokój nie istnieje
     //     }
     // }
-    // TODO hania - dostować gui
     else if (msg.substr(0, 2) == "09") {  // Opuszczenie pokoju
         auto lobbyIt = std::find_if(lobbies.begin(), lobbies.end(), [clientFd](const Lobby& lobby) {
             return std::any_of(lobby.players.begin(), lobby.players.end(), [clientFd](const Player* player) {
@@ -324,18 +323,29 @@ void handleClientMessage(int clientFd, const std::string& msg) {
         });
 
         if (playerIt != lobbyIt->players.end()) {
+            std::string nick = (*playerIt)->nick;
+
             (*playerIt)->isOwner = false;
 
             lobbyIt->players.erase(playerIt);
             lobbyIt->playersCount--;
 
-            sendToClient(clientFd, "09", "1");
-            isStartAllowed(&*lobbyIt);
-            sendPlayersToClients(&*lobbyIt);
+            if (lobbyIt->game.isGameActive) {
+                for (const auto& player : lobbyIt->players) {
+                    sendToClient(player->sockfd, "80", nick);
+                }
+            }
+            else {
+                isStartAllowed(&*lobbyIt);
+                sendPlayersToClients(&*lobbyIt);
+            }
 
+            sendToClient(clientFd, "09", "1");
             // todo sprawdzić czy tu nie trzeba usunąć pokoju bo a) podczas gry został jeden gracz b) w pokoju bez gry jest 0 graczy
         }
-        // todo wyślij kod błędu że nie znaleziono gracza
+        else {
+            sendToClient(clientFd, "09", "0"); //
+        }
     }
     else if (msg.substr(0, 2) == "70") { // prośba o listę pokoi (dla jednego gracza)
         sendLobbiesToClients(lobbyNames, clientFd);
