@@ -7,7 +7,7 @@
 - [x] 02\\[nazwa,hasło,poziom,rundy,czas] - utworzenie nowego pokoju o podanej nazwie 
 - [x] 03\\[nazwa,haslo] - dołączenie do pokoju o podanej nazwie
 - [x] 06\\[litera] - próba zgadnięcia litery
-- [x] 07\\[pokój] - restart gry
+- [x] 07\\[] - restart gry
 - [x] 08\\[pokój] - podanie aktualnego stanu gry
 - [x] 09\\[pokój] - opuszczenie pokoju przez gracza
 
