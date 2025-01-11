@@ -15,7 +15,7 @@
 #include "sendToClient.h"
 
 void sendLobbiesToClients(std::vector<std::string> lobbyNames, int clientFd = -1);
-void sendPlayersToClients(const Lobby* lobby, int ignoreFd = -1);
+void sendPlayersToClients(const Lobby* lobby, int ignoreFd = -1, int onlyFd = -1);
 void sendWordAndPointsToClients(const Lobby* lobby, const Player* playerWhoGuessed);
 void sendLivesToClients(const Lobby* lobby, const Player* playerWhoMissed);
 void sendStartToClients(const Lobby* lobby);

@@ -27,7 +27,7 @@ void sendLobbiesToClients(std::vector<std::string> lobbyNames, int clientFd) {
     }
 }
 
-void sendPlayersToClients(const Lobby* lobby, int ignoreFd) {
+void sendPlayersToClients(const Lobby* lobby, int ignoreFd, int onlyFd) {
     std::string msgBody;
 
     // przygotowanie wiadomości
@@ -38,6 +38,10 @@ void sendPlayersToClients(const Lobby* lobby, int ignoreFd) {
                 msgBody += ",";
             }
         }
+    }
+
+    if (onlyFd != -1) {
+        sendToClient(onlyFd, "71", msgBody);
     }
 
     // wysłanie do wszystkich klientów z pokoju
@@ -120,6 +124,7 @@ void sendEndToClients(const Lobby* lobby) {
 
 void isStartAllowed(const Lobby* lobby) {
     if (lobby->game.isGameActive) {
+        std::cout << "i think game is active";
         return;
     }
     if (lobby->playersCount < 2) {

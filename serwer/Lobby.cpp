@@ -2,10 +2,6 @@
 #include <iostream>
 
 void Lobby::startGame() {
-    for (auto& player : players) {
-        player->points = 0;
-    }
-
     game.resetGame(roundsAmount, roundDuration, difficulty);
     game.players = players;
     game.startGame();

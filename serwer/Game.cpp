@@ -163,6 +163,7 @@ void Game::resetGame(int roundsAmount, int roundDuration, int difficulty) {
 
     for (auto& player : players) {
         player->points = 0;
+        player->failedLetters.clear();
     }
 }
 
