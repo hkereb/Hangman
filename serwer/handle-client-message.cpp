@@ -74,6 +74,7 @@ void handleClientMessage(int clientFd, const std::string& msg) {
         lobbies.push_back(std::move(newLobby));
 
         sendToClient(clientFd, "02", "1");
+        playerIt->isReadyToPlay = true;
         std::cout << "Lobby created successfully: " << lobbyName << "\n";
         std::cout << "Current lobby count: " << lobbyCount << "\n";
     }
@@ -127,6 +128,7 @@ void handleClientMessage(int clientFd, const std::string& msg) {
         lobbyIt->players.push_back(&*playerIt);
         lobbyIt->playersCount++;
         sendToClient(clientFd, "03", "1");
+        playerIt->isReadyToPlay = true;
         sendPlayersToClients(&*lobbyIt);
         isStartAllowed(&*lobbyIt);
     }
