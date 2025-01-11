@@ -183,11 +183,11 @@ void removeFromLobby(int clientFd) {
                     return player->sockfd == clientFd;
                 });
 
-                if (gamePlayerIt != gamePlayers.end()) {
-                    std::cout << "Removing player " << (*gamePlayerIt)->nick << " from game.\n";
-                    // gamePlayers.erase(gamePlayerIt); // Usuwamy gracza z gry
-                    lobby.game.players.erase(gamePlayerIt);
-                }
+                // if (gamePlayerIt != gamePlayers.end()) {
+                //     std::cout << "Removing player " << (*gamePlayerIt)->nick << " from game.\n";
+                //     // gamePlayers.erase(gamePlayerIt); // Usuwamy gracza z gry
+                //     lobby.game.players.erase(gamePlayerIt);
+                // }
 
                 for (auto & player : lobby.players) {
                     if (playerToRemove->nick != player->nick) {
@@ -203,8 +203,8 @@ void removeFromLobby(int clientFd) {
             if (lobby.playersCount > 0) {
                 lobby.setOwner();
                 sendPlayersToClients(&lobby);
+                isStartAllowed(&lobby);
             }
-            isStartAllowed(&lobby);
             break;
         }
     }

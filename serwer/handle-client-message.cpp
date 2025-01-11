@@ -112,7 +112,7 @@ void handleClientMessage(int clientFd, const std::string& msg) {
 =======
         if (playerIt != players.end()) {
             lobbyIt->players.push_back(&*playerIt);  // Dodaj gracza do pokoju
-            lobbyIt->playersCount++;
+            // lobbyIt->playersCount++;
             lobbyIt->playersCount = lobbyIt->players.size();
             sendToClient(clientFd, "03", "1");  // Sukces
             sendPlayersToClients(&*lobbyIt);
