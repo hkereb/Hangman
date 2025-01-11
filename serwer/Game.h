@@ -40,9 +40,10 @@ struct Game {
     std::thread timerThread;
 
     Game() :
-    timeLeftInRound(0),
-    isRoundActive(false),
-    isGameActive(false){}
+        isGameActive(false),
+        timeLeftInRound(0),
+        isRoundActive(false)
+    {}
 
     // move constructor
     Game(Game&& other) noexcept
