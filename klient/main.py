@@ -6,6 +6,24 @@ from gui import MainApp
 from PySide6 import QtWidgets as qtw
 from PySide6 import QtCore as qtc
 
+def try_connect(ip):
+    if not client.isConnected:
+        client.server_ip = ip
+        client.server_port = SERVER_PORT
+        client.connect_to_server()
+    else:
+        window.submit_nick()
+
+def handle_cant_connect(error_message):
+    qtw.QMessageBox.critical(window, "Connection Error", f"Cannot connect to the server:\n{error_message}")
+
+def handle_connection_error(error_message):
+    qtw.QMessageBox.critical(window, "Connection Error",f"The connection with the server has been lost:\n{error_message}")
+    window.clean_upon_disconnect()
+
+def unlock_other_signals():
+    window.submit_nick()
+
 if __name__ == "__main__":
     #SERVER_IP = "192.168.100.8"
     SERVER_PORT = 1111
@@ -18,37 +36,15 @@ if __name__ == "__main__":
     window.show()
 
     ############# signals ##############
-    def try_connect(ip):
-        global client
-        if not client.isConnected:
-            client.server_ip = ip
-            client.server_port = SERVER_PORT
-            client.connect_to_server()
-            if client.isConnected:
-                client.message_received.connect(window.handle_server_response)
-        else:
-            window.submit_nick()
-
-
-    def handle_cant_connect(error_message):
-        qtw.QMessageBox.critical(window, "Connection Error",f"Cannot connect to the server:\n{error_message}")
-
-    def handle_connection_error(error_message):
-        qtw.QMessageBox.critical(window, "Connection Error",f"The connection with the server has been lost:\n{error_message}")
-        window.clean_upon_disconnect()
-
-    def unlock_other_signals():
-        window.sig_submit_nick.connect(lambda nick: client.send_to_server("01", f"{nick}"))
-        window.sig_create_room.connect(lambda name, password, level, rounds, time_sec: client.send_to_server("02", f"name:{name},password:{password},difficulty:{level},rounds:{rounds},time:{time_sec}"))
-        window.sig_join_room.connect(lambda name, password: client.send_to_server("03", f"name:{name},password:{password}"))
-        window.sig_rooms_list.connect(lambda message: client.send_to_server("70", ""))
-        window.sig_players_list.connect(lambda message: client.send_to_server("71", ""))
-        window.sig_start.connect(lambda message: client.send_to_server("73", ""))
-        window.sig_submit_letter.connect(lambda letter: client.send_to_server("06", f"{letter}"))
-        window.sig_time_ran_out.connect(lambda message: client.send_to_server("80", ""))
-
-        window.submit_nick()
-
+    client.message_received.connect(window.handle_server_response)
+    window.sig_submit_nick.connect(lambda nick: client.send_to_server("01", f"{nick}"))
+    window.sig_create_room.connect(lambda name, password, level, rounds, time_sec: client.send_to_server("02",f"name:{name},password:{password},difficulty:{level},rounds:{rounds},time:{time_sec}"))
+    window.sig_join_room.connect(lambda name, password: client.send_to_server("03", f"name:{name},password:{password}"))
+    window.sig_rooms_list.connect(lambda message: client.send_to_server("70", ""))
+    window.sig_players_list.connect(lambda message: client.send_to_server("71", ""))
+    window.sig_start.connect(lambda message: client.send_to_server("73", ""))
+    window.sig_submit_letter.connect(lambda letter: client.send_to_server("06", f"{letter}"))
+    window.sig_time_ran_out.connect(lambda message: client.send_to_server("80", ""))
 
     client.sig_cant_connect.connect(lambda error_msg: handle_cant_connect(error_msg))
     client.sig_server_disconnected.connect(lambda error_msg: handle_connection_error(error_msg))
