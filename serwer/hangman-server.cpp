@@ -60,7 +60,6 @@ int main() {
 
         for (int n = 0; n < ready; ++n) {
             if (events[n].data.fd == sockfd) {
-                // std::cout << "sockfd" << std::endl;
                 sockaddr_in clientAddr{};
                 socklen_t addrSize = sizeof(clientAddr);
                 int newFd = accept(events[n].data.fd, (struct sockaddr *)&clientAddr, &addrSize);
@@ -75,7 +74,6 @@ int main() {
 
                 printf("server: new connection established.\n");
                 setNonBlocking(newFd);
-                // todo nasłuchiwać jescze na EPOLLERR i EPOLLUP - rozłączyć w przypadku either
                 ev.events = EPOLLIN | EPOLLET;
                 ev.data.fd = newFd;
                 if (epoll_ctl(efd, EPOLL_CTL_ADD, newFd, &ev) < 0) {
@@ -88,8 +86,36 @@ int main() {
                 players.push_back(newPlayer);
 
                 sendToClient(newFd, "69", "hello!");
-            }
-            else {
+            } else {
+                if (events[n].events & (EPOLLERR | EPOLLHUP)) {
+                    // epoll errors and hang ups
+                    std::cout << "Error or hang-up detected on socket: " <<  events[n].data.fd << std::endl;
+
+                    // remove player from global list
+                    removeFromLobby(events[n].data.fd);
+
+                    auto playerIt = std::find_if(players.begin(), players.end(), [n, events](const Player& player) {
+                        return player.sockfd == events[n].data.fd;
+                    });
+
+                    if (playerIt != players.end()) {
+                        auto nicknameIt = std::find(playersNicknames.begin(), playersNicknames.end(), playerIt->nick);
+                        if (nicknameIt != playersNicknames.end()) {
+                            playersNicknames.erase(nicknameIt);  // Remove the nickname
+                        }
+                        std::cout << "Player with nickname " << playerIt->nick << " removed from global player list.\n";
+                        players.erase(playerIt);
+                    }
+                    sendLobbiesToClients(lobbyNames);
+
+                    // Clean up resources
+                    close(events[n].data.fd);
+                    epoll_ctl(efd, EPOLL_CTL_DEL, events[n].data.fd, &ev);
+                    clientBuffers.erase(events[n].data.fd);  // clean up client buffers
+                    fdsToWatch--;
+
+                    continue; 
+                }
                 //std::cout << "clientfd" << std::endl;
                 while (true) {
                     char buffer[1024] = {0};
@@ -111,7 +137,6 @@ int main() {
                             auto nicknameIt = std::find(playersNicknames.begin(), playersNicknames.end(), playerIt->nick);
                             if (nicknameIt != playersNicknames.end()) {
                                 playersNicknames.erase(nicknameIt);  // Remove the nickname
-                                //std::cout << "Player's nickname removed: " << playerIt->nick << "\n";
                             }
                             std::cout << "Player with nickname " << playerIt->nick << " removed from global player list.\n";
                             players.erase(playerIt);
