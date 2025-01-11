@@ -48,6 +48,8 @@ class MainApp(QMainWindow):
 
         self.ui.level_combobox.addItems(["easy", "medium", "hard"])
 
+        self.ui.nick_field.setMaxLength(20)
+
         self.ui.start_btn.setVisible(False)
         self.ui.start_btn.setEnabled(False)
 
@@ -232,7 +234,7 @@ class MainApp(QMainWindow):
                 self.ui.stackedWidget.setCurrentWidget(self.ui.waitroom_page)
             elif result == "0":  # błąd
                 self.ui.create_name_field.setStyleSheet("color: red;")
-        ### decyzja o dołączenii do pokoju
+        ### decyzja o dołączeniu do pokoju
         elif message.startswith("03"):
             result = substr_msg(message)
             if result == "1":  # pomyślnie dołączono do pokoju
@@ -409,6 +411,26 @@ class MainApp(QMainWindow):
 
             self.ui.send_letter_btn.setEnabled(True)
             self.ui.letter_input.setReadOnly(False)
+        ### jeden z graczy opuścił trwającą grę
+        elif message.startswith("80"):
+            nick = substr_msg(message)
+
+            for i, name_label in enumerate(self.player_names_labels):
+                if name_label.text() == nick:
+                    self.player_names_labels[i].setText("")
+                    self.player_labels[i].setPixmap(QPixmap(self.image_paths[10]))
+                    self.opacity[i].setOpacity(0.5)
+                    break
+
+            for i in range(self.ui.ranking_list.count()):
+                item = self.ui.ranking_list.item(i)
+                item_info = item.text().split("    ")
+
+                list_nick = item_info[1]
+
+                if nick == list_nick:
+                    self.ui.ranking_list.takeItem(i)
+                    break
 
     def on_ip_changed(self):
         if self.ui.ip_field.hasAcceptableInput():

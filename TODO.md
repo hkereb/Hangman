@@ -35,3 +35,4 @@
 - [x] 77\\[nick:punkty] - update rankingu
 - [x] 78\\[nick:punkty,nick:punkty;słowo1,słowo2] - koniec gry
 - [x] 79\\[zaszyfrowane_hasło,runda,runda_max] - nowa runda
+- [x] 80\\[nick] - gracz opuścił pokój w trakcie gry

@@ -42,7 +42,6 @@ if __name__ == "__main__":
     window.show()
 
     ############# signals ##############
-    # todo messaage niepotrzebne tam gdzie body puste
     client.message_received.connect(window.handle_server_response)
     window.sig_submit_nick.connect(lambda nick: client.send_to_server("01", f"{nick}"))
     window.sig_create_room.connect(lambda name, password, level, rounds, time_sec: client.send_to_server("02",f"name:{name},password:{password},difficulty:{level},rounds:{rounds},time:{time_sec}"))
