@@ -10,7 +10,6 @@ from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox, QGraphicsO
 from PySide6.QtCore import QObject, Signal, QThread, QRegularExpression, QTime
 from PySide6.QtGui import QRegularExpressionValidator, QPixmap
 
-
 def substr_msg(msg):
     return msg[3:]
 
@@ -25,8 +24,9 @@ class MainApp(QMainWindow):
     sig_has_connected = Signal()
     sig_submit_letter = Signal(str)
     sig_time_ran_out = Signal(str)
-    sig_leave_room = Signal(str) # todo usunąć niepotrzebne stringi z sygnałów
+    sig_leave_room = Signal(str)
     sig_disconnect_me = Signal(str)
+    sig_ready_to_play = Signal(str)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -147,10 +147,13 @@ class MainApp(QMainWindow):
 
     def submit_ip(self):
         if not self.ui.nick_field.text().strip():
-            QMessageBox.warning(self, "Info", "Nickname field is obligatory!")
+            QMessageBox.information(self, "Cannot submit information", "Nickname field cannot be empty")
             return
         if not self.ui.ip_field.text().strip():
-            QMessageBox.warning(self, "Info", "IP field is obligatory!")
+            QMessageBox.information(self, "Cannot submit information", "IP field cannot be empty")
+            return
+        if not self.ui.ip_field.hasAcceptableInput():
+            QMessageBox.information(self, "Cannot submit information", "IP field has an invalid value")
             return
         ip = self.ui.ip_field.text()
 
@@ -338,8 +341,13 @@ class MainApp(QMainWindow):
             if decision == "1":
                 self.ui.start_btn.setEnabled(True)
                 print("Gra może zostać rozpoczęta.")
-            else:
+            elif decision == "01":
                 self.ui.start_btn.setEnabled(False)
+                QMessageBox.information(self, "Cannot start the game", "There is not enough players (minimum of 2) in the Room")
+                print("Gra NIE może zostać rozpoczęta.")
+            elif decision == "02":
+                self.ui.start_btn.setEnabled(False)
+                QMessageBox.information(self, "Cannot start the game", "Not all players are ready to play again")
                 print("Gra NIE może zostać rozpoczęta.")
         ### init gry
         elif message.startswith("73"):
@@ -444,7 +452,7 @@ class MainApp(QMainWindow):
             self.ui.send_letter_btn.setEnabled(True)
             self.ui.letter_input.setReadOnly(False)
         ### jeden z graczy opuścił trwającą grę
-        elif message.startswith("80"):
+        elif message.startswith("81"):
             nick = substr_msg(message)
 
             for i, name_label in enumerate(self.player_names_labels):
@@ -483,6 +491,7 @@ class MainApp(QMainWindow):
         if self.ui.stackedWidget.widget(index) == self.ui.waitroom_page:
             print("emmited 71 through changing page")
             self.sig_players_list.emit("")
+            self.sig_ready_to_play.emit("")
 
     def on_list_item_selected(self):
         selected_item = self.ui.rooms_list.currentItem()

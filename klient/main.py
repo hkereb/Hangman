@@ -52,6 +52,7 @@ if __name__ == "__main__":
     window.sig_submit_letter.connect(lambda letter: client.send_to_server("06", f"{letter}"))
     window.sig_time_ran_out.connect(lambda message: client.send_to_server("80", ""))
     window.sig_leave_room.connect(lambda message: client.send_to_server("09", ""))
+    window.sig_ready_to_play.connect(lambda message: client.send_to_server("82", ""))
 
     client.sig_cant_connect.connect(lambda error_msg: handle_cant_connect(error_msg))
     client.sig_server_disconnected.connect(lambda error_msg: handle_connection_error(error_msg))
