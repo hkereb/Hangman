@@ -4,8 +4,9 @@ extern std::vector<std::shared_ptr<Player>> players;
 extern std::vector<std::shared_ptr<Lobby>> lobbies;
 extern std::vector<std::string> lobbyNames;
 
-void sendLobbiesToClients(std::vector<std::string> lobbyNames, int clientFd) {
+void sendLobbiesToClients(const std::vector<std::string> &lobbyNames, const int clientFd) {
     std::string messageBody;
+
     // przygotowanie wiadomości
     for (size_t i = 0; i < lobbyNames.size(); ++i) {
         messageBody += lobbyNames[i];
@@ -17,6 +18,7 @@ void sendLobbiesToClients(std::vector<std::string> lobbyNames, int clientFd) {
     if (clientFd != -1) {
         sendToClient(clientFd, "70", messageBody);
     }
+
     // wysłanie do wielu klientów (update dla klientów, którzy są już w aplikacji)
     else {
         for (const auto& player : players) {

@@ -293,6 +293,7 @@ void handleClientMessage(int clientFd, const std::string& msg) {
             std::string nick = (*playerIt)->nick;
 
             (*playerIt)->isOwner = false;
+            (*playerIt)->lobbyName = "";
 
             (*lobbyIt)->players.erase(playerIt);
             (*lobbyIt)->playersCount--;
@@ -311,7 +312,7 @@ void handleClientMessage(int clientFd, const std::string& msg) {
             // todo sprawdzić czy tu nie trzeba usunąć pokoju bo a) podczas gry został jeden gracz b) w pokoju bez gry jest 0 graczy
         }
         else {
-            sendToClient(clientFd, "09", "0"); //
+            sendToClient(clientFd, "09", "0");
         }
     }
     else if (msg.substr(0, 2) == "70") { // prośba o listę pokoi (dla jednego gracza)
