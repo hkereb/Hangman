@@ -130,11 +130,6 @@ void Game::startTimer() {
 
             if (timeLeftInRound <= 0) {
                 isRoundActive = false;
-
-                // todo - być może zbędna wiadomość, bardziej liczy się zaczęcie nowej gry + reset timera
-                // for (const auto& player : players) {
-                //     sendToClient(player->sockfd, "12", "");
-                // }
                 sendToClient(players[0]->sockfd, "12", "");
             }
         }
