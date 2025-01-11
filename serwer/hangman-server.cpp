@@ -75,6 +75,7 @@ int main() {
 
                 printf("server: new connection established.\n");
                 setNonBlocking(newFd);
+                // todo nasłuchiwać jescze na EPOLLERR i EPOLLUP - rozłączyć w przypadku either
                 ev.events = EPOLLIN | EPOLLET;
                 ev.data.fd = newFd;
                 if (epoll_ctl(efd, EPOLL_CTL_ADD, newFd, &ev) < 0) {
