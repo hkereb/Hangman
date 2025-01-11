@@ -15,6 +15,7 @@
 - [x] 71\\[] - prośba o przesłanie listy nicków graczy obecnych w danym pokoju
 - [x] 73\\[] - prośba o rozpoczęcie gry w pokoju gracza
 - [x] 80\\[] - prośba o nową rundę (minął czas)
+- [x] 82\\[] - gotowość do gry
 
 
 #### Serwer -> Klient:
@@ -35,4 +36,4 @@
 - [x] 77\\[nick:punkty] - update rankingu
 - [x] 78\\[nick:punkty,nick:punkty;słowo1,słowo2] - koniec gry
 - [x] 79\\[zaszyfrowane_hasło,runda,runda_max] - nowa runda
-- [x] 80\\[nick] - gracz opuścił pokój w trakcie gry
+- [x] 81\\[nick] - gracz opuścił pokój w trakcie gry

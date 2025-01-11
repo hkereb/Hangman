@@ -10,7 +10,6 @@ from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox, QGraphicsO
 from PySide6.QtCore import QObject, Signal, QThread, QRegularExpression, QTime
 from PySide6.QtGui import QRegularExpressionValidator, QPixmap
 
-
 def substr_msg(msg):
     return msg[3:]
 
@@ -25,8 +24,9 @@ class MainApp(QMainWindow):
     sig_has_connected = Signal()
     sig_submit_letter = Signal(str)
     sig_time_ran_out = Signal(str)
-    sig_leave_room = Signal(str) # todo usunąć niepotrzebne stringi z sygnałów
+    sig_leave_room = Signal(str)
     sig_disconnect_me = Signal(str)
+    sig_ready_to_play = Signal(str)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -147,10 +147,13 @@ class MainApp(QMainWindow):
 
     def submit_ip(self):
         if not self.ui.nick_field.text().strip():
-            QMessageBox.warning(self, "Info", "Nickname field is obligatory!")
+            QMessageBox.information(self, "Cannot submit information", "Nickname field cannot be empty")
             return
         if not self.ui.ip_field.text().strip():
-            QMessageBox.warning(self, "Info", "IP field is obligatory!")
+            QMessageBox.information(self, "Cannot submit information", "IP field cannot be empty")
+            return
+        if not self.ui.ip_field.hasAcceptableInput():
+            QMessageBox.information(self, "Cannot submit information", "IP field has an invalid value")
             return
         ip = self.ui.ip_field.text()
 
@@ -224,26 +227,52 @@ class MainApp(QMainWindow):
             result = substr_msg(message)
             if result == "1":  # nick zaakceptowany
                 self.ui.stackedWidget.setCurrentWidget(self.ui.create_or_join_page)
-            elif result == "0":  # nick odrzucony
-                QMessageBox.warning(self, "Info", "Nickname has already been taken!")
-                self.ui.nick_field.setStyleSheet("color: red;")
+            elif result == "01":  # nick odrzucony
+                QMessageBox.information(self, "Nickanme cannot be assigned", "Nickname has already been taken")
+                self.ui.nick_field.clear()
+            elif result == "02":  # nie znaleziono gracza
+                QMessageBox.critical(self, "Nickname cannot be assigned", "Player has not been found\nTry reconnecting")
         ### decyzja o utworzeniu pokoju
         elif message.startswith("02"):
             result = substr_msg(message)
             if result == "1":  # pokój pomyślnie stworzony
                 self.ui.stackedWidget.setCurrentWidget(self.ui.waitroom_page)
-            elif result == "0":  # błąd
-                self.ui.create_name_field.setStyleSheet("color: red;")
+            elif result == "01":  # nazwa zajęta
+                self.ui.create_name_field.clear()
+                QMessageBox.information(self, "Room cannot be created", "The name has already been taken")
+            elif result == "02":  # nie znaleziono gracza
+                QMessageBox.critical(self, "Room cannot be created", "Player has not been found\nTry reconnecting")
         ### decyzja o dołączeniu do pokoju
         elif message.startswith("03"):
             result = substr_msg(message)
             if result == "1":  # pomyślnie dołączono do pokoju
                 self.ui.stackedWidget.setCurrentWidget(self.ui.waitroom_page)
-            elif result == "0":  # błąd
-                self.ui.join_room_name_field.setStyleSheet("color: red;")
+            elif result == "01":  # niepoprawne hasło
+                QMessageBox.information(self, "Cannot join the Room", "Incorrect password")
+                self.ui.join_room_name_field.clear()
+            elif result == "02":  # max graczy
+                QMessageBox.information(self, "Cannot join the Room", "The Room is full")
+            elif result == "03":  # trwa gra
+                QMessageBox.information(self, "Cannot join the Room", "There is an ongoing game in the Room")
+            elif result == "04":  # pokój nie istnieje
+                QMessageBox.information(self, "Cannot join the Room", "The Room with given name does not exist")
+                self.ui.join_room_name_field.clear()
+                self.ui.join_password_field.clear()
+            elif result == "05":  # nie znaleziono gracza
+                QMessageBox.critical(self, "Cannot join the Room", "Player has not been found\nTry reconnecting")
         ### odpowiedź na literę w grze
         elif message.startswith("06"):
             result = substr_msg(message)
+            if result == "01":
+                QMessageBox.critical(self, "Cannot guess", "The Room has not been found\nTry reconnecting")
+                return
+            elif result == "02":
+                QMessageBox.critical(self, "Cannot guess", "Player has not been found\nTry reconnecting")
+                return
+            elif result == "03":
+                QMessageBox.information(self, "Cannot guess", "You are out of lives for this round")
+                return
+
             parts = result.split(',')
 
             decision = parts[0]
@@ -312,27 +341,38 @@ class MainApp(QMainWindow):
             if decision == "1":
                 self.ui.start_btn.setEnabled(True)
                 print("Gra może zostać rozpoczęta.")
-            else:
+            elif decision == "01":
                 self.ui.start_btn.setEnabled(False)
+                QMessageBox.information(self, "Cannot start the game", "There is not enough players (minimum of 2) in the Room")
+                print("Gra NIE może zostać rozpoczęta.")
+            elif decision == "02":
+                self.ui.start_btn.setEnabled(False)
+                QMessageBox.information(self, "Cannot start the game", "Not all players are ready to play again")
                 print("Gra NIE może zostać rozpoczęta.")
         ### init gry
         elif message.startswith("73"):
             msg = substr_msg(message)
             parts = msg.split(";")
-            word = parts[0]
+
+            decision = parts[0]
+            if decision == "0":
+                QMessageBox.critical(self, "The game cannot be started", "The Room has not been found\nTry reconnecting")
+                return
+
+            word = parts[1]
             spaced_word = " ".join(word)
             self.ui.word_label.setText(spaced_word)
 
-            time = parts[1]
+            time = parts[2]
             self.ui.time2_label_2.setText(time)
 
-            rounds = int(parts[2])
+            rounds = int(parts[3])
             self.ui.rounds2_label.setText(f"1/{rounds}")
 
-            your_nick = parts[3]
+            your_nick = parts[4]
             self.ui.ranking_list.addItem(f"0    {your_nick}")
 
-            opponents = parts[4]
+            opponents = parts[5]
             nicks = opponents.split(",")
 
             for i, nick in enumerate(nicks):
@@ -412,7 +452,7 @@ class MainApp(QMainWindow):
             self.ui.send_letter_btn.setEnabled(True)
             self.ui.letter_input.setReadOnly(False)
         ### jeden z graczy opuścił trwającą grę
-        elif message.startswith("80"):
+        elif message.startswith("81"):
             nick = substr_msg(message)
 
             for i, name_label in enumerate(self.player_names_labels):
@@ -451,6 +491,7 @@ class MainApp(QMainWindow):
         if self.ui.stackedWidget.widget(index) == self.ui.waitroom_page:
             print("emmited 71 through changing page")
             self.sig_players_list.emit("")
+            self.sig_ready_to_play.emit("")
 
     def on_list_item_selected(self):
         selected_item = self.ui.rooms_list.currentItem()
