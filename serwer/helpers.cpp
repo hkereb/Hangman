@@ -27,7 +27,7 @@ void sendLobbiesToClients(std::vector<std::string> lobbyNames, int clientFd) {
     }
 }
 
-void sendPlayersToClients(const Lobby* lobby, int ignoreFd) {
+void sendPlayersToClients(const Lobby* lobby) {
     std::string msgBody;
 
     // przygotowanie wiadomości
@@ -176,7 +176,7 @@ void removeFromLobby(int clientFd) {
         if (playerIt != lobby.players.end()) {
             Player* playerToRemove = *playerIt;
             std::cout << "Player: " << playerToRemove->nick << ", got removed from lobby: " << lobby.name << "\n";
-            lobby.playersCount--;
+            // lobby.playersCount--;
             if (lobby.game.isGameActive) { // gra trwa (game page)
                 auto& gamePlayers = lobby.game.players;
                 auto gamePlayerIt = std::find_if(gamePlayers.begin(), gamePlayers.end(), [clientFd](const Player* player) {
@@ -196,11 +196,15 @@ void removeFromLobby(int clientFd) {
                 }
 
             }
-            isStartAllowed(&lobby);
+            
             lobby.players.erase(playerIt);
             lobby.playersCount = lobby.players.size();
-            lobby.setOwner();
-            sendPlayersToClients(&lobby);
+            std::cout << "players count: " << lobby.playersCount << std::endl;
+            if (lobby.playersCount > 0) {
+                lobby.setOwner();
+                sendPlayersToClients(&lobby);
+            }
+            isStartAllowed(&lobby);
             break;
         }
     }
@@ -220,4 +224,8 @@ void removeEmptyLobbies() {
             ++n;
         }
     }
+}
+
+int getLobbyCount() {
+    return lobbies.size();
 }

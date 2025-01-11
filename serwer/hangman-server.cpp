@@ -63,7 +63,7 @@ int main() {
 
         for (int n = 0; n < ready; ++n) {
             if (events[n].data.fd == sockfd) {
-                std::cout << "sockfd: " << sockfd << std::endl;
+                
                 sockaddr_in clientAddr{};
                 socklen_t addrSize = sizeof(clientAddr);
                 int newFd = accept(events[n].data.fd, (struct sockaddr *)&clientAddr, &addrSize);
@@ -89,6 +89,7 @@ int main() {
                 Player newPlayer;
                 newPlayer.sockfd = newFd;
                 players.push_back(newPlayer);
+                std::cout << "new file descriptor" << newFd << std::endl;
 
                 sendToClient(newFd, "69", "hello!");
             }
@@ -105,27 +106,34 @@ int main() {
 
                         perror("client got disconnected");
 
-                        removeFromLobby(events[n].data.fd);
+                        std::cout << "fd: " << events[n].data.fd << std::endl;
                         
-                        // remove player from global list
-                        auto playerIt = std::find_if(players.begin(), players.end(), [n, events](const Player& player) {
-                            return player.sockfd == events[n].data.fd;
-                        });
+                        if (events[n].data.fd >= 0) {
+                                
+                            removeFromLobby(events[n].data.fd);
+                            
+                            // remove player from global list
+                            auto playerIt = std::find_if(players.begin(), players.end(), [n, events](const Player& player) {
+                                return player.sockfd == events[n].data.fd;
+                            });
 
-                        if (playerIt != players.end()) {
-                            auto nicknameIt = std::find(playersNicknames.begin(), playersNicknames.end(), playerIt->nick);
-                            if (nicknameIt != playersNicknames.end()) {
-                                playersNicknames.erase(nicknameIt);  // Remove the nickname
-                                //std::cout << "Player's nickname removed: " << playerIt->nick << "\n";
+                            if (playerIt != players.end()) {
+                                auto nicknameIt = std::find(playersNicknames.begin(), playersNicknames.end(), playerIt->nick);
+                                if (nicknameIt != playersNicknames.end()) {
+                                    playersNicknames.erase(nicknameIt);  // Remove the nickname
+                                    //std::cout << "Player's nickname removed: " << playerIt->nick << "\n";
+                                }
+                                std::cout << "Player with nickname " << playerIt->nick << " removed from global player list.\n";
+                                players.erase(playerIt);
                             }
-                            std::cout << "Player with nickname " << playerIt->nick << " removed from global player list.\n";
-                            players.erase(playerIt);
-                        }
 
-                        // Clean up resources
-                        close(events[n].data.fd);
-                        epoll_ctl(efd, EPOLL_CTL_DEL, events[n].data.fd, &ev);
-                        clientBuffers.erase(events[n].data.fd);  // clean up client buffers
+                            // Clean up resources
+                            clientBuffers.erase(events[n].data.fd);  // clean up client buffers
+                            if (epoll_ctl(efd, EPOLL_CTL_DEL, events[n].data.fd, &ev) < 0) {
+                                perror("epoll_ctl_del");
+                            }
+                            close(events[n].data.fd);
+                        }
                         fdsToWatch--;
                         break;
                     }
