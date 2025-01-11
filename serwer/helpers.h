@@ -26,3 +26,4 @@ Settings parseSettings(const std::string& msg);
 std::string messageSubstring(std::string msg);
 
 void removeFromLobby(int clientFd);
+void removeEmptyLobbies();

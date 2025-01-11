@@ -212,5 +212,21 @@ void removeFromLobby(int clientFd) {
             break;
         }
     }
+    removeEmptyLobbies();
 }
 
+void removeEmptyLobbies() {
+    for (auto n = lobbies.begin(); n != lobbies.end();) {
+        if ((*n)->players.empty()) {
+            std::cout << "Lobby removal: " << (*n)->name << "\n"; 
+            auto lobbyNameIt = std::find(lobbyNames.begin(), lobbyNames.end(), (*n)->name);
+            if (lobbyNameIt != lobbyNames.end()) {
+                lobbyNames.erase(lobbyNameIt);
+            }
+            n = lobbies.erase(n);
+        } else {
+            ++n;
+        }
+    }
+    sendLobbiesToClients(lobbyNames);
+}
