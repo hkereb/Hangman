@@ -21,8 +21,14 @@ def handle_connection_error(error_message):
     qtw.QMessageBox.critical(window, "Connection Error",f"The connection with the server has been lost:\n{error_message}")
     window.clean_upon_disconnect()
 
-def unlock_other_signals():
+def unlock_nickname():
     window.submit_nick()
+
+def disconnect_from_server():
+    if client.isConnected:
+        client.intentional_disconnect = True
+        client.disconnect()
+        qtw.QMessageBox.information(window, "Disconnected", "You have been disconnected from the server.")
 
 if __name__ == "__main__":
     #SERVER_IP = "192.168.100.8"
@@ -36,6 +42,7 @@ if __name__ == "__main__":
     window.show()
 
     ############# signals ##############
+    # todo messaage niepotrzebne tam gdzie body puste
     client.message_received.connect(window.handle_server_response)
     window.sig_submit_nick.connect(lambda nick: client.send_to_server("01", f"{nick}"))
     window.sig_create_room.connect(lambda name, password, level, rounds, time_sec: client.send_to_server("02",f"name:{name},password:{password},difficulty:{level},rounds:{rounds},time:{time_sec}"))
@@ -45,11 +52,13 @@ if __name__ == "__main__":
     window.sig_start.connect(lambda message: client.send_to_server("73", ""))
     window.sig_submit_letter.connect(lambda letter: client.send_to_server("06", f"{letter}"))
     window.sig_time_ran_out.connect(lambda message: client.send_to_server("80", ""))
+    window.sig_leave_room.connect(lambda message: client.send_to_server("09", ""))
 
     client.sig_cant_connect.connect(lambda error_msg: handle_cant_connect(error_msg))
     client.sig_server_disconnected.connect(lambda error_msg: handle_connection_error(error_msg))
     window.sig_connect.connect(try_connect)
-    window.sig_has_connected.connect(unlock_other_signals)
+    window.sig_has_connected.connect(unlock_nickname)
+    window.sig_disconnect_me.connect(disconnect_from_server)
     ####################################
 
     # event loop
