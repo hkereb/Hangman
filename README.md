@@ -20,7 +20,11 @@ A twist on the classic word-guessing game, this version of Hangman is a real-tim
 </div>
 
 <div align="center">
-<img src="demo-images/1.png" width="300"> <img src="demo-images/2.png" width="300"> <img src="demo-images/4.png" width="315"> <img src="demo-images/5.png" width="300">
+    <img src="demo-images/1.png" width="300"> <img src="demo-images/2.png" width="300">
+</div>
+
+<div align="center">
+    <img src="demo-images/4.png" width="300"> <img src="demo-images/5.png" width="300">
 </div>
 
 ## 🛠️ Installation & Setup
@@ -42,14 +46,14 @@ For the **client** program to work, you need:
 
 ### STEP 1: Clone the Repository
 
-```sh
+```
 git clone https://github.com/hkereb/hangman-sk2-2024.git
 cd hangman-sk2-2024
 ```
 
 ### STEP 2: Build the Server
 
-```sh
+```
 cd server
 mkdir build && cd build
 cmake ..
@@ -58,13 +62,13 @@ make
 
 ### STEP 3: Run the Server
 
-```sh
+```
 ./server
 ```
 
 ### STEP 4: Run the Client
 
-```sh
+```
 cd ../../client
 py main.py
 ```
