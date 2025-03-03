@@ -19,9 +19,9 @@ A twist on the classic word-guessing game, this version of Hangman is a real-tim
     <img src="demo-images/hangman-playgame.gif" width="600">
 </div>
 
-<img src="demo-images/1.png" width="300">
-<img src="demo-images/2.png" width="300">
-<img src="demo-images/4.png" width="300">
+<div align="center">
+<img src="demo-images/1.png" width="300"> <img src="demo-images/2.png" width="300"> <img src="demo-images/4.png" width="315">
+</div>
 
 ## 🛠️ Installation & Setup
 
