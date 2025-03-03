@@ -20,7 +20,7 @@ A twist on the classic word-guessing game, this version of Hangman is a real-tim
 </div>
 
 <div align="center">
-<img src="demo-images/1.png" width="300"> <img src="demo-images/2.png" width="300"> <img src="demo-images/4.png" width="315">
+<img src="demo-images/1.png" width="300"> <img src="demo-images/2.png" width="300"> <img src="demo-images/4.png" width="315"> <img src="demo-images/5.png" width="300">
 </div>
 
 ## 🛠️ Installation & Setup
