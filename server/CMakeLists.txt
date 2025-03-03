@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(serwer)
+project(server)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -29,9 +29,9 @@ set(HEADERS
 )
 
 # plik wykonywalny
-add_executable(serwer ${SOURCES} ${HEADERS})
+add_executable(server ${SOURCES} ${HEADERS})
 
 # do debugowania
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    target_compile_options(serwer PRIVATE -Wall -Wextra -Wpedantic -g)
+    target_compile_options(server PRIVATE -Wall -Wextra -Wpedantic -g)
 endif()
