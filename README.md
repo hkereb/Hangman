@@ -31,14 +31,14 @@ A twist on the classic word-guessing game, this version of Hangman is a real-tim
 
 ### Prerequisites
 
-For the **server** program to work, you need:
+For the **Server** program to work, you need:
 
 - **Linux OS**
 - **C++ 17**
 - **GCC / Clang / MSVC compiler**
 - **CMake**
 
-For the **client** program to work, you need:
+For the **Client** program to work, you need:
 
 - **Windows / Linux OS** (the client is tailored to Windows, but it is possible run it on Linux)
 - **Python 3.9**
