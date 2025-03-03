@@ -80,8 +80,6 @@ py main.py
 3. **Allow traffic** through the firewall (open the required port)
 4. **Share your public IP** with other players
 
-## ❓ How It Works
-
 ## 👥 Contributors
 
 - [Hanna Kerebińska](https://github.com/hkereb)
