@@ -1,11 +1,11 @@
-from PySide6.QtCore import QObject, Signal, QThread
+import PySide6.QtCore
 import socket
 import threading
 
-class NetworkClient(QThread):
-    message_received = Signal(str)
-    sig_server_disconnected = Signal(str)
-    sig_cant_connect = Signal(str)
+class NetworkClient(PySide6.QtCore.QThread):
+    message_received = PySide6.QtCore.Signal(str)
+    sig_server_disconnected = PySide6.QtCore.Signal(str)
+    sig_cant_connect = PySide6.QtCore.Signal(str)
 
     def __init__(self, server_ip, server_port, parent=None):
         super(NetworkClient, self).__init__(parent)

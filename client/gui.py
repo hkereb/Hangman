@@ -3,8 +3,6 @@ from os.path import split
 
 from PySide6 import QtGui
 
-import resources
-
 from ui_skeleton import Ui_MainWindow
 from PySide6.QtWidgets import QApplication, QMainWindow, QMessageBox, QGraphicsOpacityEffect
 from PySide6.QtCore import QObject, Signal, QThread, QRegularExpression, QTime
@@ -65,17 +63,17 @@ class MainApp(QMainWindow):
         self.ui.rounds_number_spin.setMinimum(1)
 
         self.image_paths = {
-            0: ":images/0-lives-no-eyes.png",
-            1: ":images/1-lives.png",
-            2: ":images/2-lives.png",
-            3: ":images/3-lives.png",
-            4: ":images/4-lives.png",
-            5: ":images/5-lives.png",
-            6: ":images/6-lives.png",
-            7: ":images/7-lives.png",
-            8: ":images/8-lives.png",
-            9: ":images/9-lives.png",
-            10: ":images/10-lives.png"
+            0: "images/0-lives-no-eyes.png",
+            1: "images/1-lives.png",
+            2: "images/2-lives.png",
+            3: "images/3-lives.png",
+            4: "images/4-lives.png",
+            5: "images/5-lives.png",
+            6: "images/6-lives.png",
+            7: "images/7-lives.png",
+            8: "images/8-lives.png",
+            9: "images/9-lives.png",
+            10: "images/10-lives.png",
         }
 
         self.setWindowIcon(QtGui.QIcon(self.image_paths[1]))
